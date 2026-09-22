@@ -15,7 +15,7 @@ Forma 是一个本地运行的 Web 设计系统原型：以项目为单位管理
 需要 Node.js 22+。绑定 GitHub 仓库还需要本机安装 Git。
 
 ```bash
-git clone git@github.com:xh20220630/forma-design-studio.git
+git clone https://github.com/xh20220630/forma-design-studio.git
 cd forma-design-studio
 npm ci
 npm run dev
