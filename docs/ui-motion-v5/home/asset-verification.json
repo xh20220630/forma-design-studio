@@ -1,0 +1,22 @@
+{
+  "video": {
+    "path": "public/brand/rin/v5/motion/home-idea-foundry.webm",
+    "codec": "VP9",
+    "width": 960,
+    "height": 640,
+    "fps": 24,
+    "duration": 6.0,
+    "frames": 144,
+    "alpha": true,
+    "audio": false,
+    "loop": false,
+    "bytes": 813251,
+    "sha256": "929ecb3c1bbe71454092dddefb16890e2a25ac7a78a03ffaafc017fdfa88aa18"
+  },
+  "poster": {
+    "pngBytes": 476974,
+    "webpBytes": 28502,
+    "rgba": true,
+    "frame": 144
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "objectCount": 78,
+  "movingObjectCount": 73,
+  "settledFrame": 128,
+  "holdEndFrame": 144,
+  "holdMatrixMaxError": 0.0,
+  "cameraFixed": true,
+  "characterRasterInScene": false,
+  "externalAssets": [],
+  "actualRotations": {
+    "mainPanelZDegrees": 81,
+    "foldLeafZDegrees": 129,
+    "paletteZDegrees": [
+      75,
+      95,
+      115
+    ],
+    "actionPlateYDegrees": 110
+  },
+  "allFrameGeometryViewportBounds": [
+    0.0862,
+    0.0103,
+    0.9008,
+    0.9807
+  ],
+  "geometryInsideViewport": true
+}

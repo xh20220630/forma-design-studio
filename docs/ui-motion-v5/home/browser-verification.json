@@ -1,0 +1,24 @@
+{
+  "browser": "Chrome",
+  "page": "http://127.0.0.1:5173/docs/ui-motion-v5/home/preview.html",
+  "video": {
+    "duration": 6,
+    "currentTime": 6,
+    "ended": true,
+    "paused": true,
+    "readyState": 4,
+    "error": null,
+    "loop": false,
+    "muted": true,
+    "width": 960,
+    "height": 640
+  },
+  "visualChecks": {
+    "lightBackgroundAlpha": true,
+    "darkBackgroundAlpha": true,
+    "darkBackground": "rgb(21, 38, 55)",
+    "intermediateSeekSeconds": 1.96,
+    "separateOriginalRinOverlay": true,
+    "noBlackRectangle": true
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "video": {
+    "path": "public/brand/rin/v4/motion/rin-pearl-loop.webm",
+    "codec": "VP9",
+    "width": 720,
+    "height": 480,
+    "fps": 20,
+    "duration": 4.0,
+    "frames": 80,
+    "alpha": true,
+    "audio": false,
+    "bytes": 373993
+  },
+  "poster": {
+    "pngBytes": 348685,
+    "webpBytes": 42402,
+    "rgba": true
+  },
+  "sourceRinSha256": "b2165fac1521c48cc4f8a065c12b941fa001ce0fc297876c581ea6084707cda8"
+}

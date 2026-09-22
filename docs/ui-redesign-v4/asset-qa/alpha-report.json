@@ -1,0 +1,170 @@
+[
+  {
+    "name": "rin-full-body",
+    "source": "public/brand/rin/forma-rin-chibi-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      251,
+      0,
+      999,
+      1254
+    ],
+    "output_size": [
+      772,
+      1278
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.4178,
+    "partial_alpha_pixels": 17771,
+    "opaque_pixels_exact": true,
+    "png_bytes": 896904,
+    "webp_bytes": 574396
+  },
+  {
+    "name": "rin-theme",
+    "source": "public/brand/rin/rin-theme-v2.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      269,
+      17,
+      1093,
+      1228
+    ],
+    "output_size": [
+      848,
+      1235
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.43344,
+    "partial_alpha_pixels": 20941,
+    "opaque_pixels_exact": true,
+    "png_bytes": 967500,
+    "webp_bytes": 643218
+  },
+  {
+    "name": "rin-avatar",
+    "source": "public/brand/rin/rin-avatar-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      41,
+      30,
+      1213,
+      1232
+    ],
+    "output_size": [
+      1196,
+      1226
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.34206,
+    "partial_alpha_pixels": 20242,
+    "opaque_pixels_exact": true,
+    "png_bytes": 1275797,
+    "webp_bytes": 840278
+  },
+  {
+    "name": "rin-empty",
+    "source": "public/brand/rin/rin-empty-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      174,
+      22,
+      1081,
+      1190
+    ],
+    "output_size": [
+      931,
+      1192
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.35627,
+    "partial_alpha_pixels": 15030,
+    "opaque_pixels_exact": true,
+    "png_bytes": 905382,
+    "webp_bytes": 598236
+  },
+  {
+    "name": "rin-thinking",
+    "source": "public/brand/rin/rin-thinking-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      243,
+      19,
+      1126,
+      1218
+    ],
+    "output_size": [
+      907,
+      1223
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.54567,
+    "partial_alpha_pixels": 19775,
+    "opaque_pixels_exact": true,
+    "png_bytes": 794127,
+    "webp_bytes": 515782
+  },
+  {
+    "name": "rin-success",
+    "source": "public/brand/rin/rin-success-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      266,
+      23,
+      940,
+      1217
+    ],
+    "output_size": [
+      698,
+      1218
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.40122,
+    "partial_alpha_pixels": 17823,
+    "opaque_pixels_exact": true,
+    "png_bytes": 799663,
+    "webp_bytes": 516076
+  },
+  {
+    "name": "rin-error",
+    "source": "public/brand/rin/rin-error-v1.png",
+    "source_size": [
+      1254,
+      1254
+    ],
+    "source_crop_box": [
+      201,
+      113,
+      1060,
+      1118
+    ],
+    "output_size": [
+      883,
+      1029
+    ],
+    "padding_px": 12,
+    "transparent_fraction": 0.38752,
+    "partial_alpha_pixels": 19433,
+    "opaque_pixels_exact": true,
+    "png_bytes": 877374,
+    "webp_bytes": 562442
+  }
+]

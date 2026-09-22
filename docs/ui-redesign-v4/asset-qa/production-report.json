@@ -1,0 +1,194 @@
+[
+  {
+    "file": "hero-environment.webp",
+    "size": [
+      1920,
+      640
+    ],
+    "bytes": 26684,
+    "mode": "RGB",
+    "source_size": [
+      2172,
+      724
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "hero-environment-wide.webp",
+    "size": [
+      1920,
+      486
+    ],
+    "bytes": 24076,
+    "mode": "RGB",
+    "source_size": [
+      2172,
+      724
+    ],
+    "crop": [
+      0,
+      100,
+      2172,
+      650
+    ]
+  },
+  {
+    "file": "studio-compact.webp",
+    "size": [
+      640,
+      640
+    ],
+    "bytes": 15450,
+    "mode": "RGB",
+    "source_size": [
+      2172,
+      724
+    ],
+    "crop": [
+      1350,
+      0,
+      2074,
+      724
+    ]
+  },
+  {
+    "file": "cover-commerce.webp",
+    "size": [
+      1199,
+      750
+    ],
+    "bytes": 140142,
+    "mode": "RGB",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "cover-travel.webp",
+    "size": [
+      1199,
+      750
+    ],
+    "bytes": 184502,
+    "mode": "RGB",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "cover-midnight.webp",
+    "size": [
+      1199,
+      750
+    ],
+    "bytes": 54866,
+    "mode": "RGB",
+    "source_size": [
+      1586,
+      992
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-full-body-640.webp",
+    "size": [
+      387,
+      640
+    ],
+    "bytes": 185122,
+    "mode": "RGBA",
+    "source_size": [
+      772,
+      1278
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-theme-640.webp",
+    "size": [
+      439,
+      640
+    ],
+    "bytes": 217266,
+    "mode": "RGBA",
+    "source_size": [
+      848,
+      1235
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-avatar-128.webp",
+    "size": [
+      125,
+      128
+    ],
+    "bytes": 19520,
+    "mode": "RGBA",
+    "source_size": [
+      1196,
+      1226
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-empty-320.webp",
+    "size": [
+      250,
+      320
+    ],
+    "bytes": 62806,
+    "mode": "RGBA",
+    "source_size": [
+      931,
+      1192
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-thinking-320.webp",
+    "size": [
+      237,
+      320
+    ],
+    "bytes": 57312,
+    "mode": "RGBA",
+    "source_size": [
+      907,
+      1223
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-success-320.webp",
+    "size": [
+      183,
+      320
+    ],
+    "bytes": 57440,
+    "mode": "RGBA",
+    "source_size": [
+      698,
+      1218
+    ],
+    "crop": "none"
+  },
+  {
+    "file": "rin-error-320.webp",
+    "size": [
+      275,
+      320
+    ],
+    "bytes": 80254,
+    "mode": "RGBA",
+    "source_size": [
+      883,
+      1029
+    ],
+    "crop": "none"
+  }
+]

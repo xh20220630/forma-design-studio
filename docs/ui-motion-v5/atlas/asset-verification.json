@@ -1,0 +1,22 @@
+{
+  "video": {
+    "path": "/brand/rin/v5/motion/atlas-unfold.webm",
+    "codec": "VP9",
+    "width": 900,
+    "height": 600,
+    "fps": 24,
+    "duration": 6.0,
+    "frames": 144,
+    "alphaMode": 1,
+    "audio": false,
+    "bytes": 794372
+  },
+  "poster": {
+    "path": "/brand/rin/v5/motion/atlas-poster.webp",
+    "width": 900,
+    "height": 600,
+    "rgba": true,
+    "bytes": 54932
+  },
+  "temporaryFrameSequence": "none; rendered directly to WebM"
+}

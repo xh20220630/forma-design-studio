@@ -1,0 +1,85 @@
+{
+  "asset_count": 13,
+  "production_bytes": 1125440,
+  "original_rin_opaque_rgb_exact": true,
+  "checks": [
+    {
+      "file": "hero-environment.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "hero-environment-wide.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "studio-compact.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "cover-commerce.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "cover-travel.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "cover-midnight.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": false
+    },
+    {
+      "file": "rin-full-body-640.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-theme-640.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-avatar-128.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-empty-320.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-thinking-320.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-success-320.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    },
+    {
+      "file": "rin-error-320.webp",
+      "dimensions_verified": true,
+      "mode_verified": true,
+      "alpha_verified": true
+    }
+  ]
+}

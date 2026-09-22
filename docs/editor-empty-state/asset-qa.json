@@ -1,0 +1,23 @@
+{
+  "asset": "public/brand/rin/editor/rin-start-design.png",
+  "size": [
+    1230,
+    1278
+  ],
+  "mode": "RGBA",
+  "bytes": 1305777,
+  "alpha_extrema": [
+    0,
+    255
+  ],
+  "transparent_pixels": 782549,
+  "translucent_pixels": 788196,
+  "opaque_pixels": 1195,
+  "content_bbox_alpha_gt_8": [
+    146,
+    6,
+    1084,
+    1264
+  ],
+  "source_unchanged": true
+}

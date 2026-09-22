@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.data/
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+*.log
+.pnpm-store/
+__pycache__/
+*.pyc

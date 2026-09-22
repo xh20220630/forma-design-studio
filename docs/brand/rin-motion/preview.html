@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rin Brand / Motion specimen</title>
+    <style>
+      body {
+        margin: 0;
+        background: var(--studio-surface);
+        color: var(--studio-text);
+        font:
+          14px/1.5 system-ui,
+          sans-serif;
+      }
+      main {
+        max-width: 1020px;
+        margin: 40px auto;
+        padding: 0 24px;
+      }
+      h1 {
+        font-size: 22px;
+        letter-spacing: -0.5px;
+      }
+      p {
+        color: var(--studio-text-secondary);
+      }
+      section {
+        padding: 24px;
+        margin: 20px 0;
+        background: var(--studio-card-bg);
+        border: 1px solid var(--studio-border);
+        border-radius: var(--studio-card-radius);
+        box-shadow: var(--studio-card-shadow);
+      }
+      .specimen-row {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        flex-wrap: wrap;
+      }
+      .specimen-item {
+        text-align: center;
+        color: var(--studio-text-secondary);
+        font-size: 11px;
+      }
+      .specimen-item > span {
+        display: block;
+        margin-top: 12px;
+      }
+      .studio {
+        max-width: 680px;
+        margin: auto;
+      }
+      button {
+        font: inherit;
+        padding: 9px 13px;
+        border: 1px solid var(--studio-border);
+        border-radius: var(--studio-control-radius);
+        background: var(--studio-surface-raised);
+        color: var(--studio-text);
+        cursor: pointer;
+      }
+      button[aria-pressed="true"] {
+        outline: 2px solid var(--studio-focus-ring);
+      }
+      a {
+        color: var(--studio-accent-ink);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Rin · Brand / Motion</h1>
+      <p>彩色角色，黑白工具，天蓝角标。演示由播放按钮明确启动。</p>
+      <div id="root"></div>
+    </main>
+    <script type="module">
+      import React from "react";
+      import { createRoot } from "react-dom/client";
+      import { MotionConfig } from "motion/react";
+      import {
+        StudioThemeProvider,
+        useStudioTheme,
+      } from "/src/theme/StudioTheme.tsx";
+      import {
+        RinAvatar,
+        RinIllustration,
+        RinIcon,
+        RinStudioScene,
+        RinThemeCompanion,
+      } from "/src/components/brand/RinBrand.tsx";
+      const h = React.createElement;
+      const kinds = [
+        "projects",
+        "components",
+        "tokens",
+        "canvas",
+        "sync",
+        "agent",
+        "theme",
+        "materials",
+        "motion",
+      ];
+      const row = (children) =>
+        h("div", { className: "specimen-row" }, children);
+      function Preview() {
+        const { settings, presets, updateSettings } = useStudioTheme();
+        return h(
+          MotionConfig,
+          { reducedMotion: settings.motion === "off" ? "always" : "user" },
+          h(
+            "section",
+            null,
+            row([
+              ...presets.map((preset) =>
+                h(
+                  "button",
+                  {
+                    key: preset.id,
+                    onClick: () => updateSettings({ preset: preset.id }),
+                    "aria-pressed": settings.preset === preset.id,
+                  },
+                  preset.name,
+                ),
+              ),
+              h(
+                "a",
+                { href: "/#/theme", key: "studio" },
+                "打开 Rin 主题工作室 →",
+              ),
+            ]),
+          ),
+          h("section", null, h(RinThemeCompanion, { size: 230 })),
+          h(
+            "section",
+            null,
+            row(
+              kinds.map((kind) =>
+                h(
+                  "div",
+                  { className: "specimen-item", key: kind },
+                  h(RinIcon, { kind, size: 24 }),
+                  h("span", null, kind),
+                ),
+              ),
+            ),
+          ),
+          h(
+            "section",
+            null,
+            row(
+              kinds.map((kind) =>
+                h(
+                  "div",
+                  { className: "specimen-item", key: kind },
+                  h(RinIcon, { kind, size: 40, variant: "sculptural" }),
+                  h("span", null, kind),
+                ),
+              ),
+            ),
+          ),
+          h(
+            "section",
+            null,
+            row([
+              h(RinAvatar, { size: 44, ready: true, key: "avatar" }),
+              ...["empty", "thinking", "success", "error"].map((state) =>
+                h(
+                  "div",
+                  { className: "specimen-item", key: state },
+                  h(RinIllustration, { state, size: 128 }),
+                  h("span", null, state),
+                ),
+              ),
+            ]),
+          ),
+          h(
+            "section",
+            null,
+            h(
+              "div",
+              { className: "studio" },
+              h(RinStudioScene, { compact: true }),
+            ),
+          ),
+        );
+      }
+      createRoot(document.getElementById("root")).render(
+        h(StudioThemeProvider, null, h(Preview)),
+      );
+    </script>
+  </body>
+</html>

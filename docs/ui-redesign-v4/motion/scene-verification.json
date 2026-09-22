@@ -1,0 +1,8 @@
+{
+  "loopBoundaryMatrixMaxError": 0.0,
+  "rinAnimated": false,
+  "cameraAnimated": false,
+  "packedRinMatchesSource": true,
+  "renderEngine": "BLENDER_EEVEE",
+  "renderSamples": 32
+}
