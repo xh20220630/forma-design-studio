@@ -6,9 +6,9 @@
 
 | 文件 | 用途 | 规格 |
 | --- | --- | --- |
-| `public/brand/rin/v5/motion/home-idea-foundry.webm` | 正式片 | 960 × 640，24 fps，144 帧，6 秒，VP9 alpha，无音轨，813,251 B |
-| `public/brand/rin/v5/motion/home-idea-foundry-poster.webp` | 默认态 / reduced-motion | 第 144 帧完成态，RGBA，28,502 B |
-| `public/brand/rin/v5/motion/home-idea-foundry-poster.png` | 无损工程海报 | 960 × 640，476,974 B |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry.webm` | 正式片 | 960 × 640，24 fps，144 帧，6 秒，VP9 alpha，无音轨，813,251 B |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.webp` | 默认态 / reduced-motion | 第 144 帧完成态，RGBA，28,502 B |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.png` | 无损工程海报 | 960 × 640，476,974 B |
 | `docs/ui-motion-v5/home/home-idea-foundry.blend` | 可编辑源场景 | 全程序材质和几何，无外部纹理、无角色资产依赖 |
 | `docs/ui-motion-v5/home/create_home.py` | 重现脚本 | 支持关键帧预览、源场景、正式渲染 |
 | `docs/ui-motion-v5/home/home-storyboard.jpg` | 经主线验收的四帧分镜 | 散件、展开、装配、停稳；正式片在此基础上加强银灰与蓝色层次 |
@@ -44,7 +44,7 @@
 }
 ```
 
-对应脚底 `x=61.41%, y=74.28%`，锚点为 bottom-center。来源可继续用原版 `public/brand/rin/v4/rin-full-body.png` 或其已验证的同构 WebP。视频和 IP 必须共享同一个 3:2 内容坐标系；外层 hero 比例不同，应先 `object-fit: contain`，同时让叠图定位到同一个内层框。
+对应脚底 `x=61.41%, y=74.28%`，锚点为 bottom-center。来源可继续用原版 `apps/web/public/brand/rin/v4/rin-full-body.png` 或其已验证的同构 WebP。视频和 IP 必须共享同一个 3:2 内容坐标系；外层 hero 比例不同，应先 `object-fit: contain`，同时让叠图定位到同一个内层框。
 
 - 默认显示完成态 WebP；不要预先下载完整视频。
 - 用户播放后只演一轮，`loop=false`，末尾保留最后一帧；用户可重放。

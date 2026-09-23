@@ -1,6 +1,6 @@
 # Rin Pearl Studio · 规范切图清单
 
-生产目录：`public/brand/rin/v4/`。原有 `public/brand/rin/*-v1.png` / `rin-theme-v2.png` 均未覆盖。角色只从这些原图提取背景、裁切、缩放；**没有生成或重画角色**。所有控件、标题、图标、输入框、表格与真实画布预览仍由代码绘制。
+生产目录：`apps/web/public/brand/rin/v4/`。原有 `apps/web/public/brand/rin/*-v1.png` / `rin-theme-v2.png` 均未覆盖。角色只从这些原图提取背景、裁切、缩放；**没有生成或重画角色**。所有控件、标题、图标、输入框、表格与真实画布预览仍由代码绘制。
 
 ## 前端推荐资源
 

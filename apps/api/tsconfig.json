@@ -1,0 +1,6 @@
+{
+  "extends": "@forma/typescript-config/node.json",
+  "include": [
+    "src"
+  ]
+}

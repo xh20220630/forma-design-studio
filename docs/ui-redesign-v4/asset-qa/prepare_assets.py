@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[3]
-SOURCE = ROOT / 'public/brand/rin'
+SOURCE = ROOT / 'apps/web/public/brand/rin'
 DEST = SOURCE / 'v4'
 QA = Path(__file__).resolve().parent
 
@@ -114,7 +114,7 @@ def prepare():
         opaque = derived[:, :, 3] == 255
         record = {
             'name': name,
-            'source': f'public/brand/rin/{filename}',
+            'source': f'apps/web/public/brand/rin/{filename}',
             'source_size': list(original.size),
             'source_crop_box': list(bbox),
             'output_size': list(padded.size),

@@ -1,6 +1,6 @@
 {
   "video": {
-    "path": "public/brand/rin/v5/motion/home-idea-foundry.webm",
+    "path": "apps/web/public/brand/rin/v5/motion/home-idea-foundry.webm",
     "codec": "VP9",
     "width": 960,
     "height": 640,

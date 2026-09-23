@@ -11,7 +11,7 @@ parser.add_argument('--poster-only', action='store_true')
 parser.add_argument('--save-blend', action='store_true')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / 'public' / 'brand' / 'rin'
+OUT = ROOT / 'apps' / 'web' / 'public' / 'brand' / 'rin'
 OUT.mkdir(parents=True, exist_ok=True)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)

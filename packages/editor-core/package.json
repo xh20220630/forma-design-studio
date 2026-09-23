@@ -1,0 +1,23 @@
+{
+  "name": "@forma/editor-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./geometry": "./src/geometry.ts",
+    "./boolean": "./src/boolean.ts",
+    "./viewport": "./src/viewport.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.ts"
+  },
+  "dependencies": {
+    "@forma/schema": "workspace:*",
+    "polygon-clipping": "catalog:"
+  },
+  "devDependencies": {
+    "@forma/typescript-config": "workspace:*",
+    "typescript": "catalog:"
+  }
+}

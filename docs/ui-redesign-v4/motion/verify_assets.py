@@ -7,7 +7,7 @@ import struct
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / 'public/brand/rin/v4/motion'
+OUT = ROOT / 'apps/web/public/brand/rin/v4/motion'
 ASSET = OUT / 'rin-pearl-loop.webm'
 data = ASSET.read_bytes()
 
@@ -92,7 +92,7 @@ poster.save(OUT / 'rin-pearl-poster.webp', format='WEBP', quality=88, method=6)
 report = {
     'video': {'path': str(ASSET.relative_to(ROOT)).replace('\\', '/'), 'codec': 'VP9', 'width': 720, 'height': 480, 'fps': 20, 'duration': seconds, 'frames': frames, 'alpha': True, 'audio': False, 'bytes': len(data)},
     'poster': {'pngBytes': (OUT / 'rin-pearl-poster.png').stat().st_size, 'webpBytes': (OUT / 'rin-pearl-poster.webp').stat().st_size, 'rgba': True},
-    'sourceRinSha256': hashlib.sha256((ROOT / 'public/brand/rin/v4/rin-full-body.png').read_bytes()).hexdigest(),
+    'sourceRinSha256': hashlib.sha256((ROOT / 'apps/web/public/brand/rin/v4/rin-full-body.png').read_bytes()).hexdigest(),
 }
 (Path(__file__).parent / 'asset-verification.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
 print(json.dumps(report, indent=2))

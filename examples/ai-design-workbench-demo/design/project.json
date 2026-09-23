@@ -1,0 +1,15 @@
+{
+  "schema_version": 2,
+  "revision": 0,
+  "id": "forma-studio-demo",
+  "name": "Forma Studio 产品设计",
+  "theme": {
+    "id": "midnight-canvas",
+    "version": "2.0.0",
+    "status": "approved",
+    "confirmation": "深色专业工具感，以蓝紫高亮表达 AI 生成和系统状态。",
+    "design_path": "DESIGN.md",
+    "tokens_path": "tokens.json",
+    "anchor_image": "flows/studio-browse/images/projects-v1.png"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "flow_id": "studio-browse",
+  "viewport": { "x": 72, "y": 92, "zoom": 0.34 },
+  "nodes": {
+    "projects": { "x": 0, "y": 0 },
+    "project": { "x": 2100, "y": 0 }
+  }
+}

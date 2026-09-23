@@ -9,7 +9,7 @@ from PIL import Image
 
 DOC = Path(__file__).resolve().parent
 ROOT = DOC.parents[2]
-OUT = ROOT / 'public/brand/rin/v5/motion'
+OUT = ROOT / 'apps/web/public/brand/rin/v5/motion'
 asset = OUT / 'home-idea-foundry.webm'
 data = asset.read_bytes()
 

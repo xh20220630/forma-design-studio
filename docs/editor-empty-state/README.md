@@ -2,7 +2,7 @@
 
 ## Deliverable
 
-- Asset: `public/brand/rin/editor/rin-start-design.png`
+- Asset: `apps/web/public/brand/rin/editor/rin-start-design.png`
 - PNG RGBA, 1230 × 1278 px; 1,305,777 bytes.
 - Recommended presentation: `width: 240px; height: auto; object-fit: contain`; reserve approximately 240 × 250 px. The image contains clear side margins; the central character and frame remain legible at this size.
 - Composition: the original silver-haired Rin sits on a pearl/ice-blue design frame and holds a translucent layout panel. Original face, asymmetric fringe, blue eyes, geometric hair clip, black-and-white coat and blue buckle accents remain recognizable. Rendering is refined anime illustration with dimensional material shading.
@@ -15,8 +15,8 @@ Generated using the built-in `image_gen.imagegen` tool, with both inspected orig
 The selected output is the first generation. Later material-refinement variants and a background-extraction attempt produced RGB images with a painted checkerboard; those failed transparency QA and were not used or copied into the project. The selected illustration has genuine transparent and translucent pixels, not a checkerboard background. See `asset-qa.json` and the 240 px light/white/dark presentation check in `display-qa.png`.
 
 Original references:
-- `public/brand/rin/forma-rin-chibi-v1.png` — authoritative character identity and costume.
-- `public/brand/rin/v4/rin-empty-320.webp` — supporting seated proportion and design-frame relationship.
+- `apps/web/public/brand/rin/forma-rin-chibi-v1.png` — authoritative character identity and costume.
+- `apps/web/public/brand/rin/v4/rin-empty-320.webp` — supporting seated proportion and design-frame relationship.
 
 Selected built-in output:
 `C:/Users/Administrator/.codex/generated_images/01a0c007-e3aa-7092-9f17-47a8328dd887/exec-c718995d-3364-4b7b-a91b-30b4f9273533.png`

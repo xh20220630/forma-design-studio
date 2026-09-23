@@ -1,6 +1,6 @@
 {
   "video": {
-    "path": "public/brand/rin/v4/motion/rin-pearl-loop.webm",
+    "path": "apps/web/public/brand/rin/v4/motion/rin-pearl-loop.webm",
     "codec": "VP9",
     "width": 720,
     "height": 480,

@@ -1,0 +1,30 @@
+{
+  "name": "@forma/ai-design-workbench",
+  "version": "0.1.0",
+  "description": "Local single-project design workbench for Forma AI UI Designer",
+  "private": false,
+  "type": "module",
+  "bin": {
+    "forma-design": "./dist/cli.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "build": "node tooling/build.ts",
+    "prepack": "pnpm --filter @forma/ai-design-workbench-ui build && pnpm run build",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.ts"
+  },
+  "devDependencies": {
+    "@forma/ai-ui-designer-plugin": "workspace:*",
+    "@forma/ai-design-workbench-ui": "workspace:*",
+    "@forma/design-workspace-sdk": "workspace:*",
+    "@forma/schema": "workspace:*",
+    "@forma/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "esbuild": "0.25.12",
+    "typescript": "catalog:"
+  }
+}

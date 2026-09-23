@@ -13,8 +13,8 @@
 
 ## 素材
 
-- [透明底主形象](../../public/brand/formi/formi-master-v1.png)：1254 × 1254 PNG，RGBA，透明背景。用于品牌展示、欢迎页和较大尺寸 Agent 形象。
-- [动作设定图](../../public/brand/formi/formi-poses-v1.png)：1536 × 1024 PNG，浅色背景。HELLO / THINK / BUILD / DONE 四种状态；这是整张设定图，不是已拆分的动画或图标。
+- [透明底主形象](../../apps/web/public/brand/formi/formi-master-v1.png)：1254 × 1254 PNG，RGBA，透明背景。用于品牌展示、欢迎页和较大尺寸 Agent 形象。
+- [动作设定图](../../apps/web/public/brand/formi/formi-poses-v1.png)：1536 × 1024 PNG，浅色背景。HELLO / THINK / BUILD / DONE 四种状态；这是整张设定图，不是已拆分的动画或图标。
 
 前端可使用资源路径 `/brand/formi/formi-master-v1.png`。本次提供形象与素材，尚未替换应用中的头像或图标。
 

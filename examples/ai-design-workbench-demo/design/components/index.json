@@ -1,0 +1,45 @@
+{
+  "schema_version": 2,
+  "components": [
+    {
+      "id": "app-shell",
+      "version": "2.0.0",
+      "name": "App Shell",
+      "status": "approved",
+      "scope": ["desktop", "authenticated"],
+      "excludes": ["marketing"],
+      "tags": ["navigation", "layout"],
+      "spec_path": "components/app-shell/v2.md"
+    },
+    {
+      "id": "resource-card",
+      "version": "1.1.0",
+      "name": "Resource Card",
+      "status": "approved",
+      "scope": ["project"],
+      "excludes": [],
+      "tags": ["content", "selection"],
+      "spec_path": "components/resource-card/v1.md"
+    },
+    {
+      "id": "resource-card",
+      "version": "2.0.0",
+      "name": "Resource Card",
+      "status": "approved",
+      "scope": ["project", "component"],
+      "excludes": [],
+      "tags": ["content", "selection"],
+      "spec_path": "components/resource-card/v2.md"
+    },
+    {
+      "id": "action-dialog",
+      "version": "1.0.0",
+      "name": "Action Dialog",
+      "status": "approved",
+      "scope": ["confirmation", "publish"],
+      "excludes": ["passive-info"],
+      "tags": ["modal", "action"],
+      "spec_path": "components/action-dialog/v1.md"
+    }
+  ]
+}

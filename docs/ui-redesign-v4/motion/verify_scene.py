@@ -16,7 +16,7 @@ rin = bpy.data.objects['Original silver-haired blue-eyed Rin, fixed pose']
 assert rin.animation_data is None
 assert scene.camera.animation_data is None
 texture = next(node.image for node in rin.data.materials[0].node_tree.nodes if node.type == 'TEX_IMAGE')
-original = (ROOT / 'public/brand/rin/v4/rin-full-body.png').read_bytes()
+original = (ROOT / 'apps/web/public/brand/rin/v4/rin-full-body.png').read_bytes()
 assert hashlib.sha256(bytes(texture.packed_file.data)).digest() == hashlib.sha256(original).digest()
 report = {'loopBoundaryMatrixMaxError': maximum_error, 'rinAnimated': False, 'cameraAnimated': False, 'packedRinMatchesSource': True, 'renderEngine': scene.render.engine, 'renderSamples': scene.eevee.taa_render_samples}
 Path(__file__).with_name('scene-verification.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

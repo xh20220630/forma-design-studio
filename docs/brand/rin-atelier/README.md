@@ -20,7 +20,7 @@ Blender 源场景与复现说明见 `../rin-motion/`。角色使用 2.5D 卡片�
 
 ## 图片素材与生成记录
 
-所有图片由内置 imagegen 生成。身份参考：`public/brand/rin/forma-rin-chibi-v1.png`。生产素材放在 `public/brand/rin/`，原始生成结果保留。背景为白色，不宣称透明。旧的 `workspace-concept-v1.png` 是被用户否决的蓝色横幅方向，仅留作过程记录；实际实施采用 approved-v2 与彩色 IP 的最新修订。
+所有图片由内置 imagegen 生成。身份参考：`apps/web/public/brand/rin/forma-rin-chibi-v1.png`。生产素材放在 `apps/web/public/brand/rin/`，原始生成结果保留。背景为白色，不宣称透明。旧的 `workspace-concept-v1.png` 是被用户否决的蓝色横幅方向，仅留作过程记录；实际实施采用 approved-v2 与彩色 IP 的最新修订。
 
 ### 头像：rin-avatar-v1.png
 

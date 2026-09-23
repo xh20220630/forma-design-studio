@@ -9,7 +9,7 @@ parser.add_argument('--studio', action='store_true')
 args = parser.parse_args()
 filename = 'rin-studio-loop.webm' if args.studio else 'rin-assembly.webm'
 width, height, expected_seconds, expected_frames = (720, 480, 5, 125) if args.studio else (400, 240, 2.4, 60)
-ASSET = Path(__file__).resolve().parents[3] / 'public' / 'brand' / 'rin' / filename
+ASSET = Path(__file__).resolve().parents[3] / 'apps' / 'web' / 'public' / 'brand' / 'rin' / filename
 data = ASSET.read_bytes()
 
 

@@ -13,8 +13,8 @@ parser.add_argument('--save-blend', action='store_true')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / 'docs' / 'ui-redesign-v4' / 'motion'
-OUT = ROOT / 'public' / 'brand' / 'rin' / 'v4' / 'motion'
-SOURCE = ROOT / 'public' / 'brand' / 'rin' / 'v4' / 'rin-full-body.png'
+OUT = ROOT / 'apps' / 'web' / 'public' / 'brand' / 'rin' / 'v4' / 'motion'
+SOURCE = ROOT / 'apps' / 'web' / 'public' / 'brand' / 'rin' / 'v4' / 'rin-full-body.png'
 OUT.mkdir(parents=True, exist_ok=True)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)

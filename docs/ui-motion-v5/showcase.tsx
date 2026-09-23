@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { ArrowUpRight, MoveUpRight, Pause, Play } from "lucide-react";
-import { StudioThemeProvider } from "../../src/theme/StudioTheme";
-import { StudioSequence } from "../../src/components/motion/StudioSequence";
-import { ChromaticLoom } from "../../src/components/motion/ChromaticLoom";
+import { StudioThemeProvider } from "@/theme/StudioTheme";
+import { StudioSequence } from "@/components/motion/StudioSequence";
+import { ChromaticLoom } from "@/components/motion/ChromaticLoom";
 import "./showcase.css";
 
 const scenes = [

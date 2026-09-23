@@ -12,21 +12,52 @@ Forma 是一个本地运行的 Web 设计系统原型：以项目为单位管理
 
 ## 启动
 
-需要 Node.js 22+。绑定 GitHub 仓库还需要本机安装 Git。
+需要 Node.js 22.18+ 和 pnpm 10.20.0（已通过 `packageManager` 固定）。绑定 GitHub 仓库还需要本机安装 Git。
 
 ```bash
 git clone https://github.com/xh20220630/forma-design-studio.git
 cd forma-design-studio
-npm ci
-npm run dev
+corepack enable
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
 - 工作台：[http://127.0.0.1:5173](http://127.0.0.1:5173)
 - 本地 API：[http://127.0.0.1:4310/api/health](http://127.0.0.1:4310/api/health)
 
-`npm run dev` 同时启动 Vite 前端和 Express API。只启动前端使用 `npm run dev:web`，只启动 API 使用 `npm run dev:api`。只有前端时可以查看和编辑本地缓存，模型生成、工作空间绑定和文件同步需要 API 服务。
+`pnpm dev` 同时启动 Vite 前端和 Express API。只启动前端使用 `pnpm dev:web`，只启动 API 使用 `pnpm dev:api`。只有前端时可以查看和编辑本地缓存，模型生成、工作空间绑定和文件同步需要 API 服务。
 
 首次进入会创建 Nexus、Moss、Roam、Vault 四个示例项目。所有项目卡片展示真实页面节点的实时缩略图；模板库中的图片是主题风格示意。
+
+## Monorepo 结构
+
+使用 pnpm workspace；内部包通过 `workspace:*` 引用，外部依赖版本在 `pnpm-workspace.yaml` 的 catalog 中统一管理，只维护根目录的 `pnpm-lock.yaml`。
+
+```text
+apps/
+  web/                  @forma/web：React + Vite 工作台及 public 资源
+  api/                  @forma/api：Express API、持久化、模型与代码同步
+packages/
+  schema/               @forma/schema：设计数据与 Agent 通信契约
+  renderer/             @forma/renderer：共享场景渲染与独立导出源码
+  editor-core/          @forma/editor-core：几何、布尔运算、视口计算
+  ui/                   @forma/ui：基础组件、样式、样式工具
+  typescript-config/    @forma/typescript-config：公共 TS 配置
+scripts/                仓库级工具
+docs/                  架构、API 与设计素材制作记录
+```
+
+共享包是仅供仓库内部使用的源码包，由 Vite 编译；API 使用共享包独立的 Node `.ts` 入口生成导出源码，无需先构建内部包。API 与画布算法通过 Node.js 内置 TypeScript 类型擦除运行，API 的 `tsc` 严格检查使用 NodeNext 模块解析。
+
+- `pnpm dev`：并行启动 Web 和 API，也可用 `pnpm dev:web` / `pnpm dev:api` 单独启动。
+- `pnpm build`：按包执行类型检查，构建 Web 到 `apps/web/dist/`；API 使用 TypeScript ESM，由 Node.js 22.18+ 直接执行。
+- `pnpm start`：启动 API，同时提供已构建的 Web 界面，默认访问 `http://127.0.0.1:4310`。
+- `pnpm preview`：仅预览 Web 构建；需要服务端功能时另行启动 API。
+- `pnpm --filter @forma/web <命令>`：针对单个包运行命令。
+
+`.env` 和默认 `.data/` 始终位于仓库根目录，迁移前的数据无需搬迁。`FORMA_DATA_DIR` 的相对路径也以仓库根目录解析。开发服务继续支持 `/docs/` 下的设计预览，这些工程记录不进入生产包。
+
+依赖边界和新增包约定见 [贡献指南](./CONTRIBUTING.md)。pnpm 的工作区和内部依赖语义见 [官方文档](https://pnpm.io/workspaces)。
 
 ## 建议体验顺序
 
@@ -48,7 +79,7 @@ npm run dev
 
 密钥由本地服务端使用，不随设置读取接口返回。设置页保存的密钥位于 `.data/settings.json`；该目录已被 Git 忽略。使用你有访问权限的模型名称和服务地址。未配置模型时会明确提示，不会用示例内容冒充生成结果。
 
-目前图片生成请求的尺寸是 `1536x1024`。如果服务提供商不支持该尺寸、视觉输入或接口格式，需要替换为兼容模型，或调整 [模型适配器](./server/provider.mjs)。
+目前图片生成请求的尺寸是 `1536x1024`。如果服务提供商不支持该尺寸、视觉输入或接口格式，需要替换为兼容模型，或调整 [模型适配器](./apps/api/src/provider.ts)。
 
 ## 设计与代码如何保持一致
 
@@ -90,7 +121,7 @@ export function App() {
 
 内置侧边 Agent 聊天使用设置中的文本模型，将自然语言转换为受验证的设计操作。支持多会话和本地历史持久化；全局与项目会话分开显示。图片审批与同步写入通过对话中的结果卡片执行，代码同步绑定到具体预览版本。模型未配置或调用失败时显示真实错误。
 
-任何能够发起 HTTP 请求的 Agent 都可以读写项目、生成主题、执行图片审批流程和同步代码。使用本地 REST API，并遵循 [项目类型](./src/types.ts) 与版本号校验。可通过 `FORMA_AGENT_TOKEN` 为外部本地请求配置 Bearer Token。
+任何能够发起 HTTP 请求的 Agent 都可以读写项目、生成主题、执行图片审批流程和同步代码。使用本地 REST API，并遵循 [项目类型](./packages/schema/src/design.ts) 与版本号校验。可通过 `FORMA_AGENT_TOKEN` 为外部本地请求配置 Bearer Token。
 
 - [API 文档与 Agent 示例](./docs/API.md)
 - [架构、数据流与同步边界](./docs/ARCHITECTURE.md)
@@ -122,9 +153,9 @@ export function App() {
 ## 检查命令
 
 ```bash
-npm run typecheck
-npm run build
-npm test
+pnpm typecheck
+pnpm build
+pnpm test
 ```
 
 后端测试使用临时目录和本地模拟模型，不需要真实模型密钥。它们验证流程与同步机制，真实模型质量需要实际服务配置后体验。

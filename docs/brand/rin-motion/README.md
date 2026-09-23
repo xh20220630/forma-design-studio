@@ -10,8 +10,8 @@ Rin 使用未经改写的原始 PNG，作为固定的 **2.5D 肖像平面**。�
 | --- | --- |
 | `create_studio.py` | 第二版场景、材质、灯光和阶段关键帧的可复现源代码 |
 | `rin-studio.blend` | 可直接打开的场景；人物原始 PNG 已打包，约 1.5 MB |
-| `public/brand/rin/rin-studio-loop.webm` | VP9 / 720 × 480 / 25 fps / 125 帧 / 5 秒 / 无音频，约 256 KiB |
-| `public/brand/rin/rin-studio-poster.png` | 第 96 帧，模块完成归位后的静态画面 |
+| `apps/web/public/brand/rin/rin-studio-loop.webm` | VP9 / 720 × 480 / 25 fps / 125 帧 / 5 秒 / 无音频，约 256 KiB |
+| `apps/web/public/brand/rin/rin-studio-poster.png` | 第 96 帧，模块完成归位后的静态画面 |
 | `inspect_motion.py` | Python 标准库读取 WebM 元数据，核对时长、编码、画幅和帧数 |
 | `preview.html` | 独立组件验收页：两档图标、头像、四种状态、手动演示 |
 
@@ -29,7 +29,7 @@ Rin 使用未经改写的原始 PNG，作为固定的 **2.5D 肖像平面**。�
 
 ## 重现与验证
 
-已使用 Windows 的 Blender 5.2.1 LTS / EEVEE。先确认 `public/brand/rin/forma-rin-chibi-v1.png` 存在，然后从仓库根目录运行：
+已使用 Windows 的 Blender 5.2.1 LTS / EEVEE。先确认 `apps/web/public/brand/rin/forma-rin-chibi-v1.png` 存在，然后从仓库根目录运行：
 
 ```powershell
 & 'D:/app/blender/blender.exe' --background --factory-startup --python-exit-code 1 --python 'docs/brand/rin-motion/create_studio.py' -- --save-blend
@@ -61,7 +61,7 @@ import { RinAvatar, RinIllustration, RinIcon, RinAssembly, RinStudioScene } from
 - `RinIllustration` 在可见、前台时进入；`thinking` 仅在真实执行时循环三个细小信号。成功和错误只有一次进入反馈。减少动态效果时直接展示静态状态。
 - `RinAssembly` 只有 active、进入视口、页面前台、用户未减少动态效果时播放。inactive 或减少动态效果恢复静帧，视口外或后台暂停。
 - `RinStudioScene` 默认静态，用户手动启动/停止，不自动声称有任务在运行。减少动态效果时显示静态演示和禁用的播放控件。
-- `src/lib/motion.ts` 导出 `motionTiming`、`motionEase` 和 `enterMotion(reduced)`，供界面复用统一的进入与反馈曲线。
+- `apps/web/src/lib/motion.ts` 导出 `motionTiming`、`motionEase` 和 `enterMotion(reduced)`，供界面复用统一的进入与反馈曲线。
 
 ## 官方参考
 

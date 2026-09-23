@@ -14,7 +14,7 @@ parser.add_argument('--save-only', action='store_true')
 args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
 DOC = Path(__file__).resolve().parent
-OUT = ROOT / 'public/brand/rin/v5/motion'
+OUT = ROOT / 'apps/web/public/brand/rin/v5/motion'
 OUT.mkdir(parents=True, exist_ok=True)
 bpy.ops.object.select_all(action='SELECT')
 bpy.ops.object.delete(use_global=False)

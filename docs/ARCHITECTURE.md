@@ -23,9 +23,9 @@ flowchart LR
   Workspace --> App[实际 Web 应用]
 ```
 
-`src/types.ts` 是编辑器的数据契约；服务端在 `server/validate.mjs` 验证同一契约。节点与组件通过稳定 ID 引用，节点可以绑定类型匹配的主题 token 与集合变量。页面坐标始终是绝对坐标；`parentId` 表达图层归属，编辑器和导出渲染器都按扁平数组顺序绘制，并继承祖先的隐藏、透明度、旋转和翻转。组件内节点使用组件画布坐标；`type: component` 实例运行时引用主组件，因此主组件变化会传播到这些实例。组件和父子图层的循环引用会被拒绝。
+`packages/schema/src/design.ts` 是编辑器的数据契约；服务端在 `apps/api/src/validate.ts` 验证同一契约。节点与组件通过稳定 ID 引用，节点可以绑定类型匹配的主题 token 与集合变量。页面坐标始终是绝对坐标；`parentId` 表达图层归属，编辑器和导出渲染器都按扁平数组顺序绘制，并继承祖先的隐藏、透明度、旋转和翻转。组件内节点使用组件画布坐标；`type: component` 实例运行时引用主组件，因此主组件变化会传播到这些实例。组件和父子图层的循环引用会被拒绝。
 
-编辑器、项目预览和导出 React 共用 `src/components/SceneRenderer.tsx`。导出器嵌入这份源代码，统一形状、文字、效果、组件覆盖及模式变量的解析。自动布局和尺寸约束由编辑器计算并保存为节点坐标；导出代码呈现这些坐标，不自动生成响应式应用布局。主题模式、变量集合、评论和手动版本快照均可持久化。详细能力与限制见 [画布能力清单](./CANVAS-CAPABILITIES.md)。
+设计画布通过 `@forma/renderer/canvas` 使用 Canvas 2D 场景层与交互覆盖层；场景编译、空间索引、可见区域裁剪和有上限的位图缓存位于 `packages/renderer/src/canvas/`。项目预览、原型与导出 React 使用 `SceneRenderer.tsx`，两种渲染后端共享 `scene-values.ts` 的主题、变量和形状参数解析。导出器组合 DOM 渲染源码与共享解析源码，生成独立 React 代码。拖拽只更新编辑器内部预览，结束后再保存并记录一次历史；左侧图层列表使用可见行虚拟化。自动布局和尺寸约束由编辑器计算并保存为节点坐标；导出代码呈现这些坐标，不自动生成响应式应用布局。主题模式、变量集合、评论和手动版本快照均可持久化。详细能力与限制见 [画布能力清单](./CANVAS-CAPABILITIES.md)。
 
 ## 图片优先的生成流程
 
@@ -86,18 +86,39 @@ export function Dashboard() {
 ## 文件布局
 
 ```text
-server/
-  index.mjs        HTTP 路由、来源限制、保存与同步协调
-  store.mjs        原子 JSON 文件持久化及串行事务
-  validate.mjs     场景图、token 与批准门槛校验
-  provider.mjs     图片、视觉还原及自然语言主题生成
-  exporter.mjs     React 导出、路径边界与冲突保护
-  workspaces.mjs   本地目录校验和 GitHub 克隆
-  agent.mjs        项目隔离的持久化聊天、模型计划校验与操作执行
-  sync.mjs         普通编辑与聊天共用的受保护同步协调
-  dev.mjs          同时启动 API 和 Vite
-  backend.test.mjs 以临时目录和测试模型服务验证关键路径
+apps/web/
+  src/                    工作台页面、编辑器交互和应用状态
+  public/                 品牌素材、图片与视频
+  tooling/                Vite 开发预览支持
+  vite.config.ts          前端构建、API 代理与共享包解析
+apps/api/
+  src/index.ts           HTTP 路由与本地访问限制
+  src/config.ts          根目录环境变量、数据目录与 Web 产物路径
+  src/store.ts           JSON 持久化及串行事务
+  src/validate.ts        场景图、Token 与批准门槛校验
+  src/provider.ts        图片、视觉还原与主题生成
+  src/exporter.ts        React 导出、路径边界与冲突保护
+  src/agent.ts           会话、模型计划与操作执行
+  src/sync.ts            普通编辑与聊天共用的同步协调
+  src/workspaces.ts      本地绑定与 GitHub 克隆
+  tests/                  API、Agent 与运行路径测试
+packages/
+  schema/                 设计和 Agent 类型；Node 类型源码入口
+  renderer/               共享场景渲染器；Node 独立导出源码入口
+  editor-core/            几何、布尔与视口算法及相应测试
+  ui/                     Radix 基础组件、Tailwind 样式与工具
+  typescript-config/      基础配置及 React 配置
 ```
+
+包依赖为：Web → UI / editor-core / renderer / schema；API → renderer；renderer 和 editor-core → schema。共享包不得反向依赖应用，跨包引用必须使用公开的包名与子路径，不能穿透 `src` 目录。
+
+内部包是私有源码包：前端通过 Vite 消费 TypeScript/TSX，服务端仅加载 `@forma/renderer/source` 的 Node 入口。该入口在包内部组合渲染器与设计类型，使导出的 React 代码不依赖工作区包，也不读取 Web 应用源码。
+
+API 的源文件与共享 Node 入口统一为 TypeScript。Node.js 22.18+ 直接执行 `.ts`；`@forma/typescript-config/node.json` 使用 strict、NodeNext、verbatimModuleSyntax 与 erasableSyntaxOnly 检查运行兼容性。项目存储、Agent 会话、审批记录、导出清单和同步结果均有显式类型，业务方法复用 `@forma/schema` 的公共契约。
+
+pnpm 负责并行开发和递归检查。根目录保存唯一锁文件，catalog 固定迁移前的外部依赖版本，`workspace:*` 保证内部包使用本地实现。所有包复用 `@forma/typescript-config`；React 共享包通过 peerDependencies 声明 React 运行时，应用负责提供版本。
+
+服务端不依赖启动目录：`.env`、默认 `.data/`、相对 `FORMA_DATA_DIR` 以仓库根目录解析，静态界面来自 `apps/web/dist/`。开发端的品牌资源 URL 保持 `/brand/...`，设计预览仍由 `/docs/...` 访问。
 
 ## 后续扩展边界
 

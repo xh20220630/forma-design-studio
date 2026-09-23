@@ -4,7 +4,7 @@
 
 ## 最终形象
 
-[白底 Q 版主形象](../../public/brand/rin/forma-rin-chibi-v1.png)
+[白底 Q 版主形象](../../apps/web/public/brand/rin/forma-rin-chibi-v1.png)
 
 银白短发、冰蓝瞳、半垂眼与平直嘴角构成冷淡表情。大头小身体的 Q 版比例保留黑白不对称外套、蓝色方形发饰、袖口画框角标与设计面板，将角色与 Forma 的页面、组件及代码工作流关联。
 
@@ -14,7 +14,7 @@
 
 前端资源路径：`/brand/rin/forma-rin-chibi-v1.png`。
 
-[早期正常比例角色参考](../../public/brand/rin/forma-rin-concept-v1.png)仅作为角色身份参考，当前方向以 Q 版为准。
+[早期正常比例角色参考](../../apps/web/public/brand/rin/forma-rin-concept-v1.png)仅作为角色身份参考，当前方向以 Q 版为准。
 
 ## 最终使用的提示词
 

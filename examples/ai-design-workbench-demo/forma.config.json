@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "designRoot": "./design",
+  "workbench": {
+    "openBrowser": true
+  },
+  "skills": {
+    "forma-ai-ui-designer": {
+      "requiredVersion": "^2.0.0"
+    }
+  }
+}

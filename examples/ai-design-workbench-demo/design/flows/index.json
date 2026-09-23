@@ -1,0 +1,21 @@
+{
+  "schema_version": 2,
+  "flows": [
+    {
+      "id": "studio-browse",
+      "name": "项目浏览",
+      "scope": ["projects", "overview"],
+      "path": "flows/studio-browse/flow.json",
+      "layout_path": "flows/studio-browse/layout.json",
+      "related_flows": ["project-authoring"]
+    },
+    {
+      "id": "project-authoring",
+      "name": "项目编辑与发布",
+      "scope": ["editor", "components", "publish"],
+      "path": "flows/project-authoring/flow.json",
+      "layout_path": "flows/project-authoring/layout.json",
+      "related_flows": ["studio-browse"]
+    }
+  ]
+}

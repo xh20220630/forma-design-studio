@@ -1,7 +1,7 @@
 [
   {
     "name": "rin-full-body",
-    "source": "public/brand/rin/forma-rin-chibi-v1.png",
+    "source": "apps/web/public/brand/rin/forma-rin-chibi-v1.png",
     "source_size": [
       1254,
       1254
@@ -25,7 +25,7 @@
   },
   {
     "name": "rin-theme",
-    "source": "public/brand/rin/rin-theme-v2.png",
+    "source": "apps/web/public/brand/rin/rin-theme-v2.png",
     "source_size": [
       1254,
       1254
@@ -49,7 +49,7 @@
   },
   {
     "name": "rin-avatar",
-    "source": "public/brand/rin/rin-avatar-v1.png",
+    "source": "apps/web/public/brand/rin/rin-avatar-v1.png",
     "source_size": [
       1254,
       1254
@@ -73,7 +73,7 @@
   },
   {
     "name": "rin-empty",
-    "source": "public/brand/rin/rin-empty-v1.png",
+    "source": "apps/web/public/brand/rin/rin-empty-v1.png",
     "source_size": [
       1254,
       1254
@@ -97,7 +97,7 @@
   },
   {
     "name": "rin-thinking",
-    "source": "public/brand/rin/rin-thinking-v1.png",
+    "source": "apps/web/public/brand/rin/rin-thinking-v1.png",
     "source_size": [
       1254,
       1254
@@ -121,7 +121,7 @@
   },
   {
     "name": "rin-success",
-    "source": "public/brand/rin/rin-success-v1.png",
+    "source": "apps/web/public/brand/rin/rin-success-v1.png",
     "source_size": [
       1254,
       1254
@@ -145,7 +145,7 @@
   },
   {
     "name": "rin-error",
-    "source": "public/brand/rin/rin-error-v1.png",
+    "source": "apps/web/public/brand/rin/rin-error-v1.png",
     "source_size": [
       1254,
       1254

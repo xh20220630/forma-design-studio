@@ -5,7 +5,7 @@ from PIL import Image
 
 
 ROOT = Path(__file__).resolve().parents[3]
-DEST = ROOT / 'public/brand/rin/v4'
+DEST = ROOT / 'apps/web/public/brand/rin/v4'
 QA = Path(__file__).resolve().parent
 SCENES = ['hero-environment', 'cover-commerce', 'cover-travel', 'cover-midnight']
 

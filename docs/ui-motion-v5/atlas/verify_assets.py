@@ -8,7 +8,7 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[3]
 DOC = Path(__file__).resolve().parent
-OUT = ROOT / 'public/brand/rin/v5/motion'
+OUT = ROOT / 'apps/web/public/brand/rin/v5/motion'
 video = OUT / 'atlas-unfold.webm'
 data = video.read_bytes()
 

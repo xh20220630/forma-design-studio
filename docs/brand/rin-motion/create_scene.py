@@ -16,7 +16,7 @@ def arguments():
 
 
 ROOT = Path(__file__).resolve().parents[3]
-OUT = ROOT / 'public' / 'brand' / 'rin'
+OUT = ROOT / 'apps' / 'web' / 'public' / 'brand' / 'rin'
 IMAGE = OUT / 'forma-rin-chibi-v1.png'
 OUT.mkdir(parents=True, exist_ok=True)
 args = arguments()

@@ -5,7 +5,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 ROOT = Path(__file__).resolve().parents[3]
 OUT = Path(__file__).resolve().parent / 'textures'
-SOURCE = ROOT / 'public/brand/rin/v4'
+SOURCE = ROOT / 'apps/web/public/brand/rin/v4'
 OUT.mkdir(exist_ok=True)
 W, H = 960, 640
 FONT = 'C:/Windows/Fonts/segoeui.ttf'

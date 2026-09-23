@@ -1,0 +1,21 @@
+{
+  "name": "forma-ai-ui-designer",
+  "version": "2.0.0",
+  "description": "Design multi-page product flows and review them in the local Forma AI Design Workbench.",
+  "author": {
+    "name": "Forma"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AI UI Designer",
+    "shortDescription": "Design and review complete product flows in Forma.",
+    "longDescription": "Creates coherent multi-page UI designs, maintains system-level design tokens and component specifications, and publishes image-node flows to the local Forma workbench.",
+    "developerName": "Forma",
+    "category": "Design",
+    "capabilities": ["Design", "Local workbench"],
+    "defaultPrompt": [
+      "Design this product flow in the local Forma workbench.",
+      "Extend the existing design with a new user flow."
+    ]
+  }
+}

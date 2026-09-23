@@ -1,6 +1,6 @@
 # Forma Local API
 
-启动：`npm install` 后执行 `npm run dev`。页面默认 `http://127.0.0.1:5173`，API 默认 `http://127.0.0.1:4310`。Node.js 22+，GitHub 克隆需要 Git。`npm run dev:api` 只启动 API；存在 `dist/` 时 API 也会提供构建后的前端。开发页面通过 Vite 的 `/api` 代理访问服务。
+启动：`pnpm install` 后执行 `pnpm dev`。页面默认 `http://127.0.0.1:5173`，API 默认 `http://127.0.0.1:4310`。Node.js 22.18+、pnpm 10.20.0，GitHub 克隆需要 Git。`pnpm dev:api` 只启动 API；存在 `apps/web/dist/` 时 API 也会提供构建后的前端。开发页面通过 Vite 的 `/api` 代理访问服务。
 
 所有写请求使用 `Content-Type: application/json`。错误响应为 `{ "error": "可读的错误信息" }`，常见状态码：400 输入错误，404 未找到，409 版本或同步冲突，502 模型服务失败。若设置了 `FORMA_AGENT_TOKEN`，外部 agent 需要 `Authorization: Bearer <token>`。
 
@@ -15,7 +15,7 @@
 | DELETE | `/api/projects/:id` | 删除设计数据，返回 `{ok:true}`；保留工作空间与图片资源 |
 | GET | `/api/projects/:id/export` | 下载 `{projectId,revision,files:[{path,content}]}` |
 
-项目结构见 `src/types.ts`。创建时 `revision: 0`；每次成功更新，使用返回对象中的新 revision 继续编辑。服务端对已有项目要求请求 revision 与当前相同，不同返回 409；读取最新项目、合并设计后再提交。普通 PUT 不能更改服务端管理的 generation 审批信息或绑定路径，只能切换已绑定 workspace 的 `autoSync`。
+项目结构见 `packages/schema/src/design.ts`。创建时 `revision: 0`；每次成功更新，使用返回对象中的新 revision 继续编辑。服务端对已有项目要求请求 revision 与当前相同，不同返回 409；读取最新项目、合并设计后再提交。普通 PUT 不能更改服务端管理的 generation 审批信息或绑定路径，只能切换已绑定 workspace 的 `autoSync`。
 
 节点 `src` 支持 HTTP(S)、PNG/JPEG/WebP/SVG base64 data URL，或精确的 `/api/assets/<文件名>.png|jpeg|jpg|webp|svg` 本地图片地址；不接受目录跳转、编码路径或查询参数。SVG 只接受基本形状、分组、渐变和裁剪定义；拒绝脚本、事件、外部资源、内联样式与不支持的标签。导出与同步会将项目本地图片嵌入设计 JSON；图片缺失或不安全时返回错误，而不是输出依赖 Forma API 的失效地址。
 
@@ -93,7 +93,7 @@ console.log(preview);
 | GET | `/api/agent/sessions/:id` | `AgentSession`，包含完整消息及操作结果 |
 | POST | `/api/agent/sessions/:id/messages` | `{content?,sessionRevision?,projectRevision?,action?}` → `AgentTurnResponse` |
 
-类型契约在 `src/lib/agent-types.ts`。`sessionRevision` 防止基于旧对话继续提交；`projectRevision` 可要求项目仍处于前端已保存的版本。响应包含 `session`、`message`，以及实际结果的 `project`、`syncPreview`。执行出错时返回对应 HTTP 状态及 `error`，已经开始的对话仍包含已保存的 `session/message`。部分操作成功、后续失败时，成功结果保留并明确列出；不会回滚已经完成的设计修改。并发设计冲突时，响应的 `project` 为服务端最新状态，不能用过时的推理快照覆盖当前设计。
+类型契约在 `packages/schema/src/agent.ts`。`sessionRevision` 防止基于旧对话继续提交；`projectRevision` 可要求项目仍处于前端已保存的版本。响应包含 `session`、`message`，以及实际结果的 `project`、`syncPreview`。执行出错时返回对应 HTTP 状态及 `error`，已经开始的对话仍包含已保存的 `session/message`。部分操作成功、后续失败时，成功结果保留并明确列出；不会回滚已经完成的设计修改。并发设计冲突时，响应的 `project` 为服务端最新状态，不能用过时的推理快照覆盖当前设计。
 
 模型允许请求以下有限操作：
 
@@ -125,4 +125,4 @@ console.log(preview);
 
 ## 验证
 
-`npm test` 执行 Node 原生测试。测试使用临时目录和本地模拟模型 HTTP 服务，不产生真实模型调用费用，验证持久化、版本冲突、批准门槛、图片传给视觉模型、自动同步、外部修改保护、路径与循环检查。真实模型效果、网络和付费账号需要使用实际配置验证。
+`pnpm test` 执行 Node 原生测试。测试使用临时目录和本地模拟模型 HTTP 服务，不产生真实模型调用费用，验证持久化、版本冲突、批准门槛、图片传给视觉模型、自动同步、外部修改保护、路径与循环检查。真实模型效果、网络和付费账号需要使用实际配置验证。

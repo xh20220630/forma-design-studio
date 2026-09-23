@@ -30,7 +30,7 @@ poster = Image.open(manifest['frames'][-1]).convert('RGBA')
 composition = Image.new('RGBA', poster.size, '#eef5fb')
 composition.alpha_composite(poster)
 layout = json.loads((DOC / 'scene-layout.json').read_text(encoding='utf-8'))['rinOverlay']
-rin = Image.open(ROOT / 'public/brand/rin/v4/rin-full-body.png').convert('RGBA')
+rin = Image.open(ROOT / 'apps/web/public/brand/rin/v4/rin-full-body.png').convert('RGBA')
 height = round(poster.height * layout['height'])
 rin = rin.resize((round(rin.width / rin.height * height), height), Image.Resampling.LANCZOS)
 x = round(layout['feetX'] * poster.width - rin.width / 2)

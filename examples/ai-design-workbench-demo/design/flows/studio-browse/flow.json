@@ -1,0 +1,111 @@
+{
+  "schema_version": 2,
+  "id": "studio-browse",
+  "name": "项目浏览",
+  "goal": "找到项目并进入设计上下文。",
+  "theme_version": "2.0.0",
+  "brief_path": "flows/studio-browse/BRIEF.md",
+  "entry_page": "projects",
+  "consistency_notes": [
+    "项目卡片与资源卡片使用同一选中规则。",
+    "左侧导航和顶部项目上下文在流程间保持稳定。"
+  ],
+  "pages": [
+    {
+      "id": "projects",
+      "name": "项目列表",
+      "kind": "page",
+      "platform": "desktop",
+      "goal": "浏览和搜索可用项目。",
+      "image": "flows/studio-browse/images/projects-v1.png",
+      "image_revision": 1,
+      "prompt_path": "flows/studio-browse/prompts/projects.md",
+      "reference_images": [],
+      "width": 960,
+      "height": 640,
+      "component_usage": [
+        {
+          "id": "app-shell",
+          "version": "2.0.0",
+          "adaptation": "项目级导航"
+        },
+        {
+          "id": "resource-card",
+          "version": "1.1.0",
+          "adaptation": "项目缩略卡；待复核 2.0.0 升级"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "open-project",
+          "label": "进入项目",
+          "text": "点击 Forma Studio 卡片进入项目概览。",
+          "x": 0.42,
+          "y": 0.38,
+          "label_x": 0.45,
+          "label_y": 0.34,
+          "target": "studio-browse/project"
+        }
+      ]
+    },
+    {
+      "id": "project",
+      "name": "项目概览",
+      "kind": "page",
+      "platform": "desktop",
+      "goal": "了解项目状态并进入编辑。",
+      "image": "flows/studio-browse/images/project-v1.png",
+      "image_revision": 1,
+      "prompt_path": "flows/studio-browse/prompts/project.md",
+      "reference_images": [
+        "flows/studio-browse/images/projects-v1.png"
+      ],
+      "width": 960,
+      "height": 640,
+      "component_usage": [
+        {
+          "id": "app-shell",
+          "version": "2.0.0",
+          "adaptation": "项目上下文"
+        },
+        {
+          "id": "resource-card",
+          "version": "2.0.0",
+          "adaptation": "页面与资源摘要"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "open-editor",
+          "label": "跨流程编辑",
+          "text": "从项目概览进入页面编辑流程。",
+          "x": 0.72,
+          "y": 0.19,
+          "label_x": 0.76,
+          "label_y": 0.23,
+          "target": "project-authoring/editor"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "select-project",
+      "from": "studio-browse/projects",
+      "to": "studio-browse/project",
+      "intent": "navigate",
+      "trigger": "打开项目",
+      "condition": "用户选择 Forma Studio",
+      "effect": "显示项目概览"
+    },
+    {
+      "id": "start-authoring",
+      "from": "studio-browse/project",
+      "to": "project-authoring/editor",
+      "intent": "navigate",
+      "trigger": "编辑页面",
+      "condition": "项目已加载",
+      "effect": "切换到编辑流程"
+    }
+  ]
+}

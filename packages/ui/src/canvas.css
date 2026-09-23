@@ -1,0 +1,30 @@
+:is(.workspace-root .design-editor .ed-canvas-main, .forma-canvas) {
+  --canvas-pasteboard: #f1f1f0;
+  --canvas-chrome: #fafaf9;
+  --canvas-ink: #303238;
+  --canvas-muted: #73767d;
+  --canvas-rule: #dedfdf;
+  background: var(--canvas-pasteboard);
+  background-image: none;
+  color: var(--canvas-ink);
+}
+html[data-studio-theme="midnight"] :is(.workspace-root .design-editor .ed-canvas-main, .forma-canvas) {
+  --canvas-pasteboard: #262729;
+  --canvas-chrome: #303134;
+  --canvas-ink: #ededee;
+  --canvas-muted: #a9abb1;
+  --canvas-rule: #424348;
+}
+.ed-viewport-rulers { position: absolute; inset: 0; z-index: 18; pointer-events: none; overflow: hidden; }
+.ed-viewport-ruler { position: absolute; background: var(--canvas-chrome); color: var(--canvas-muted); font-size: 9px; font-variant-numeric: tabular-nums; user-select: none; pointer-events: auto; cursor: crosshair; overflow: hidden; }
+.ed-viewport-ruler.is-horizontal { top: 0; left: 0; width: 100%; height: 20px; border-bottom: 1px solid var(--canvas-rule); }
+.ed-viewport-ruler.is-vertical { top: 0; left: 0; height: 100%; width: 20px; border-right: 1px solid var(--canvas-rule); }
+.ed-viewport-ruler span { position: absolute; border-color: var(--canvas-rule); line-height: 1; }
+.ed-viewport-ruler.is-horizontal span { bottom: 0; height: 4px; border-left: 1px solid var(--canvas-rule); padding-left: 4px; }
+.ed-viewport-ruler.is-horizontal span.is-major { height: 15px; }
+.ed-viewport-ruler.is-vertical span { right: 0; width: 4px; border-top: 1px solid var(--canvas-rule); padding-top: 4px; writing-mode: vertical-rl; }
+.ed-viewport-ruler.is-vertical span.is-major { width: 15px; }
+.ed-ruler-origin { position: absolute; left: 0; top: 0; width: 20px; height: 20px; display: grid; place-items: center; background: var(--canvas-chrome); border-right: 1px solid var(--canvas-rule); border-bottom: 1px solid var(--canvas-rule); color: var(--canvas-muted); pointer-events: auto; }
+.ed-ruler-origin:hover { color: var(--canvas-ink); }
+
+:root { --canvas-artboard-shadow: 0 0 0 1px #22252a0a, 0 2px 6px #22252a05, 0 12px 40px -20px #22252a1c; }

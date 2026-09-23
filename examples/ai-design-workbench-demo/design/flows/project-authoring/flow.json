@@ -1,0 +1,155 @@
+{
+  "schema_version": 2,
+  "id": "project-authoring",
+  "name": "项目编辑与发布",
+  "goal": "维护页面与系统资产，完成发布确认。",
+  "theme_version": "2.0.0",
+  "brief_path": "flows/project-authoring/BRIEF.md",
+  "entry_page": "editor",
+  "consistency_notes": [
+    "编辑器、组件库和发布弹层共享同一主操作样式。",
+    "弹层图片保留完整底层页面以支持上下文评审。"
+  ],
+  "pages": [
+    {
+      "id": "editor",
+      "name": "页面编辑器",
+      "kind": "page",
+      "platform": "desktop",
+      "goal": "检查页面结构和设计状态。",
+      "image": "flows/project-authoring/images/editor-v1.png",
+      "image_revision": 1,
+      "prompt_path": "flows/project-authoring/prompts/editor.md",
+      "reference_images": [
+        "flows/studio-browse/images/project-v1.png"
+      ],
+      "width": 960,
+      "height": 640,
+      "component_usage": [
+        {
+          "id": "app-shell",
+          "version": "2.0.0",
+          "adaptation": "编辑工具导航"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "inspect-components",
+          "label": "检查组件",
+          "text": "进入项目级组件库检查复用规范。",
+          "x": 0.12,
+          "y": 0.47,
+          "label_x": 0.16,
+          "label_y": 0.43,
+          "target": "project-authoring/components"
+        }
+      ]
+    },
+    {
+      "id": "components",
+      "name": "组件库",
+      "kind": "page",
+      "platform": "desktop",
+      "goal": "检查系统级设计组件。",
+      "image": "flows/project-authoring/images/components-v1.png",
+      "image_revision": 1,
+      "prompt_path": "flows/project-authoring/prompts/components.md",
+      "reference_images": [
+        "flows/project-authoring/images/editor-v1.png"
+      ],
+      "width": 960,
+      "height": 640,
+      "component_usage": [
+        {
+          "id": "app-shell",
+          "version": "2.0.0",
+          "adaptation": "组件库导航"
+        },
+        {
+          "id": "resource-card",
+          "version": "2.0.0",
+          "adaptation": "组件预览卡"
+        }
+      ],
+      "annotations": []
+    },
+    {
+      "id": "publish-dialog",
+      "name": "发布确认",
+      "kind": "modal",
+      "platform": "desktop",
+      "parent": "project-authoring/editor",
+      "goal": "在发布前确认版本和影响范围。",
+      "image": "flows/project-authoring/images/publish-dialog-v1.png",
+      "image_revision": 1,
+      "prompt_path": "flows/project-authoring/prompts/publish-dialog.md",
+      "reference_images": [
+        "flows/project-authoring/images/editor-v1.png"
+      ],
+      "width": 960,
+      "height": 640,
+      "component_usage": [
+        {
+          "id": "app-shell",
+          "version": "2.0.0",
+          "adaptation": "作为弹层底层上下文"
+        },
+        {
+          "id": "action-dialog",
+          "version": "1.0.0",
+          "adaptation": "发布确认和风险提示"
+        }
+      ],
+      "annotations": [
+        {
+          "id": "confirm-publish",
+          "label": "确认发布",
+          "text": "主按钮发布当前版本并返回编辑器。",
+          "x": 0.61,
+          "y": 0.65,
+          "label_x": 0.65,
+          "label_y": 0.69,
+          "target": "project-authoring/editor"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "id": "open-components",
+      "from": "project-authoring/editor",
+      "to": "project-authoring/components",
+      "intent": "navigate",
+      "trigger": "查看组件",
+      "condition": "项目已加载",
+      "effect": "显示组件库"
+    },
+    {
+      "id": "open-publish",
+      "from": "project-authoring/editor",
+      "to": "project-authoring/publish-dialog",
+      "intent": "open",
+      "trigger": "发布",
+      "condition": "校验已通过",
+      "effect": "打开发布确认弹层"
+    },
+    {
+      "id": "close-publish",
+      "from": "project-authoring/publish-dialog",
+      "to": "project-authoring/editor",
+      "intent": "success",
+      "trigger": "取消或完成",
+      "condition": "用户关闭弹层",
+      "effect": "返回页面编辑器"
+    },
+    {
+      "id": "back-to-project",
+      "from": "project-authoring/editor",
+      "to": "studio-browse/project",
+      "intent": "back",
+      "trigger": "返回概览",
+      "condition": "离开编辑模式",
+      "effect": "切换到项目浏览流程"
+    }
+  ]
+}

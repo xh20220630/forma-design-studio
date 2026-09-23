@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parents[3]
 QA = Path(__file__).resolve().parent
-DEST = ROOT / 'public/brand/rin/v4'
+DEST = ROOT / 'apps/web/public/brand/rin/v4'
 records = json.loads((QA / 'production-report.json').read_text(encoding='utf-8'))
 roles = json.loads((QA / 'alpha-report.json').read_text(encoding='utf-8'))
 checks = []

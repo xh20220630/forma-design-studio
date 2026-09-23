@@ -1,0 +1,13 @@
+{
+  "extends": "@forma/typescript-config/base.json",
+  "include": [
+    "src"
+  ],
+  "compilerOptions": {
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "types": []
+  }
+}

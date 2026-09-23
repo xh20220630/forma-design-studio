@@ -8,16 +8,16 @@
 
 | 路径 | 规格 / 用途 |
 | --- | --- |
-| `public/brand/rin/v4/motion/rin-pearl-loop.webm` | 720×480，VP9，20 fps，80 帧，4 秒，无音频，包含 Alpha，373,993 bytes |
-| `public/brand/rin/v4/motion/rin-pearl-poster.webp` | 720×480，透明，42,402 bytes；前端默认静帧 |
-| `public/brand/rin/v4/motion/rin-pearl-poster.png` | 同尺寸 RGBA，348,685 bytes；工程静帧 |
+| `apps/web/public/brand/rin/v4/motion/rin-pearl-loop.webm` | 720×480，VP9，20 fps，80 帧，4 秒，无音频，包含 Alpha，373,993 bytes |
+| `apps/web/public/brand/rin/v4/motion/rin-pearl-poster.webp` | 720×480，透明，42,402 bytes；前端默认静帧 |
+| `apps/web/public/brand/rin/v4/motion/rin-pearl-poster.png` | 同尺寸 RGBA，348,685 bytes；工程静帧 |
 | `docs/ui-redesign-v4/motion/rin-pearl.blend` | Blender 5.2.1 LTS 源场景；原角色纹理已打包 |
 | `docs/ui-redesign-v4/motion/create_pearl.py` | 可重现的场景、灯光、透明材质、循环关键帧与渲染脚本 |
-| `src/components/motion/RinMotion.tsx` | 播放控制、卡片视差、选中反馈和真实任务状态组件 |
-| `src/components/motion/rin-motion.css` | 限定作用域的动效样式 |
-| `src/lib/rin-motion.ts` | 资产地址、节奏、进入动效参数 |
+| `apps/web/src/components/motion/RinMotion.tsx` | 播放控制、卡片视差、选中反馈和真实任务状态组件 |
+| `apps/web/src/components/motion/rin-motion.css` | 限定作用域的动效样式 |
+| `apps/web/src/lib/rin-motion.ts` | 资产地址、节奏、进入动效参数 |
 
-资产路径相对仓库根目录。原贴图来源为 `public/brand/rin/v4/rin-full-body.png`，由切图流程从 `public/brand/rin/forma-rin-chibi-v1.png` 提取原轮廓透明度。
+资产路径相对仓库根目录。原贴图来源为 `apps/web/public/brand/rin/v4/rin-full-body.png`，由切图流程从 `apps/web/public/brand/rin/forma-rin-chibi-v1.png` 提取原轮廓透明度。
 
 ## 构图与使用范围
 

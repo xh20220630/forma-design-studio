@@ -1,0 +1,20 @@
+{
+  "name": "@forma/schema",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/design.ts",
+    "./agent": "./src/agent.ts",
+    "./workbench": "./src/workbench.ts",
+    "./source": "./src/source.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@forma/typescript-config": "workspace:*",
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}
