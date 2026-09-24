@@ -6,14 +6,14 @@ Rin 使用未经改写的原始 PNG，作为固定的 **2.5D 肖像平面**。�
 
 ## 现行资产
 
-| 文件 | 用途 |
-| --- | --- |
-| `create_studio.py` | 第二版场景、材质、灯光和阶段关键帧的可复现源代码 |
-| `rin-studio.blend` | 可直接打开的场景；人物原始 PNG 已打包，约 1.5 MB |
-| `apps/web/public/brand/rin/rin-studio-loop.webm` | VP9 / 720 × 480 / 25 fps / 125 帧 / 5 秒 / 无音频，约 256 KiB |
-| `apps/web/public/brand/rin/rin-studio-poster.png` | 第 96 帧，模块完成归位后的静态画面 |
-| `inspect_motion.py` | Python 标准库读取 WebM 元数据，核对时长、编码、画幅和帧数 |
-| `preview.html` | 独立组件验收页：两档图标、头像、四种状态、手动演示 |
+| 文件                                              | 用途                                                          |
+| ------------------------------------------------- | ------------------------------------------------------------- |
+| `create_studio.py`                                | 第二版场景、材质、灯光和阶段关键帧的可复现源代码              |
+| `rin-studio.blend`                                | 可直接打开的场景；人物原始 PNG 已打包，约 1.5 MB              |
+| `apps/web/public/brand/rin/rin-studio-loop.webm`  | VP9 / 720 × 480 / 25 fps / 125 帧 / 5 秒 / 无音频，约 256 KiB |
+| `apps/web/public/brand/rin/rin-studio-poster.png` | 第 96 帧，模块完成归位后的静态画面                            |
+| `inspect_motion.py`                               | Python 标准库读取 WebM 元数据，核对时长、编码、画幅和帧数     |
+| `preview.html`                                    | 独立组件验收页：两档图标、头像、四种状态、手动演示            |
 
 资产路径相对仓库根目录。第一版 `create_scene.py` / `rin-assembly.blend` 和 `rin-assembly.webm` 保留用于兼容与历史对照；应用里的 `RinAssembly` 已使用第二版视频。
 

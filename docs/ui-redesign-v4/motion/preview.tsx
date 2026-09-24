@@ -1,1 +1,1 @@
-import "../../ui-motion-v5/showcase";
+import '../../ui-motion-v5/showcase';

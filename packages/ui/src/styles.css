@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 @source "./";
 @custom-variant dark (&:is(.dark *));
 @theme inline {
@@ -48,7 +48,7 @@
   --sky: #38bdf8;
   --sky-soft: #f0f9ff;
   --sky-ink: #0369a1;
-  --font-mono: "Geist Mono Variable", monospace;
+  --font-mono: 'Geist Mono Variable', monospace;
   --radius: 0.5rem;
 }
 @layer base {

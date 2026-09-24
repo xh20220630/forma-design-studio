@@ -1,47 +1,105 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Rin / Pearl Studio · UI 设计图</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #f3f5f8; color: #17202a; font: 14px/1.6 "Segoe UI", "Microsoft YaHei", sans-serif; }
-    header { background: #15181e; color: #fff; padding: 40px max(24px, calc((100vw - 1320px) / 2)); }
-    header small { color: #70cfff; letter-spacing: .12em; }
-    h1 { margin: 10px 0; font-size: 30px; font-weight: 550; }
-    header p { color: #b4bec9; max-width: 720px; }
-    header nav { margin: 22px 0 0; }
-    header nav a { color: #d7e9ff; background: #243143; border-color: #39495c; }
-    main { max-width: 1376px; padding: 32px 24px 70px; margin: auto; }
-    nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
-    nav a { padding: 7px 13px; border: 1px solid #dce2e9; border-radius: 7px; background: #fff; color: inherit; text-decoration: none; }
-    section { margin: 0 0 40px; scroll-margin-top: 20px; }
-    h2 { display: flex; gap: 12px; align-items: baseline; margin-bottom: 12px; font-size: 20px; font-weight: 550; }
-    h2 span { font-size: 12px; font-family: monospace; color: #758393; }
-    figure { margin: 0; border: 1px solid #dce2e9; background: #fff; border-radius: 14px; overflow: hidden; }
-    img { display: block; width: 100%; height: auto; }
-    .pending { padding: 48px; text-align: center; color: #718095; }
-    figcaption { border-top: 1px solid #e4e8ee; display: flex; justify-content: space-between; gap: 16px; padding: 13px 20px; font-size: 12px; color: #718095; }
-    figcaption a { color: #17698e; }
-    footer { color: #718095; border-top: 1px solid #dce2e9; padding-top: 24px; }
-  </style>
-</head>
-<body>
-  <header><small>FORMA / RIN</small><h1>Pearl Studio · 全页面设计</h1><p>12 张逐页高保真视觉设计、独立透明素材与 Blender 动效。正式页面保留原版凛 Rin，文字、表单与画布均可交互。</p><nav aria-label="交付内容"><a href="/">打开新版工作台 ↗</a><a href="motion/preview.html">体验动效 ↗</a><a href="implementation.md">实现与验收记录</a><a href="asset-manifest.md">切图清单</a></nav></header>
-  <main><nav id="navigation"></nav><div id="designs"></div><footer>设计图：内置 ImageGen · 交付规范：design-spec.md / asset-manifest.md / motion/ · 页面范围：page-inventory.md</footer></main>
-  <script>
-    const pages = [['01-projects','项目首页'],['02-project','项目概览'],['03-editor','设计画布'],['04-templates','模板库'],['05-components','组件库'],['06-tokens','设计变量'],['07-agents','助手与接入'],['08-sync','代码同步'],['09-settings','设置'],['10-theme','Rin 主题工作室'],['11-chat','Rin 聊天'],['12-dialogs','关键弹窗']];
-    for (const [id, title] of pages) {
-      const link = document.createElement('a'); link.href = '#' + id; link.textContent = title; document.querySelector('#navigation').append(link);
-      const section = document.createElement('section'); section.id = id;
-      const heading = document.createElement('h2'); heading.innerHTML = '<span>' + id.slice(0,2) + '</span>' + title;
-      const figure = document.createElement('figure');
-      const img = document.createElement('img'); img.alt = title + '高保真 UI 设计图'; img.loading = 'lazy'; img.src = 'designs/' + id + '.png';
-      img.onerror = () => { img.hidden = true; const pending = document.createElement('div'); pending.className = 'pending'; pending.textContent = '图片加载失败，请使用下方链接打开原图。'; figure.prepend(pending); };
-      const caption = document.createElement('figcaption'); caption.innerHTML = '<span>Rin / Pearl Studio · ' + title + '</span><a href="designs/' + id + '.png" target="_blank">打开原图 ↗</a>';
-      figure.append(img,caption); section.append(heading,figure); document.querySelector('#designs').append(section);
-    }
-  </script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Rin / Pearl Studio · UI 设计图</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f3f5f8; color: #17202a; font: 14px/1.6 "Segoe UI", "Microsoft YaHei", sans-serif; }
+      header { background: #15181e; color: #fff; padding: 40px max(24px, calc((100vw - 1320px) / 2)); }
+      header small { color: #70cfff; letter-spacing: .12em; }
+      h1 { margin: 10px 0; font-size: 30px; font-weight: 550; }
+      header p { color: #b4bec9; max-width: 720px; }
+      header nav { margin: 22px 0 0; }
+      header nav a { color: #d7e9ff; background: #243143; border-color: #39495c; }
+      main { max-width: 1376px; padding: 32px 24px 70px; margin: auto; }
+      nav { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 28px; }
+      nav a { padding: 7px 13px; border: 1px solid #dce2e9; border-radius: 7px; background: #fff; color: inherit; text-decoration: none; }
+      section { margin: 0 0 40px; scroll-margin-top: 20px; }
+      h2 { display: flex; gap: 12px; align-items: baseline; margin-bottom: 12px; font-size: 20px; font-weight: 550; }
+      h2 span { font-size: 12px; font-family: monospace; color: #758393; }
+      figure { margin: 0; border: 1px solid #dce2e9; background: #fff; border-radius: 14px; overflow: hidden; }
+      img { display: block; width: 100%; height: auto; }
+      .pending { padding: 48px; text-align: center; color: #718095; }
+      figcaption { border-top: 1px solid #e4e8ee; display: flex; justify-content: space-between; gap: 16px; padding: 13px 20px; font-size: 12px; color: #718095; }
+      figcaption a { color: #17698e; }
+      footer { color: #718095; border-top: 1px solid #dce2e9; padding-top: 24px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <small>FORMA / RIN</small>
+      <h1>Pearl Studio · 全页面设计</h1>
+      <p>
+        12 张逐页高保真视觉设计、独立透明素材与 Blender 动效。正式页面保留原版凛
+        Rin，文字、表单与画布均可交互。
+      </p>
+      <nav aria-label="交付内容">
+        <a href="/">打开新版工作台 ↗</a><a href="motion/preview.html">体验动效 ↗</a
+        ><a href="implementation.md">实现与验收记录</a><a href="asset-manifest.md">切图清单</a>
+      </nav>
+    </header>
+    <main>
+      <nav id="navigation"></nav>
+      <div id="designs"></div>
+      <footer>
+        设计图：内置 ImageGen · 交付规范：design-spec.md / asset-manifest.md / motion/ ·
+        页面范围：page-inventory.md
+      </footer>
+    </main>
+    <script>
+      const pages = [
+        ['01-projects', '项目首页'],
+        ['02-project', '项目概览'],
+        ['03-editor', '设计画布'],
+        ['04-templates', '模板库'],
+        ['05-components', '组件库'],
+        ['06-tokens', '设计变量'],
+        ['07-agents', '助手与接入'],
+        ['08-sync', '代码同步'],
+        ['09-settings', '设置'],
+        ['10-theme', 'Rin 主题工作室'],
+        ['11-chat', 'Rin 聊天'],
+        ['12-dialogs', '关键弹窗'],
+      ];
+      for (const [id, title] of pages) {
+        const link = document.createElement('a');
+        link.href = '#' + id;
+        link.textContent = title;
+        document.querySelector('#navigation').append(link);
+        const section = document.createElement('section');
+        section.id = id;
+        const heading = document.createElement('h2');
+        heading.innerHTML = '<span>' + id.slice(0, 2) + '</span>' + title;
+        const figure = document.createElement('figure');
+        const img = document.createElement('img');
+        img.alt = title + '高保真 UI 设计图';
+        img.loading = 'lazy';
+        img.src = 'designs/' + id + '.png';
+        img.onerror =
+          /**
+           * 图片加载失败时显示可点击的原图入口，避免预览留下空白。
+           * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+           */
+          () => {
+            img.hidden = true;
+            const pending = document.createElement('div');
+            pending.className = 'pending';
+            pending.textContent = '图片加载失败，请使用下方链接打开原图。';
+            figure.prepend(pending);
+          };
+        const caption = document.createElement('figcaption');
+        caption.innerHTML =
+          '<span>Rin / Pearl Studio · ' +
+          title +
+          '</span><a href="designs/' +
+          id +
+          '.png" target="_blank">打开原图 ↗</a>';
+        figure.append(img, caption);
+        section.append(heading, figure);
+        document.querySelector('#designs').append(section);
+      }
+    </script>
+  </body>
 </html>

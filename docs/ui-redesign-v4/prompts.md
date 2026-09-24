@@ -1,6 +1,6 @@
 # 逐页生成提示词
 
-工具：内置 image_gen__imagegen；每个页面独立调用。首次输入原版 Rin 主图，后续均输入首张设计图与原版 Rin 主图。
+工具：内置 image_gen\_\_imagegen；每个页面独立调用。首次输入原版 Rin 主图，后续均输入首张设计图与原版 Rin 主图。
 
 ## 共享视觉系统
 
@@ -89,4 +89,3 @@ Top-right 610×390 '连接工作空间', subtitle '绑定本地项目或 GitHub 
 Bottom-left 660×370 '创建组件', subtitle '把可复用的设计，保存到组件库。'; name field 'Primary button', dropdown row 类型 '按钮 Button' and 分类 '基础控件', description field '用于页面中的主要操作', small pale blueprint live preview containing blue '主要按钮'; footer 取消 / '创建组件'.
 Bottom-right 610×290 deletion confirmation dialog with small restrained red warning symbol, title '删除这个项目？', body '数据洞察平台的画布与设计数据将被删除。已同步的应用代码会保留。'; footer outlined '取消' and restrained red '删除项目'. Beneath deletion dialog outside the modal two small toast examples green-check '已保存更改' and orange-warning '连接失败，请检查设置'. Use no scary giant icon, no irrelevant IP on destructive dialog. Showcase consistent padding24, 40px controls, clear hierarchy, usable keyboard focus ring. Designs must reflect real functional dialogs not invented marketing cards.
 ```
-

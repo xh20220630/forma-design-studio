@@ -8,7 +8,15 @@ from mathutils import Vector
 
 
 def arguments():
-    argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+    """读取 Blender 分隔符后的脚本参数，避免将 Blender 自身参数当作素材选项。
+
+    参数：
+        无。
+
+    返回：
+        解析后的命令行选项。
+    """
+    argv = sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else []
     parser = argparse.ArgumentParser()
     parser.add_argument('--poster-only', action='store_true')
     parser.add_argument('--save-blend', action='store_true')
@@ -40,6 +48,17 @@ scene.render.image_settings.color_mode = 'RGB'
 
 
 def material(name, value, metallic=0, roughness=0.4):
+    """创建带统一表面参数的 Blender 材质，确保同类模型使用一致的灯光响应。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        value：当前待处理的颜色或进度值。
+        metallic：材质的金属程度。
+        roughness：表面粗糙度，越大反光越分散。
+
+    返回：
+        创建的材质对象。
+    """
     result = bpy.data.materials.new(name)
     result.diffuse_color = (value, value, value, 1)
     result.use_nodes = True
@@ -63,6 +82,18 @@ glass.node_tree.nodes.get('Principled BSDF').inputs['IOR'].default_value = 1.45
 
 
 def box(name, location, size, surface, bevel=0.04):
+    """创建具有实际尺寸和圆角的盒形对象，应用缩放后再倒角以保持边缘一致。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        location：对象在所属坐标系中的位置。
+        size：对象尺寸或文字字号。
+        surface：供对象使用的材质。
+        bevel：边缘倒角的宽度。
+
+    返回：
+        创建的场景对象。
+    """
     bpy.ops.mesh.primitive_cube_add(size=1, location=location)
     obj = bpy.context.object
     obj.name = name
@@ -78,6 +109,17 @@ def box(name, location, size, surface, bevel=0.04):
 
 
 def label(text, location, size, surface):
+    """创建文字标签并设置字体尺寸与材质，使场景说明采用一致的视觉风格。
+
+    参数：
+        text：需要绘制的文字。
+        location：对象在所属坐标系中的位置。
+        size：对象尺寸或文字字号。
+        surface：供对象使用的材质。
+
+    返回：
+        创建的文字对象；二维绘图版本直接绘制到目标图像。
+    """
     curve = bpy.data.curves.new(text, 'FONT')
     curve.body = text
     curve.size = size
@@ -91,8 +133,26 @@ def label(text, location, size, surface):
 
 
 def assemble(obj, offset, delay=0, twist=0):
+    """在起止位置之间设置装配动画，使用平滑节奏减少突然跳动。
+
+    参数：
+        obj：需要记录动画的场景对象。
+        offset：相对最终姿态的初始偏移。
+        delay：动画开始前的延迟。
+        twist：装配过程中的附加旋转幅度。
+
+    返回：
+        无返回值；结果写入当前画布、场景或输出文件。
+    """
     origin = obj.location.copy()
-    for frame, amount in ((1, 1), (8 + delay, 1), (22 + delay, 0), (37 + delay, 0), (58, 1), (60, 1)):
+    for frame, amount in (
+        (1, 1),
+        (8 + delay, 1),
+        (22 + delay, 0),
+        (37 + delay, 0),
+        (58, 1),
+        (60, 1),
+    ):
         obj.location = origin + Vector(offset) * amount
         obj.rotation_euler.z = twist * amount
         obj.keyframe_insert(data_path='location', frame=frame)
@@ -138,20 +198,46 @@ for name, position, dimensions, surface, offset, delay in parts:
     assemble(obj, offset, delay, 0.025 if delay % 4 else -0.025)
     if name == 'Navigation':
         for index in range(4):
-            line = box(f'Navigation item {index}', (-0.06, 0.71 - index * 0.30, 0.317), (0.28, 0.025, 0.014), silver, 0.005)
+            line = box(
+                f'Navigation item {index}',
+                (-0.06, 0.71 - index * 0.30, 0.317),
+                (0.28, 0.025, 0.014),
+                silver,
+                0.005,
+            )
             assemble(line, offset, delay)
     elif name == 'Main component':
         for index, width in enumerate((1.13, 0.72)):
-            line = box(f'Component content {index}', (1.24 - (1.13 - width) / 2, 0.65 - index * 0.18, 0.289), (width, 0.045, 0.014), ink, 0.006)
+            line = box(
+                f'Component content {index}',
+                (1.24 - (1.13 - width) / 2, 0.65 - index * 0.18, 0.289),
+                (width, 0.045, 0.014),
+                ink,
+                0.006,
+            )
             assemble(line, offset, delay)
     else:
-        square = box(f'{name} token', (position[0] - 0.27, position[1] + 0.11, 0.296), (0.20, 0.20, 0.032), ink, 0.025)
+        square = box(
+            f'{name} token',
+            (position[0] - 0.27, position[1] + 0.11, 0.296),
+            (0.20, 0.20, 0.032),
+            ink,
+            0.025,
+        )
         assemble(square, offset, delay)
-        line = box(f'{name} label', (position[0], position[1] - 0.18, 0.291), (0.72, 0.025, 0.012), muted, 0.005)
+        line = box(
+            f'{name} label',
+            (position[0], position[1] - 0.18, 0.291),
+            (0.72, 0.025, 0.012),
+            muted,
+            0.005,
+        )
         assemble(line, offset, delay)
 
 for index, surface in enumerate((sky, silver, glass)):
-    token = box(f'Token {index}', (-0.13 + index * 0.29, -1.01, 0.20), (0.19, 0.19, 0.16), surface, 0.022)
+    token = box(
+        f'Token {index}', (-0.13 + index * 0.29, -1.01, 0.20), (0.19, 0.19, 0.16), surface, 0.022
+    )
     assemble(token, (-0.16 + index * 0.08, -0.15, 0.42 + index * 0.10), index)
 label('TOKEN   /   COMPONENT   /   UI', (0.80, -1.06, 0.135), 0.089, ink)
 
@@ -165,7 +251,10 @@ camera.data.type = 'ORTHO'
 camera.data.ortho_scale = 8.3
 scene.camera = camera
 
-for name, position, power, size in (('Key softbox', (-3, -4, 8), 700, 7), ('Fill softbox', (5, 3, 6), 400, 5)):
+for name, position, power, size in (
+    ('Key softbox', (-3, -4, 8), 700, 7),
+    ('Fill softbox', (5, 3, 6), 400, 5),
+):
     light = bpy.data.lights.new(name, 'AREA')
     light.energy = power
     light.shape = 'DISK'

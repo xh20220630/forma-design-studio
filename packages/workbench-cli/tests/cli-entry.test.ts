@@ -6,6 +6,10 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { isDirectExecution } from '../src/cli.ts';
 
+/**
+ * 验证recognizes direct execution through a workspace bin symlink。
+ * @returns 完成当前检查或生命周期操作。
+ */
 test('recognizes direct execution through a workspace bin symlink', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'forma-cli-entry-'));
   try {

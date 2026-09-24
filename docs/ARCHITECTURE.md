@@ -44,13 +44,13 @@ flowchart LR
 
 设计场景图是生成层的唯一来源。导出固定的 `forma-generated/` 目录：
 
-| 文件 | 作用 |
-| --- | --- |
-| `design.json` | 页面、组件、tokens 与设计版本 |
-| `tokens.css` | 项目主题 CSS 变量 |
-| `index.tsx` | React `FormaPage` / `FormaComponent` 渲染器与 `onAction(nodeId)` 事件接口 |
-| `manifest.json` | 项目归属、版本、生成文件 SHA-256 |
-| `README.md` | 使用方式与集成边界 |
+| 文件            | 作用                                                                      |
+| --------------- | ------------------------------------------------------------------------- |
+| `design.json`   | 页面、组件、tokens 与设计版本                                             |
+| `tokens.css`    | 项目主题 CSS 变量                                                         |
+| `index.tsx`     | React `FormaPage` / `FormaComponent` 渲染器与 `onAction(nodeId)` 事件接口 |
+| `manifest.json` | 项目归属、版本、生成文件 SHA-256                                          |
+| `README.md`     | 使用方式与集成边界                                                        |
 
 业务应用只需导入稳定组件，在生成目录外处理路由、数据、状态与业务事件：
 

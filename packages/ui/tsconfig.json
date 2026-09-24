@@ -1,6 +1,4 @@
 {
   "extends": "@forma/typescript-config/react.json",
-  "include": [
-    "src"
-  ]
+  "include": ["src"]
 }

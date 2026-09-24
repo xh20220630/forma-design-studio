@@ -76,119 +76,141 @@
       <div id="root"></div>
     </main>
     <script type="module">
-      import React from "react";
-      import { createRoot } from "react-dom/client";
-      import { MotionConfig } from "motion/react";
-      import {
-        StudioThemeProvider,
-        useStudioTheme,
-      } from "/src/theme/StudioTheme.tsx";
+      import React from 'react';
+      import { createRoot } from 'react-dom/client';
+      import { MotionConfig } from 'motion/react';
+      import { StudioThemeProvider, useStudioTheme } from '/src/theme/StudioTheme.tsx';
       import {
         RinAvatar,
         RinIllustration,
         RinIcon,
         RinStudioScene,
         RinThemeCompanion,
-      } from "/src/components/brand/RinBrand.tsx";
+      } from '/src/components/brand/RinBrand.tsx';
       const h = React.createElement;
       const kinds = [
-        "projects",
-        "components",
-        "tokens",
-        "canvas",
-        "sync",
-        "agent",
-        "theme",
-        "materials",
-        "motion",
+        'projects',
+        'components',
+        'tokens',
+        'canvas',
+        'sync',
+        'agent',
+        'theme',
+        'materials',
+        'motion',
       ];
-      const row = (children) =>
-        h("div", { className: "specimen-row" }, children);
+
+      /**
+       * 把多个预览项排成一行，让不同品牌样式可以并排比较。
+       * @param children - 由调用方放入组件的子内容。
+       * @returns 用于预览的 React 界面内容。
+       */
+      const row = (children) => h('div', { className: 'specimen-row' }, children);
+
+      /**
+       * 呈现品牌资源与主题切换预览，方便在同一页面比较不同状态。
+       * @returns 用于预览的 React 界面内容。
+       */
       function Preview() {
         const { settings, presets, updateSettings } = useStudioTheme();
         return h(
           MotionConfig,
-          { reducedMotion: settings.motion === "off" ? "always" : "user" },
+          { reducedMotion: settings.motion === 'off' ? 'always' : 'user' },
           h(
-            "section",
+            'section',
             null,
             row([
-              ...presets.map((preset) =>
-                h(
-                  "button",
-                  {
-                    key: preset.id,
-                    onClick: () => updateSettings({ preset: preset.id }),
-                    "aria-pressed": settings.preset === preset.id,
-                  },
-                  preset.name,
-                ),
+              ...presets.map(
+                /**
+                 * 应用选中的主题预设，让资源预览立即采用该配色。
+                 * @param preset - 工作室基础配色预设。
+                 * @returns 用于预览的 React 界面内容。
+                 */
+                (preset) =>
+                  h(
+                    'button',
+                    {
+                      key: preset.id,
+                      onClick:
+                        /**
+                         * 应用选中的主题预设，让资源预览立即采用该配色。
+                         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+                         */
+                        () => updateSettings({ preset: preset.id }),
+                      'aria-pressed': settings.preset === preset.id,
+                    },
+                    preset.name,
+                  ),
               ),
-              h(
-                "a",
-                { href: "/#/theme", key: "studio" },
-                "打开 Rin 主题工作室 →",
+              h('a', { href: '/#/theme', key: 'studio' }, '打开 Rin 主题工作室 →'),
+            ]),
+          ),
+          h('section', null, h(RinThemeCompanion, { size: 230 })),
+          h(
+            'section',
+            null,
+            row(
+              kinds.map(
+                /**
+                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
+                 * @param kind - 用于决定展示或处理分支的类别。
+                 * @returns 用于预览的 React 界面内容。
+                 */
+                (kind) =>
+                  h(
+                    'div',
+                    { className: 'specimen-item', key: kind },
+                    h(RinIcon, { kind, size: 24 }),
+                    h('span', null, kind),
+                  ),
+              ),
+            ),
+          ),
+          h(
+            'section',
+            null,
+            row(
+              kinds.map(
+                /**
+                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
+                 * @param kind - 用于决定展示或处理分支的类别。
+                 * @returns 用于预览的 React 界面内容。
+                 */
+                (kind) =>
+                  h(
+                    'div',
+                    { className: 'specimen-item', key: kind },
+                    h(RinIcon, { kind, size: 40, variant: 'sculptural' }),
+                    h('span', null, kind),
+                  ),
+              ),
+            ),
+          ),
+          h(
+            'section',
+            null,
+            row([
+              h(RinAvatar, { size: 44, ready: true, key: 'avatar' }),
+              ...['empty', 'thinking', 'success', 'error'].map(
+                /**
+                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
+                 * @param state - 当前操作所依赖的完整状态。
+                 * @returns 用于预览的 React 界面内容。
+                 */
+                (state) =>
+                  h(
+                    'div',
+                    { className: 'specimen-item', key: state },
+                    h(RinIllustration, { state, size: 128 }),
+                    h('span', null, state),
+                  ),
               ),
             ]),
           ),
-          h("section", null, h(RinThemeCompanion, { size: 230 })),
-          h(
-            "section",
-            null,
-            row(
-              kinds.map((kind) =>
-                h(
-                  "div",
-                  { className: "specimen-item", key: kind },
-                  h(RinIcon, { kind, size: 24 }),
-                  h("span", null, kind),
-                ),
-              ),
-            ),
-          ),
-          h(
-            "section",
-            null,
-            row(
-              kinds.map((kind) =>
-                h(
-                  "div",
-                  { className: "specimen-item", key: kind },
-                  h(RinIcon, { kind, size: 40, variant: "sculptural" }),
-                  h("span", null, kind),
-                ),
-              ),
-            ),
-          ),
-          h(
-            "section",
-            null,
-            row([
-              h(RinAvatar, { size: 44, ready: true, key: "avatar" }),
-              ...["empty", "thinking", "success", "error"].map((state) =>
-                h(
-                  "div",
-                  { className: "specimen-item", key: state },
-                  h(RinIllustration, { state, size: 128 }),
-                  h("span", null, state),
-                ),
-              ),
-            ]),
-          ),
-          h(
-            "section",
-            null,
-            h(
-              "div",
-              { className: "studio" },
-              h(RinStudioScene, { compact: true }),
-            ),
-          ),
+          h('section', null, h('div', { className: 'studio' }, h(RinStudioScene, { compact: true }))),
         );
       }
-      createRoot(document.getElementById("root")).render(
-        h(StudioThemeProvider, null, h(Preview)),
-      );
+      createRoot(document.getElementById('root')).render(h(StudioThemeProvider, null, h(Preview)));
     </script>
   </body>
 </html>

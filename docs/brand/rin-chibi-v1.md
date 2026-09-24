@@ -62,4 +62,3 @@ Text: none. Avoid: realistic tall proportions, long legs, glamorous runway pose,
 Edit this chibi character illustration: replace the entire gray checkerboard background with a perfectly clean, flat, solid white (#FFFFFF) background. The background must be completely uniform white from edge to edge, with no squares, no grid, no texture, no shadows, no lines, and no transparency pattern. This is a white-background character design presentation.
 Keep the silver-haired cool chibi anime girl exactly recognizable: same oversized head and tiny body, half-lidded blue eyes and unsmiling face, asymmetrical black-and-white outfit, hairclip, trousers, boots, pose and little blue design panel. Preserve clean anime linework and cel shading. Give the full character a little white breathing room on every side; head and boots wholly visible. Only replace the background and add a small margin; no text, no watermark, no extra objects.
 ```
-

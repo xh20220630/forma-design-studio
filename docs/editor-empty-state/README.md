@@ -15,6 +15,7 @@ Generated using the built-in `image_gen.imagegen` tool, with both inspected orig
 The selected output is the first generation. Later material-refinement variants and a background-extraction attempt produced RGB images with a painted checkerboard; those failed transparency QA and were not used or copied into the project. The selected illustration has genuine transparent and translucent pixels, not a checkerboard background. See `asset-qa.json` and the 240 px light/white/dark presentation check in `display-qa.png`.
 
 Original references:
+
 - `apps/web/public/brand/rin/forma-rin-chibi-v1.png` — authoritative character identity and costume.
 - `apps/web/public/brand/rin/v4/rin-empty-320.webp` — supporting seated proportion and design-frame relationship.
 
@@ -33,4 +34,3 @@ Rendering: exceptionally careful hair strands grouped into sculpted silver locks
 Background: genuinely transparent alpha, including all empty space around the character and through any open frame areas. No solid white background, no gray background, no checkerboard painted into the image, no floor plane or environment. Any minimal contact shadow must be translucent and localized to the object.
 Palette: original silver, charcoal, pearl white and restrained ice blue. No new accent color. Avoid text, letters, numerals, logos, watermark, UI screenshots, floating debris, sparkles, excessive glow, neon halos, busy background, extra characters and unnecessary props. Deliver only this one finished transparent illustration.
 ```
-

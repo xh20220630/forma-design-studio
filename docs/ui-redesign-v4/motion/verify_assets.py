@@ -13,6 +13,15 @@ data = ASSET.read_bytes()
 
 
 def variable_integer(offset, keep_marker=False):
+    """读取 EBML 可变长整数，同时返回字节数以便继续扫描下一字段。
+
+    参数：
+        offset：相对最终姿态的初始偏移。
+        keep_marker：是否保留 EBML 长度标记；读取元素 ID 时需要保留。
+
+    返回：
+        整数值和它占用的字节数。
+    """
     first = data[offset]
     if not first:
         raise ValueError('Invalid EBML integer')
@@ -20,13 +29,22 @@ def variable_integer(offset, keep_marker=False):
     while not first & marker:
         width += 1
         marker >>= 1
-    value = int.from_bytes(data[offset:offset + width], 'big')
+    value = int.from_bytes(data[offset : offset + width], 'big')
     if not keep_marker:
         value &= (1 << (7 * width)) - 1
     return value, width
 
 
 def elements(start, end):
+    """按声明的长度遍历 EBML 元素，限制在父元素范围内以防越界扫描。
+
+    参数：
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+
+    产出：
+        依次产生元素标识、内容起点和结束位置。
+    """
     cursor = start
     while cursor < end:
         identity, width = variable_integer(cursor, True)
@@ -40,6 +58,15 @@ def elements(start, end):
 
 
 def number(start, end):
+    """把指定字节区间按大端序解释为整数，用于读取视频元数据。
+
+    参数：
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+
+    返回：
+        区间对应的整数。
+    """
     return int.from_bytes(data[start:end], 'big')
 
 
@@ -90,9 +117,28 @@ assert poster.size == (720, 480) and poster.mode == 'RGBA'
 assert poster.getchannel('A').getextrema() == (0, 255)
 poster.save(OUT / 'rin-pearl-poster.webp', format='WEBP', quality=88, method=6)
 report = {
-    'video': {'path': str(ASSET.relative_to(ROOT)).replace('\\', '/'), 'codec': 'VP9', 'width': 720, 'height': 480, 'fps': 20, 'duration': seconds, 'frames': frames, 'alpha': True, 'audio': False, 'bytes': len(data)},
-    'poster': {'pngBytes': (OUT / 'rin-pearl-poster.png').stat().st_size, 'webpBytes': (OUT / 'rin-pearl-poster.webp').stat().st_size, 'rgba': True},
-    'sourceRinSha256': hashlib.sha256((ROOT / 'apps/web/public/brand/rin/v4/rin-full-body.png').read_bytes()).hexdigest(),
+    'video': {
+        'path': str(ASSET.relative_to(ROOT)).replace('\\', '/'),
+        'codec': 'VP9',
+        'width': 720,
+        'height': 480,
+        'fps': 20,
+        'duration': seconds,
+        'frames': frames,
+        'alpha': True,
+        'audio': False,
+        'bytes': len(data),
+    },
+    'poster': {
+        'pngBytes': (OUT / 'rin-pearl-poster.png').stat().st_size,
+        'webpBytes': (OUT / 'rin-pearl-poster.webp').stat().st_size,
+        'rgba': True,
+    },
+    'sourceRinSha256': hashlib.sha256(
+        (ROOT / 'apps/web/public/brand/rin/v4/rin-full-body.png').read_bytes()
+    ).hexdigest(),
 }
-(Path(__file__).parent / 'asset-verification.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
+(Path(__file__).parent / 'asset-verification.json').write_text(
+    json.dumps(report, indent=2), encoding='utf-8'
+)
 print(json.dumps(report, indent=2))

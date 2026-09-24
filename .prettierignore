@@ -1,0 +1,10 @@
+# Dependencies, build output and local state are not maintained source.
+**/node_modules/
+**/dist/
+**/.data/
+**/.forma/
+**/.pnpm-store/
+**/__pycache__/
+**/*.tsbuildinfo
+# Generated dependency resolution stays managed by pnpm.
+pnpm-lock.yaml

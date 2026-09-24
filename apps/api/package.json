@@ -11,17 +11,18 @@
   },
   "dependencies": {
     "@forma/renderer": "workspace:*",
+    "@forma/schema": "workspace:*",
     "express": "catalog:",
-    "@forma/schema": "workspace:*"
+    "image-size": "2.0.2"
   },
   "devDependencies": {
     "@forma/typescript-config": "workspace:*",
+    "@types/express": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "typescript": "catalog:",
-    "@types/express": "catalog:"
+    "typescript": "catalog:"
   }
 }

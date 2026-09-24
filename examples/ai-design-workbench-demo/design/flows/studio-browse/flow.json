@@ -57,9 +57,7 @@
       "image": "flows/studio-browse/images/project-v1.png",
       "image_revision": 1,
       "prompt_path": "flows/studio-browse/prompts/project.md",
-      "reference_images": [
-        "flows/studio-browse/images/projects-v1.png"
-      ],
+      "reference_images": ["flows/studio-browse/images/projects-v1.png"],
       "width": 960,
       "height": 640,
       "component_usage": [

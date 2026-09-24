@@ -10,5 +10,9 @@ import App from './App.tsx';
 import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><StudioThemeProvider><App /></StudioThemeProvider></React.StrictMode>,
+  <React.StrictMode>
+    <StudioThemeProvider>
+      <App />
+    </StudioThemeProvider>
+  </React.StrictMode>,
 );

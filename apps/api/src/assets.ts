@@ -3,19 +3,67 @@ import path from 'node:path';
 import { dataRoot } from './store.ts';
 import { ApiError, requireValue } from './errors.ts';
 
+/**
+ * 从本地素材地址提取受限制的文件名，避免读取素材目录外的文件。
+ *
+ * @param source - 原始数据或操作开始时的状态。
+ * @returns 素材文件名。
+ */
 export function localAssetFilename(source: unknown) {
-  requireValue(typeof source === 'string' && /^\/api\/assets\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]{0,240}\.(?:png|jpe?g|webp|svg)$/.test(source), '本地图片地址必须是 /api/assets/ 下的单个 PNG、JPEG、WebP 或 SVG 文件名。');
+  requireValue(
+    typeof source === 'string' &&
+      /^\/api\/assets\/[a-zA-Z0-9_-][a-zA-Z0-9_.-]{0,240}\.(?:png|jpe?g|webp|svg)$/.test(source),
+    '本地图片地址必须是 /api/assets/ 下的单个 PNG、JPEG、WebP 或 SVG 文件名。',
+  );
   return source.slice('/api/assets/'.length);
 }
 
+/**
+ * 拒绝脚本、外部引用等不安全 SVG 内容，供导出时安全内嵌。
+ *
+ * @param source - 原始数据或操作开始时的状态。
+ * @returns 无返回值；不符合要求时抛出错误。
+ */
 export function validateSafeSvg(source: unknown) {
-  requireValue(typeof source === 'string' && source.length <= 2000000 && /<svg(?:\s|>)/i.test(source), 'SVG 格式无效或过大。');
-  requireValue(!/<!(?:DOCTYPE|ENTITY)|<\?|javascript:|data:|url\(\s*[^#]|\bon\w+\s*=|\b(?:href|style)\s*=/i.test(source), 'SVG 不允许脚本、事件、外部资源或内联样式。');
-  const allowed = new Set(['svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'defs', 'linearGradient', 'radialGradient', 'stop', 'clipPath', 'title', 'desc']);
-  for (const match of source.matchAll(/<\/?([\w:-]+)\b/g)) requireValue(allowed.has(match[1]), `SVG 不支持元素 ${match[1]}。`);
+  requireValue(
+    typeof source === 'string' && source.length <= 2000000 && /<svg(?:\s|>)/i.test(source),
+    'SVG 格式无效或过大。',
+  );
+  requireValue(
+    !/<!(?:DOCTYPE|ENTITY)|<\?|javascript:|data:|url\(\s*[^#]|\bon\w+\s*=|\b(?:href|style)\s*=/i.test(
+      source,
+    ),
+    'SVG 不允许脚本、事件、外部资源或内联样式。',
+  );
+  const allowed = new Set([
+    'svg',
+    'g',
+    'path',
+    'rect',
+    'circle',
+    'ellipse',
+    'line',
+    'polyline',
+    'polygon',
+    'defs',
+    'linearGradient',
+    'radialGradient',
+    'stop',
+    'clipPath',
+    'title',
+    'desc',
+  ]);
+  for (const match of source.matchAll(/<\/?([\w:-]+)\b/g))
+    requireValue(allowed.has(match[1]), `SVG 不支持元素 ${match[1]}。`);
   return source;
 }
 
+/**
+ * 读取本地素材并转为可携带的数据地址，让导出项目不依赖原服务。
+ *
+ * @param source - 原始数据或操作开始时的状态。
+ * @returns 可内嵌的素材地址。
+ */
 export function embedLocalAsset(source: unknown) {
   const filename = localAssetFilename(source);
   const directory = path.join(dataRoot, 'assets');
@@ -23,11 +71,32 @@ export function embedLocalAsset(source: unknown) {
   try {
     const directoryInfo = lstatSync(directory);
     const fileInfo = lstatSync(target);
-    requireValue(directoryInfo.isDirectory() && !directoryInfo.isSymbolicLink() && fileInfo.isFile() && !fileInfo.isSymbolicLink(), `图片资源不能使用符号链接：${filename}`, 409);
+    requireValue(
+      directoryInfo.isDirectory() &&
+        !directoryInfo.isSymbolicLink() &&
+        fileInfo.isFile() &&
+        !fileInfo.isSymbolicLink(),
+      `图片资源不能使用符号链接：${filename}`,
+      409,
+    );
     requireValue(fileInfo.size <= 30000000, `图片资源过大，无法导出：${filename}`, 409);
     const bytes = readFileSync(target);
-    const mime = filename.endsWith('.svg') ? 'image/svg+xml' : filename.endsWith('.webp') ? 'image/webp' : /\.jpe?g$/.test(filename) ? 'image/jpeg' : 'image/png';
-    const valid = mime === 'image/svg+xml' ? validateSafeSvg(bytes.toString('utf8')) : mime === 'image/png' ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) : mime === 'image/jpeg' ? bytes[0] === 255 && bytes[1] === 216 : bytes.subarray(0, 4).toString() === 'RIFF' && bytes.subarray(8, 12).toString() === 'WEBP';
+    const mime = filename.endsWith('.svg')
+      ? 'image/svg+xml'
+      : filename.endsWith('.webp')
+        ? 'image/webp'
+        : /\.jpe?g$/.test(filename)
+          ? 'image/jpeg'
+          : 'image/png';
+    const valid =
+      mime === 'image/svg+xml'
+        ? validateSafeSvg(bytes.toString('utf8'))
+        : mime === 'image/png'
+          ? bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+          : mime === 'image/jpeg'
+            ? bytes[0] === 255 && bytes[1] === 216
+            : bytes.subarray(0, 4).toString() === 'RIFF' &&
+              bytes.subarray(8, 12).toString() === 'WEBP';
     requireValue(valid, `图片资源内容与格式不匹配：${filename}`, 409);
     return `data:${mime};base64,${bytes.toString('base64')}`;
   } catch (error) {

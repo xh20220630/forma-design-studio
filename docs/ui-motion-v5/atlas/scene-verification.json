@@ -11,430 +11,190 @@
       {
         "leaf": "Atlas 01 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          -0.32,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.32,
-          2.6
-        ]
+        "worldPosition": [0.0, -0.32, 2.6],
+        "carrierPosition": [-1.16, -0.32, 2.6]
       },
       {
         "leaf": "Atlas 02 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          -0.15,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.15,
-          2.6
-        ]
+        "worldPosition": [0.0, -0.15, 2.6],
+        "carrierPosition": [-1.16, -0.15, 2.6]
       },
       {
         "leaf": "Atlas 03 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          0.02,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.02,
-          2.6
-        ]
+        "worldPosition": [0.0, 0.02, 2.6],
+        "carrierPosition": [-1.16, 0.02, 2.6]
       },
       {
         "leaf": "Atlas 04 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          0.19,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.19,
-          2.6
-        ]
+        "worldPosition": [0.0, 0.19, 2.6],
+        "carrierPosition": [-1.16, 0.19, 2.6]
       },
       {
         "leaf": "Atlas 05 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          0.36,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.36,
-          2.6
-        ]
+        "worldPosition": [0.0, 0.36, 2.6],
+        "carrierPosition": [-1.16, 0.36, 2.6]
       },
       {
         "leaf": "Atlas 06 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          0.0,
-          0.53,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.53,
-          2.6
-        ]
+        "worldPosition": [0.0, 0.53, 2.6],
+        "carrierPosition": [-1.16, 0.53, 2.6]
       }
     ],
     "46": [
       {
         "leaf": "Atlas 01 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.8208,
-          -1.4293,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.32,
-          2.6
-        ]
+        "worldPosition": [-0.8208, -1.4293, 2.6],
+        "carrierPosition": [-1.16, -0.32, 2.6]
       },
       {
         "leaf": "Atlas 02 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.3256,
-          -0.9558,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.15,
-          2.6
-        ]
+        "worldPosition": [-0.3256, -0.9558, 2.6],
+        "carrierPosition": [-1.16, -0.15, 2.6]
       },
       {
         "leaf": "Atlas 03 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.0395,
-          -0.2802,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.02,
-          2.6
-        ]
+        "worldPosition": [-0.0395, -0.2802, 2.6],
+        "carrierPosition": [-1.16, 0.02, 2.6]
       },
       {
         "leaf": "Atlas 04 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.0384,
-          0.486,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.19,
-          2.6
-        ]
+        "worldPosition": [-0.0384, 0.486, 2.6],
+        "carrierPosition": [-1.16, 0.19, 2.6]
       },
       {
         "leaf": "Atlas 05 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.2921,
-          1.1296,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.36,
-          2.6
-        ]
+        "worldPosition": [-0.2921, 1.1296, 2.6],
+        "carrierPosition": [-1.16, 0.36, 2.6]
       },
       {
         "leaf": "Atlas 06 reversible leaf",
         "flipDegrees": 0.0,
-        "worldPosition": [
-          -0.6584,
-          1.576,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.53,
-          2.6
-        ]
+        "worldPosition": [-0.6584, 1.576, 2.6],
+        "carrierPosition": [-1.16, 0.53, 2.6]
       }
     ],
     "77": [
       {
         "leaf": "Atlas 01 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          -0.8208,
-          -1.4293,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.32,
-          2.6
-        ]
+        "worldPosition": [-0.8208, -1.4293, 2.6],
+        "carrierPosition": [-1.16, -0.32, 2.6]
       },
       {
         "leaf": "Atlas 02 reversible leaf",
         "flipDegrees": 183.5,
-        "worldPosition": [
-          -0.3256,
-          -0.9558,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.15,
-          2.6
-        ]
+        "worldPosition": [-0.3256, -0.9558, 2.6],
+        "carrierPosition": [-1.16, -0.15, 2.6]
       },
       {
         "leaf": "Atlas 03 reversible leaf",
         "flipDegrees": 185.333,
-        "worldPosition": [
-          -0.0395,
-          -0.2802,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.02,
-          2.6
-        ]
+        "worldPosition": [-0.0395, -0.2802, 2.6],
+        "carrierPosition": [-1.16, 0.02, 2.6]
       },
       {
         "leaf": "Atlas 04 reversible leaf",
         "flipDegrees": 151.729,
-        "worldPosition": [
-          -0.0395,
-          0.4902,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.19,
-          2.6
-        ]
+        "worldPosition": [-0.0395, 0.4902, 2.6],
+        "carrierPosition": [-1.16, 0.19, 2.6]
       },
       {
         "leaf": "Atlas 05 reversible leaf",
         "flipDegrees": 93.5,
-        "worldPosition": [
-          -0.3256,
-          1.1658,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.36,
-          2.6
-        ]
+        "worldPosition": [-0.3256, 1.1658, 2.6],
+        "carrierPosition": [-1.16, 0.36, 2.6]
       },
       {
         "leaf": "Atlas 06 reversible leaf",
         "flipDegrees": 35.271,
-        "worldPosition": [
-          -0.8208,
-          1.6393,
-          2.6
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.53,
-          2.6
-        ]
+        "worldPosition": [-0.8208, 1.6393, 2.6],
+        "carrierPosition": [-1.16, 0.53, 2.6]
       }
     ],
     "130": [
       {
         "leaf": "Atlas 01 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          -2.56,
-          0.08,
-          3.43
-        ],
-        "carrierPosition": [
-          -3.72,
-          0.08,
-          3.43
-        ]
+        "worldPosition": [-2.56, 0.08, 3.43],
+        "carrierPosition": [-3.72, 0.08, 3.43]
       },
       {
         "leaf": "Atlas 02 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          0.0,
-          -0.03,
-          3.43
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.03,
-          3.43
-        ]
+        "worldPosition": [0.0, -0.03, 3.43],
+        "carrierPosition": [-1.16, -0.03, 3.43]
       },
       {
         "leaf": "Atlas 03 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          2.56,
-          0.1,
-          3.43
-        ],
-        "carrierPosition": [
-          1.4,
-          0.1,
-          3.43
-        ]
+        "worldPosition": [2.56, 0.1, 3.43],
+        "carrierPosition": [1.4, 0.1, 3.43]
       },
       {
         "leaf": "Atlas 04 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          -2.56,
-          0.14,
-          1.55
-        ],
-        "carrierPosition": [
-          -3.72,
-          0.14,
-          1.55
-        ]
+        "worldPosition": [-2.56, 0.14, 1.55],
+        "carrierPosition": [-3.72, 0.14, 1.55]
       },
       {
         "leaf": "Atlas 05 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          0.0,
-          0.03,
-          1.55
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.03,
-          1.55
-        ]
+        "worldPosition": [0.0, 0.03, 1.55],
+        "carrierPosition": [-1.16, 0.03, 1.55]
       },
       {
         "leaf": "Atlas 06 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          2.56,
-          0.16,
-          1.55
-        ],
-        "carrierPosition": [
-          1.4,
-          0.16,
-          1.55
-        ]
+        "worldPosition": [2.56, 0.16, 1.55],
+        "carrierPosition": [1.4, 0.16, 1.55]
       }
     ],
     "144": [
       {
         "leaf": "Atlas 01 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          -2.56,
-          0.08,
-          3.43
-        ],
-        "carrierPosition": [
-          -3.72,
-          0.08,
-          3.43
-        ]
+        "worldPosition": [-2.56, 0.08, 3.43],
+        "carrierPosition": [-3.72, 0.08, 3.43]
       },
       {
         "leaf": "Atlas 02 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          0.0,
-          -0.03,
-          3.43
-        ],
-        "carrierPosition": [
-          -1.16,
-          -0.03,
-          3.43
-        ]
+        "worldPosition": [0.0, -0.03, 3.43],
+        "carrierPosition": [-1.16, -0.03, 3.43]
       },
       {
         "leaf": "Atlas 03 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          2.56,
-          0.1,
-          3.43
-        ],
-        "carrierPosition": [
-          1.4,
-          0.1,
-          3.43
-        ]
+        "worldPosition": [2.56, 0.1, 3.43],
+        "carrierPosition": [1.4, 0.1, 3.43]
       },
       {
         "leaf": "Atlas 04 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          -2.56,
-          0.14,
-          1.55
-        ],
-        "carrierPosition": [
-          -3.72,
-          0.14,
-          1.55
-        ]
+        "worldPosition": [-2.56, 0.14, 1.55],
+        "carrierPosition": [-3.72, 0.14, 1.55]
       },
       {
         "leaf": "Atlas 05 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          0.0,
-          0.03,
-          1.55
-        ],
-        "carrierPosition": [
-          -1.16,
-          0.03,
-          1.55
-        ]
+        "worldPosition": [0.0, 0.03, 1.55],
+        "carrierPosition": [-1.16, 0.03, 1.55]
       },
       {
         "leaf": "Atlas 06 reversible leaf",
         "flipDegrees": 180.0,
-        "worldPosition": [
-          2.56,
-          0.16,
-          1.55
-        ],
-        "carrierPosition": [
-          1.4,
-          0.16,
-          1.55
-        ]
+        "worldPosition": [2.56, 0.16, 1.55],
+        "carrierPosition": [1.4, 0.16, 1.55]
       }
     ]
   }

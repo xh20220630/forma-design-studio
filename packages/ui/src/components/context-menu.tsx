@@ -1,62 +1,89 @@
-import * as React from "react"
-import { cn } from "cn"
-import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
-import { ContextMenu as ContextMenuPrimitive } from "radix-ui"
+import * as React from 'react';
+import { cn } from 'cn';
+import { CheckIcon, ChevronRightIcon, CircleIcon } from 'lucide-react';
+import { ContextMenu as ContextMenuPrimitive } from 'radix-ui';
 
-function ContextMenu({
-  ...props
-}: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
-  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />
+/**
+ * 呈现右键菜单，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function ContextMenu({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Root>) {
+  return <ContextMenuPrimitive.Root data-slot="context-menu" {...props} />;
 }
 
+/**
+ * 呈现右键菜单触发入口，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuTrigger({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Trigger>) {
-  return (
-    <ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} />
-  )
+  return <ContextMenuPrimitive.Trigger data-slot="context-menu-trigger" {...props} />;
 }
 
-function ContextMenuGroup({
-  ...props
-}: React.ComponentProps<typeof ContextMenuPrimitive.Group>) {
-  return (
-    <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />
-  )
+/**
+ * 呈现右键菜单分组，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function ContextMenuGroup({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Group>) {
+  return <ContextMenuPrimitive.Group data-slot="context-menu-group" {...props} />;
 }
 
-function ContextMenuPortal({
-  ...props
-}: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) {
-  return (
-    <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />
-  )
+/**
+ * 呈现右键菜单挂载容器，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function ContextMenuPortal({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Portal>) {
+  return <ContextMenuPrimitive.Portal data-slot="context-menu-portal" {...props} />;
 }
 
-function ContextMenuSub({
-  ...props
-}: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
-  return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />
+/**
+ * 呈现右键菜单子菜单，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function ContextMenuSub({ ...props }: React.ComponentProps<typeof ContextMenuPrimitive.Sub>) {
+  return <ContextMenuPrimitive.Sub data-slot="context-menu-sub" {...props} />;
 }
 
+/**
+ * 呈现右键菜单单选组，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuRadioGroup({
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.RadioGroup>) {
-  return (
-    <ContextMenuPrimitive.RadioGroup
-      data-slot="context-menu-radio-group"
-      {...props}
-    />
-  )
+  return <ContextMenuPrimitive.RadioGroup data-slot="context-menu-radio-group" {...props} />;
 }
 
+/**
+ * 呈现右键菜单子菜单入口，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.inset - 是否将阴影绘制在图形内部。
+ * @param props.children - 由调用方放入组件的子内容。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuSubTrigger({
   className,
   inset,
   children,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.SubTrigger> & {
-  inset?: boolean
+  /** 是否将阴影绘制在图形内部。 */
+  inset?: boolean;
 }) {
   return (
     <ContextMenuPrimitive.SubTrigger
@@ -64,16 +91,23 @@ function ContextMenuSubTrigger({
       data-inset={inset}
       className={cn(
         "flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[inset]:pl-8 data-[state=open]:bg-accent data-[state=open]:text-accent-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground",
-        className
+        className,
       )}
       {...props}
     >
       {children}
       <ChevronRightIcon className="ml-auto" />
     </ContextMenuPrimitive.SubTrigger>
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单子菜单内容，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuSubContent({
   className,
   ...props
@@ -82,14 +116,21 @@ function ContextMenuSubContent({
     <ContextMenuPrimitive.SubContent
       data-slot="context-menu-sub-content"
       className={cn(
-        "z-50 min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-        className
+        'z-50 min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单内容区域，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuContent({
   className,
   ...props
@@ -99,23 +140,34 @@ function ContextMenuContent({
       <ContextMenuPrimitive.Content
         data-slot="context-menu-content"
         className={cn(
-          "z-50 max-h-(--radix-context-menu-content-available-height) min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95",
-          className
+          'z-50 max-h-(--radix-context-menu-content-available-height) min-w-[8rem] origin-(--radix-context-menu-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border bg-popover p-1 text-popover-foreground shadow-md data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
+          className,
         )}
         {...props}
       />
     </ContextMenuPrimitive.Portal>
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单选项，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.inset - 是否将阴影绘制在图形内部。
+ * @param props.variant - 组件的外观变体。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuItem({
   className,
   inset,
-  variant = "default",
+  variant = 'default',
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Item> & {
-  inset?: boolean
-  variant?: "default" | "destructive"
+  /** 是否将阴影绘制在图形内部。 */
+  inset?: boolean;
+  /** 组件的外观变体。取值：default（默认）、destructive（删除等破坏性操作）。 */
+  variant?: 'default' | 'destructive';
 }) {
   return (
     <ContextMenuPrimitive.Item
@@ -124,13 +176,22 @@ function ContextMenuItem({
       data-variant={variant}
       className={cn(
         "relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 data-[inset]:pl-8 data-[variant=destructive]:text-destructive data-[variant=destructive]:focus:bg-destructive/10 data-[variant=destructive]:focus:text-destructive dark:data-[variant=destructive]:focus:bg-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg:not([class*='text-'])]:text-muted-foreground data-[variant=destructive]:*:[svg]:text-destructive!",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单多选项，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.children - 由调用方放入组件的子内容。
+ * @param props.checked - 复选控件当前是否选中。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuCheckboxItem({
   className,
   children,
@@ -142,7 +203,7 @@ function ContextMenuCheckboxItem({
       data-slot="context-menu-checkbox-item"
       className={cn(
         "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
+        className,
       )}
       checked={checked}
       {...props}
@@ -154,9 +215,17 @@ function ContextMenuCheckboxItem({
       </span>
       {children}
     </ContextMenuPrimitive.CheckboxItem>
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单单选项，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.children - 由调用方放入组件的子内容。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuRadioItem({
   className,
   children,
@@ -167,7 +236,7 @@ function ContextMenuRadioItem({
       data-slot="context-menu-radio-item"
       className={cn(
         "relative flex cursor-default items-center gap-2 rounded-sm py-1.5 pr-2 pl-8 text-sm outline-hidden select-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        className
+        className,
       )}
       {...props}
     >
@@ -178,29 +247,42 @@ function ContextMenuRadioItem({
       </span>
       {children}
     </ContextMenuPrimitive.RadioItem>
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单分组标签，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.inset - 是否将阴影绘制在图形内部。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuLabel({
   className,
   inset,
   ...props
 }: React.ComponentProps<typeof ContextMenuPrimitive.Label> & {
-  inset?: boolean
+  /** 是否将阴影绘制在图形内部。 */
+  inset?: boolean;
 }) {
   return (
     <ContextMenuPrimitive.Label
       data-slot="context-menu-label"
       data-inset={inset}
-      className={cn(
-        "px-2 py-1.5 text-sm font-medium text-foreground data-[inset]:pl-8",
-        className
-      )}
+      className={cn('px-2 py-1.5 text-sm font-medium text-foreground data-[inset]:pl-8', className)}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现右键菜单分隔线，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
 function ContextMenuSeparator({
   className,
   ...props
@@ -208,26 +290,27 @@ function ContextMenuSeparator({
   return (
     <ContextMenuPrimitive.Separator
       data-slot="context-menu-separator"
-      className={cn("-mx-1 my-1 h-px bg-border", className)}
+      className={cn('-mx-1 my-1 h-px bg-border', className)}
       {...props}
     />
-  )
+  );
 }
 
-function ContextMenuShortcut({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
+/**
+ * 呈现右键菜单快捷键提示，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
+function ContextMenuShortcut({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="context-menu-shortcut"
-      className={cn(
-        "ml-auto text-xs tracking-widest text-muted-foreground",
-        className
-      )}
+      className={cn('ml-auto text-xs tracking-widest text-muted-foreground', className)}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -246,4 +329,4 @@ export {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuRadioGroup,
-}
+};

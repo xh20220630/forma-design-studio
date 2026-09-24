@@ -1,5 +1,20 @@
 # 开发与目录约定
 
+## 注释与格式
+
+函数使用中文 JSDoc，说明用途、采用这种处理方式的原因、每个入参和返回值；没有业务返回值时也要明确说明。Python 函数采用同样内容的 docstring。简短回调可以用紧凑注释，复杂流程应说明版本检查、失败恢复、坐标空间和资源释放等关键约束。
+
+接口和类型说明它们在业务中的用途；类属性、接口字段和嵌套对象字段说明数据含义。状态联合类型应解释各个取值，坐标、时长、倍率等容易混淆的参数应注明单位或坐标系。注释需要随实现一起更新，不把“计划执行”写成“已经成功”，也不把兜底处理写成所有错误都会被忽略。
+
+仓库使用根目录的 `.prettierrc.json` 和 `.editorconfig` 统一缩进、引号与换行。依赖、构建产物、本地状态及 pnpm 锁文件不交给格式化器处理。
+
+```sh
+pnpm format
+pnpm format:check
+```
+
+`docs/` 中的 Python 素材脚本使用 Ruff 0.9.7，配置在根目录 `ruff.toml`。安装该版本后执行 `pnpm format:python` 或 `pnpm format:python:check`。格式化不会运行 Blender、重新生成图片或视频。
+
 ## 环境与常用命令
 
 使用 Node.js 22.18+、pnpm 10.20.0。从根目录执行 `corepack enable`、`pnpm install --frozen-lockfile`、`pnpm dev`。依赖版本由 `packageManager`、workspace catalog 和唯一的 `pnpm-lock.yaml` 管理。
@@ -17,15 +32,15 @@ AI 设计工作台使用 `pnpm design open ./examples/ai-design-workbench-demo/d
 
 ## 包的职责
 
-| 位置 | 包 | 职责 |
-| --- | --- | --- |
-| `apps/web` | `@forma/web` | 页面、编辑器交互、应用状态、静态资源 |
-| `apps/api` | `@forma/api` | HTTP、持久化、模型调用、Agent、代码同步 |
-| `packages/schema` | `@forma/schema` | 设计模型、Agent 请求/响应类型 |
-| `packages/renderer` | `@forma/renderer` | 场景渲染与独立 React 导出源码 |
-| `packages/editor-core` | `@forma/editor-core` | 不依赖 React 的画布计算 |
-| `packages/ui` | `@forma/ui` | shadcn/Radix 基础组件、样式工具 |
-| `packages/typescript-config` | `@forma/typescript-config` | TypeScript 公共配置 |
+| 位置                         | 包                         | 职责                                    |
+| ---------------------------- | -------------------------- | --------------------------------------- |
+| `apps/web`                   | `@forma/web`               | 页面、编辑器交互、应用状态、静态资源    |
+| `apps/api`                   | `@forma/api`               | HTTP、持久化、模型调用、Agent、代码同步 |
+| `packages/schema`            | `@forma/schema`            | 设计模型、Agent 请求/响应类型           |
+| `packages/renderer`          | `@forma/renderer`          | 场景渲染与独立 React 导出源码           |
+| `packages/editor-core`       | `@forma/editor-core`       | 不依赖 React 的画布计算                 |
+| `packages/ui`                | `@forma/ui`                | shadcn/Radix 基础组件、样式工具         |
+| `packages/typescript-config` | `@forma/typescript-config` | TypeScript 公共配置                     |
 
 API 和共享 Node 入口统一使用 `.ts`。API 复用 `@forma/typescript-config/node.json`，启用 strict、NodeNext、verbatimModuleSyntax 和 erasableSyntaxOnly。相对模块导入必须带 `.ts` 扩展名，类型依赖使用 `import type`；不使用依赖编译转换的 enum 或构造器参数属性。
 

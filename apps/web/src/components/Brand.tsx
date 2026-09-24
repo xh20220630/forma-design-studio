@@ -1,1 +1,1 @@
-export { default } from "@forma/ui/brand";
+export { default } from '@forma/ui/brand';

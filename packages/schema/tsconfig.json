@@ -1,11 +1,7 @@
 {
   "extends": "@forma/typescript-config/base.json",
-  "include": [
-    "src"
-  ],
+  "include": ["src"],
   "compilerOptions": {
-    "types": [
-      "node"
-    ]
+    "types": ["node"]
   }
 }

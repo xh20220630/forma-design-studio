@@ -4,7 +4,11 @@
   "description": "Forma AI UI Designer skill plugin",
   "private": true,
   "type": "module",
-  "files": [".codex-plugin", "skills", "src"],
+  "files": [
+    ".codex-plugin",
+    "skills",
+    "src"
+  ],
   "exports": {
     ".": "./src/index.ts"
   },

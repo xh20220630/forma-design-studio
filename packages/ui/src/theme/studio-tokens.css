@@ -44,11 +44,11 @@
   --studio-motion-distance: 4px;
   --studio-motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
-html[data-studio-theme="paper"],
-html[data-studio-theme="glacier"] {
+html[data-studio-theme='paper'],
+html[data-studio-theme='glacier'] {
   color-scheme: light;
 }
-html[data-studio-theme="midnight"] {
+html[data-studio-theme='midnight'] {
   color-scheme: dark;
 }
 @media (prefers-reduced-motion: reduce) {

@@ -13,12 +13,15 @@ carriers = [bpy.data.objects[f'Atlas {i + 1:02} magnetic carrier'] for i in rang
 samples = {}
 for frame in (1, 46, 77, 130, 144):
     scene.frame_set(frame)
-    samples[frame] = [{
-        'leaf': leaf.name,
-        'flipDegrees': round(math.degrees(leaf.rotation_euler.z), 3),
-        'worldPosition': [round(float(v), 4) for v in leaf.matrix_world.translation],
-        'carrierPosition': [round(float(v), 4) for v in carrier.location],
-    } for leaf, carrier in zip(leaves, carriers)]
+    samples[frame] = [
+        {
+            'leaf': leaf.name,
+            'flipDegrees': round(math.degrees(leaf.rotation_euler.z), 3),
+            'worldPosition': [round(float(v), 4) for v in leaf.matrix_world.translation],
+            'carrierPosition': [round(float(v), 4) for v in carrier.location],
+        }
+        for leaf, carrier in zip(leaves, carriers)
+    ]
 assert all(abs(item['flipDegrees']) < 0.01 for item in samples[1])
 assert all(abs(item['flipDegrees'] - 180) < 0.01 for item in samples[144])
 assert samples[130] == samples[144]

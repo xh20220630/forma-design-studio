@@ -7,7 +7,10 @@ const packageRoot = fileURLToPath(new URL('../', import.meta.url));
 const repositoryRoot = path.resolve(packageRoot, '../..');
 const outputRoot = path.join(packageRoot, 'dist');
 const webSource = path.join(repositoryRoot, 'apps/ai-design-workbench/dist');
-const skillSource = path.join(repositoryRoot, 'packages/forma-ai-ui-designer/skills/forma-ai-ui-designer');
+const skillSource = path.join(
+  repositoryRoot,
+  'packages/forma-ai-ui-designer/skills/forma-ai-ui-designer',
+);
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });

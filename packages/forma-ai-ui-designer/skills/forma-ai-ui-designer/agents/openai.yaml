@@ -1,4 +1,4 @@
 interface:
-  display_name: "AI UI Designer"
-  short_description: "在 Forma 工作台中生成和浏览多页面 UI 设计"
-  default_prompt: "Use $forma-ai-ui-designer to design this product flow in the local Forma workbench."
+  display_name: 'AI UI Designer'
+  short_description: '在 Forma 工作台中生成和浏览多页面 UI 设计'
+  default_prompt: 'Use $forma-ai-ui-designer to design this product flow in the local Forma workbench.'

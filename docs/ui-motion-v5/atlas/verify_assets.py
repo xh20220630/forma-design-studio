@@ -14,6 +14,15 @@ data = video.read_bytes()
 
 
 def vint(offset, keep_marker=False):
+    """解析 EBML 可变长整数，按需保留用于元素 ID 的长度标记。
+
+    参数：
+        offset：相对最终姿态的初始偏移。
+        keep_marker：是否保留 EBML 长度标记；读取元素 ID 时需要保留。
+
+    返回：
+        整数值和它占用的字节数。
+    """
     first = data[offset]
     if not first:
         raise ValueError('Invalid EBML integer')
@@ -21,11 +30,20 @@ def vint(offset, keep_marker=False):
     while not first & marker:
         width += 1
         marker >>= 1
-    value = int.from_bytes(data[offset:offset + width], 'big')
+    value = int.from_bytes(data[offset : offset + width], 'big')
     return (value if keep_marker else value & ((1 << (7 * width)) - 1)), width
 
 
 def elements(start, end):
+    """按声明的长度遍历 EBML 元素，限制在父元素范围内以防越界扫描。
+
+    参数：
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+
+    产出：
+        依次产生元素标识、内容起点和结束位置。
+    """
     cursor = start
     while cursor < end:
         identity, width = vint(cursor, True)
@@ -39,6 +57,15 @@ def elements(start, end):
 
 
 def integer(a, b):
+    """读取指定字节中的整数值，为 WebM 元数据检查提供数值。
+
+    参数：
+        a：字节区间起点。
+        b：字节区间终点。
+
+    返回：
+        按大端序解析的整数。
+    """
     return int.from_bytes(data[a:b], 'big')
 
 
@@ -88,8 +115,25 @@ poster = Image.open(OUT / 'atlas-poster.webp')
 assert poster.size == (900, 600) and poster.mode == 'RGBA'
 assert poster.getchannel('A').getextrema() == (0, 255)
 report = {
-    'video': {'path': '/brand/rin/v5/motion/atlas-unfold.webm', 'codec': 'VP9', 'width': 900, 'height': 600, 'fps': 24, 'duration': seconds, 'frames': frames, 'alphaMode': 1, 'audio': False, 'bytes': len(data)},
-    'poster': {'path': '/brand/rin/v5/motion/atlas-poster.webp', 'width': 900, 'height': 600, 'rgba': True, 'bytes': (OUT / 'atlas-poster.webp').stat().st_size},
+    'video': {
+        'path': '/brand/rin/v5/motion/atlas-unfold.webm',
+        'codec': 'VP9',
+        'width': 900,
+        'height': 600,
+        'fps': 24,
+        'duration': seconds,
+        'frames': frames,
+        'alphaMode': 1,
+        'audio': False,
+        'bytes': len(data),
+    },
+    'poster': {
+        'path': '/brand/rin/v5/motion/atlas-poster.webp',
+        'width': 900,
+        'height': 600,
+        'rgba': True,
+        'bytes': (OUT / 'atlas-poster.webp').stat().st_size,
+    },
     'temporaryFrameSequence': 'none; rendered directly to WebM',
 }
 (DOC / 'asset-verification.json').write_text(json.dumps(report, indent=2), encoding='utf-8')

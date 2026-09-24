@@ -4,28 +4,28 @@
 
 ## 交付
 
-| 文件 | 用途 | 规格 |
-| --- | --- | --- |
-| `apps/web/public/brand/rin/v5/motion/home-idea-foundry.webm` | 正式片 | 960 × 640，24 fps，144 帧，6 秒，VP9 alpha，无音轨，813,251 B |
-| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.webp` | 默认态 / reduced-motion | 第 144 帧完成态，RGBA，28,502 B |
-| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.png` | 无损工程海报 | 960 × 640，476,974 B |
-| `docs/ui-motion-v5/home/home-idea-foundry.blend` | 可编辑源场景 | 全程序材质和几何，无外部纹理、无角色资产依赖 |
-| `docs/ui-motion-v5/home/create_home.py` | 重现脚本 | 支持关键帧预览、源场景、正式渲染 |
-| `docs/ui-motion-v5/home/home-storyboard.jpg` | 经主线验收的四帧分镜 | 散件、展开、装配、停稳；正式片在此基础上加强银灰与蓝色层次 |
-| `docs/ui-motion-v5/home/home-rin-overlay-guide.png` | 原 IP 合成定位图 | 仅验证 DOM 叠加位置，不是视频内烘焙角色 |
+| 文件                                                                | 用途                    | 规格                                                          |
+| ------------------------------------------------------------------- | ----------------------- | ------------------------------------------------------------- |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry.webm`        | 正式片                  | 960 × 640，24 fps，144 帧，6 秒，VP9 alpha，无音轨，813,251 B |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.webp` | 默认态 / reduced-motion | 第 144 帧完成态，RGBA，28,502 B                               |
+| `apps/web/public/brand/rin/v5/motion/home-idea-foundry-poster.png`  | 无损工程海报            | 960 × 640，476,974 B                                          |
+| `docs/ui-motion-v5/home/home-idea-foundry.blend`                    | 可编辑源场景            | 全程序材质和几何，无外部纹理、无角色资产依赖                  |
+| `docs/ui-motion-v5/home/create_home.py`                             | 重现脚本                | 支持关键帧预览、源场景、正式渲染                              |
+| `docs/ui-motion-v5/home/home-storyboard.jpg`                        | 经主线验收的四帧分镜    | 散件、展开、装配、停稳；正式片在此基础上加强银灰与蓝色层次    |
+| `docs/ui-motion-v5/home/home-rin-overlay-guide.png`                 | 原 IP 合成定位图        | 仅验证 DOM 叠加位置，不是视频内烘焙角色                       |
 
 直接验收页：`http://127.0.0.1:5173/docs/ui-motion-v5/home/preview.html`。支持一轮播放、重放、暂停、关键帧定位、浅深背景以及原 Rin 显隐。
 
 ## 编排
 
-| 时间 | 动作 |
-| --- | --- |
-| 0–1.63 s | 珍珠白底座旋转 27° 就位；散开的实体模块保持明确层次。 |
-| 0.38–2.42 s | 主背板沿弧线进入，转向 81°；主界面的厚度与金属背板逐渐显现。 |
-| 1.04–3.71 s | 铰链入位，右页围绕垂直铰链旋转 129° 打开。 |
+| 时间        | 动作                                                                                               |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| 0–1.63 s    | 珍珠白底座旋转 27° 就位；散开的实体模块保持明确层次。                                              |
+| 0.38–2.42 s | 主背板沿弧线进入，转向 81°；主界面的厚度与金属背板逐渐显现。                                       |
+| 1.04–3.71 s | 铰链入位，右页围绕垂直铰链旋转 129° 打开。                                                         |
 | 2.04–4.50 s | 图表盒、数字指标、三枚色片、金属拨环、按钮盘错峰落位。色片转角 75° / 95° / 115°；按钮盘转向 110°。 |
-| 3.96–5.25 s | 冰蓝光轨巡过底座线路，节点逐次响应。 |
-| 5.29–6.00 s | 完全停稳，形成可用作海报的完整界面舞台。 |
+| 3.96–5.25 s | 冰蓝光轨巡过底座线路，节点逐次响应。                                                               |
+| 5.29–6.00 s | 完全停稳，形成可用作海报的完整界面舞台。                                                           |
 
 镜头固定为正交三分之四产品机位。实体部件都有厚度和倒角；白瓷、冷银、蓝色模块分材质。地面为透明羽化接触阴影，舞台上由 Eevee 实时投影提供物体间接触关系。不使用整个场景上下浮动或循环呼吸。
 

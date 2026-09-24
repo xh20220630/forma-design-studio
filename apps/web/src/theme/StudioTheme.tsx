@@ -1,1 +1,1 @@
-export * from "@forma/ui/studio-theme";
+export * from '@forma/ui/studio-theme';

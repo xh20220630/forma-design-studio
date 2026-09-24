@@ -1,56 +1,126 @@
 <!doctype html>
 <html lang="zh-CN">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Idea Foundry · 首页动效验收</title>
-  <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #edf2f6; color: #182b3b; font: 15px/1.5 system-ui, sans-serif; }
-    main { width: min(1050px, calc(100% - 40px)); margin: 28px auto; }
-    h1 { margin: 0; font-size: 25px; }
-    p { margin: 8px 0 18px; color: #627487; }
-    .stage { position: relative; aspect-ratio: 3 / 2; background: #eef5fb; border: 1px solid #cfdeeb; border-radius: 18px; overflow: hidden; }
-    .stage.dark { background: #152637; border-color: #314d63; }
-    video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
-    .rin { position: absolute; left: 61.41%; bottom: 25.72%; height: 43.24%; transform: translateX(-50%); pointer-events: none; }
-    .tools { display: flex; gap: 9px; flex-wrap: wrap; margin: 15px 0; align-items: center; }
-    button { border: 1px solid #c6d6e4; background: white; color: inherit; border-radius: 8px; padding: 8px 13px; font: inherit; cursor: pointer; }
-    button:first-child { background: #087cc1; color: white; border-color: #087cc1; }
-    label { display: inline-flex; gap: 6px; align-items: center; margin-left: 7px; }
-    output { color: #536c82; font-variant-numeric: tabular-nums; }
-  </style>
-</head>
-<body>
-  <main>
-    <h1>Idea Foundry / 灵感成形</h1>
-    <p>真实厚度、错峰弧线装配、129°折叠展开、光轨巡检。6 秒单轮，完成态停留；原 Rin 由独立图片叠加。</p>
-    <div class="stage" id="stage">
-      <video id="movie" muted playsinline preload="metadata" poster="/brand/rin/v5/motion/home-idea-foundry-poster.webp" src="/brand/rin/v5/motion/home-idea-foundry.webm"></video>
-      <img class="rin" id="rin" src="/brand/rin/v4/rin-full-body.png" alt="原版凛 Rin，以 DOM 独立叠加" />
-    </div>
-    <div class="tools">
-      <button id="replay">播放 / 重放</button>
-      <button id="pause">暂停</button>
-      <button data-time="0">散件 0.00s</button>
-      <button data-time="1.96">展开 1.96s</button>
-      <button data-time="3.63">装配 3.63s</button>
-      <button data-time="5.96">完成 5.96s</button>
-      <label><input type="checkbox" id="dark" /> 深色底</label>
-      <label><input type="checkbox" id="character" checked /> 原 Rin</label>
-      <output id="status">静态完成态</output>
-    </div>
-  </main>
-  <script>
-    const movie = document.getElementById('movie');
-    const status = document.getElementById('status');
-    document.getElementById('replay').onclick = () => { movie.currentTime = 0; movie.play(); };
-    document.getElementById('pause').onclick = () => movie.pause();
-    document.querySelectorAll('[data-time]').forEach(button => button.onclick = () => { movie.pause(); movie.currentTime = Number(button.dataset.time); });
-    document.getElementById('dark').onchange = event => document.getElementById('stage').classList.toggle('dark', event.target.checked);
-    document.getElementById('character').onchange = event => document.getElementById('rin').hidden = !event.target.checked;
-    const update = () => { status.value = `${movie.currentTime.toFixed(2)} / ${Number.isFinite(movie.duration) ? movie.duration.toFixed(2) : '6.00'} 秒 · ${movie.ended ? '完成，已停稳' : movie.paused ? '暂停' : '播放中'}`; };
-    ['timeupdate', 'loadedmetadata', 'play', 'pause', 'ended'].forEach(event => movie.addEventListener(event, update));
-  </script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Idea Foundry · 首页动效验收</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #edf2f6; color: #182b3b; font: 15px/1.5 system-ui, sans-serif; }
+      main { width: min(1050px, calc(100% - 40px)); margin: 28px auto; }
+      h1 { margin: 0; font-size: 25px; }
+      p { margin: 8px 0 18px; color: #627487; }
+      .stage { position: relative; aspect-ratio: 3 / 2; background: #eef5fb; border: 1px solid #cfdeeb; border-radius: 18px; overflow: hidden; }
+      .stage.dark { background: #152637; border-color: #314d63; }
+      video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+      .rin { position: absolute; left: 61.41%; bottom: 25.72%; height: 43.24%; transform: translateX(-50%); pointer-events: none; }
+      .tools { display: flex; gap: 9px; flex-wrap: wrap; margin: 15px 0; align-items: center; }
+      button { border: 1px solid #c6d6e4; background: white; color: inherit; border-radius: 8px; padding: 8px 13px; font: inherit; cursor: pointer; }
+      button:first-child { background: #087cc1; color: white; border-color: #087cc1; }
+      label { display: inline-flex; gap: 6px; align-items: center; margin-left: 7px; }
+      output { color: #536c82; font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Idea Foundry / 灵感成形</h1>
+      <p>
+        真实厚度、错峰弧线装配、129°折叠展开、光轨巡检。6 秒单轮，完成态停留；原 Rin
+        由独立图片叠加。
+      </p>
+      <div class="stage" id="stage">
+        <video
+          id="movie"
+          muted
+          playsinline
+          preload="metadata"
+          poster="/brand/rin/v5/motion/home-idea-foundry-poster.webp"
+          src="/brand/rin/v5/motion/home-idea-foundry.webm"
+        ></video>
+        <img
+          class="rin"
+          id="rin"
+          src="/brand/rin/v4/rin-full-body.png"
+          alt="原版凛 Rin，以 DOM 独立叠加"
+        />
+      </div>
+      <div class="tools">
+        <button id="replay">播放 / 重放</button>
+        <button id="pause">暂停</button>
+        <button data-time="0">散件 0.00s</button>
+        <button data-time="1.96">展开 1.96s</button>
+        <button data-time="3.63">装配 3.63s</button>
+        <button data-time="5.96">完成 5.96s</button>
+        <label><input type="checkbox" id="dark" /> 深色底</label>
+        <label><input type="checkbox" id="character" checked /> 原 Rin</label>
+        <output id="status">静态完成态</output>
+      </div>
+    </main>
+    <script>
+      const movie = document.getElementById('movie');
+      const status = document.getElementById('status');
+      document.getElementById('replay').onclick =
+        /**
+         * 将视频回到起点并播放，便于重复查看装配过程。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        () => {
+          movie.currentTime = 0;
+          movie.play();
+        };
+      document.getElementById('pause').onclick =
+        /**
+         * 暂停视频，保留当前画面供观察。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        () => movie.pause();
+      document.querySelectorAll('[data-time]').forEach(
+        /**
+         * 暂停并定位到选定时间，便于逐阶段检查动画画面。
+         * @param button - 当前预览条目或交互事件。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        (button) =>
+          (button.onclick =
+            /**
+             * 暂停并定位到选定时间，便于逐阶段检查动画画面。
+             * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+             */
+            () => {
+              movie.pause();
+              movie.currentTime = Number(button.dataset.time);
+            }),
+      );
+      document.getElementById('dark').onchange =
+        /**
+         * 切换深色背景，观察素材在不同底色上的边缘效果。
+         * @param event - 当前预览条目或交互事件。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        (event) => document.getElementById('stage').classList.toggle('dark', event.target.checked);
+      document.getElementById('character').onchange =
+        /**
+         * 切换角色叠加层的显示，便于比较场景构图。
+         * @param event - 当前预览条目或交互事件。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        (event) => (document.getElementById('rin').hidden = !event.target.checked);
+
+      /**
+       * 同步播放进度和暂停状态，让预览工具栏显示视频当前状态。
+       * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+       */
+      const update = () => {
+        status.value = `${movie.currentTime.toFixed(2)} / ${Number.isFinite(movie.duration) ? movie.duration.toFixed(2) : '6.00'} 秒 · ${movie.ended ? '完成，已停稳' : movie.paused ? '暂停' : '播放中'}`;
+      };
+      ['timeupdate', 'loadedmetadata', 'play', 'pause', 'ended'].forEach(
+        /**
+         * 订阅播放状态变化，保持进度说明与视频同步。
+         * @param event - 当前预览条目或交互事件。
+         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
+         */
+        (event) => movie.addEventListener(event, update),
+      );
+    </script>
+  </body>
 </html>

@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--preview', action='store_true')
 parser.add_argument('--poster-only', action='store_true')
 parser.add_argument('--save-blend', action='store_true')
-args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
+args = parser.parse_args(sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
 DOC = ROOT / 'docs' / 'ui-redesign-v4' / 'motion'
 OUT = ROOT / 'apps' / 'web' / 'public' / 'brand' / 'rin' / 'v4' / 'motion'
@@ -35,6 +35,18 @@ scene.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.7
 
 
 def surface(name, rgb, roughness=0.25, metallic=0.0, opacity=1):
+    """建立带颜色、金属度和透明度的材质，供场景对象重复使用。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        rgb：材质的红、绿、蓝通道。
+        roughness：表面粗糙度，越大反光越分散。
+        metallic：材质的金属程度。
+        opacity：不透明度，1 表示完全不透明。
+
+    返回：
+        创建的材质对象。
+    """
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -63,6 +75,16 @@ white = surface('Pearl highlight', (1, 1, 1), 0.16, 0.1, 0.85)
 
 
 def group(name, position=(0, 0, 0), angles=(0, 0, 0)):
+    """创建空物体作为一组模型的父级，便于整体移动和制作动画。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        angles：对象各轴的旋转参数。
+
+    返回：
+        作为分组根节点的空物体。
+    """
     obj = bpy.data.objects.new(name, None)
     scene.collection.objects.link(obj)
     obj.location = position
@@ -71,6 +93,19 @@ def group(name, position=(0, 0, 0), angles=(0, 0, 0)):
 
 
 def box(name, location, dimensions, mat, parent=None, bevel=0.02):
+    """创建具有实际尺寸和圆角的盒形对象，应用缩放后再倒角以保持边缘一致。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        location：对象在所属坐标系中的位置。
+        dimensions：盒体在三个坐标轴上的尺寸。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+        bevel：边缘倒角的宽度。
+
+    返回：
+        创建的场景对象。
+    """
     bpy.ops.mesh.primitive_cube_add(size=1)
     obj = bpy.context.object
     obj.name = name
@@ -87,6 +122,18 @@ def box(name, location, dimensions, mat, parent=None, bevel=0.02):
 
 
 def text(body, location, size, parent, material=soft_ink):
+    """创建文字标签并设置字体尺寸与材质，使场景说明采用一致的视觉风格。
+
+    参数：
+        body：需要绘制的文字。
+        location：对象在所属坐标系中的位置。
+        size：对象尺寸或文字字号。
+        parent：父级对象；未指定时不挂到其他对象下。
+        material：供对象使用的材质。
+
+    返回：
+        创建的文字对象；二维绘图版本直接绘制到目标图像。
+    """
     data = bpy.data.curves.new(body, 'FONT')
     data.body, data.size = body, size
     data.space_character = 1.2
@@ -99,6 +146,18 @@ def text(body, location, size, parent, material=soft_ink):
 
 
 def corner(parent, x, z, sx, sz):
+    """绘制面板角部标记，使设计边界在镜头中容易定位。
+
+    参数：
+        parent：父级对象；未指定时不挂到其他对象下。
+        x：水平坐标。
+        z：垂直或深度方向坐标。
+        sx：水平方向的符号或倍率。
+        sz：对应轴的方向符号或倍率。
+
+    返回：
+        包含角标的场景根对象。
+    """
     root = group('Ice blue selection corner')
     root.parent = parent
     root.location = (x, -0.052, z)
@@ -114,12 +173,39 @@ def corner(parent, x, z, sx, sz):
 
 
 def panel(name, position, width, height, rotation, phase):
+    """构造带外框、页面内容与装饰的展示面板，使多个面板保持一致结构。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        width：面板或图形宽度。
+        height：面板或图形高度。
+        rotation：对象的旋转参数。
+        phase：面板动画在整体序列中的起始节奏。
+
+    返回：
+        创建的面板根对象。
+    """
     root = group(name, position, rotation)
     box(name + ' clear face', (0, 0, 0), (width, 0.045, height), glass, root, 0.045)
     for xsign in (-1, 1):
-        box(name + ' polished edge', (xsign * width / 2, 0, 0), (0.022, 0.06, height - 0.025), blue_glass, root, 0.009)
+        box(
+            name + ' polished edge',
+            (xsign * width / 2, 0, 0),
+            (0.022, 0.06, height - 0.025),
+            blue_glass,
+            root,
+            0.009,
+        )
     for zsign in (-1, 1):
-        box(name + ' pearl edge', (0, 0, zsign * height / 2), (width - 0.02, 0.06, 0.018), white, root, 0.008)
+        box(
+            name + ' pearl edge',
+            (0, 0, zsign * height / 2),
+            (width - 0.02, 0.06, 0.018),
+            white,
+            root,
+            0.008,
+        )
     for sx in (-1, 1):
         for sz in (-1, 1):
             corner(root, sx * (width / 2 - 0.055), sz * (height / 2 - 0.055), sx, sz)
@@ -138,13 +224,29 @@ left = panel('Layout acrylic pane', (-1.35, 0.38, 1.62), 1.5, 2.36, (0, -7, -8),
 right = panel('Component acrylic pane', (1.32, 0.24, 1.52), 1.45, 2.1, (0, 6, 8), math.pi)
 text('LAYOUT', (-0.50, -0.04, 0.61), 0.095, left)
 for index, width in enumerate((0.77, 0.56, 0.67)):
-    box('Layout specification rule', (-0.50 + width / 2, -0.046, 0.36 - index * 0.16), (width, 0.008, 0.014), pearl, left, 0.003)
+    box(
+        'Layout specification rule',
+        (-0.50 + width / 2, -0.046, 0.36 - index * 0.16),
+        (width, 0.008, 0.014),
+        pearl,
+        left,
+        0.003,
+    )
 box('Layout content tile', (-0.28, -0.065, -0.38), (0.39, 0.032, 0.45), pearl, left, 0.025)
 box('Layout linked tile', (0.23, -0.065, -0.38), (0.39, 0.032, 0.45), blue_glass, left, 0.025)
 text('FORMA', (-0.48, -0.04, 0.53), 0.13, right)
 for index, width in enumerate((0.77, 0.49)):
-    box('Component label rule', (-0.48 + width / 2, -0.048, 0.24 - index * 0.17), (width, 0.009, 0.017), pearl, right, 0.003)
-box('Component primary action', (-0.24, -0.06, -0.38), (0.46, 0.035, 0.16), blue_glass, right, 0.025)
+    box(
+        'Component label rule',
+        (-0.48 + width / 2, -0.048, 0.24 - index * 0.17),
+        (width, 0.009, 0.017),
+        pearl,
+        right,
+        0.003,
+    )
+box(
+    'Component primary action', (-0.24, -0.06, -0.38), (0.46, 0.035, 0.16), blue_glass, right, 0.025
+)
 
 portrait = bpy.data.materials.new('Original Rin RGBA identity - unaltered RGB')
 portrait.use_nodes = True
@@ -176,9 +278,17 @@ for name, location, dimensions in (
 ):
     block = box(name, location, dimensions, glass, bevel=0.035)
     for xsign in (-1, 1):
-        box(name + ' highlight', (location[0] + xsign * dimensions[0] / 2, location[1] - dimensions[1] / 2, location[2]), (0.012, 0.012, dimensions[2] - 0.04), white, bevel=0.005)
+        box(
+            name + ' highlight',
+            (location[0] + xsign * dimensions[0] / 2, location[1] - dimensions[1] / 2, location[2]),
+            (0.012, 0.012, dimensions[2] - 0.04),
+            white,
+            bevel=0.005,
+        )
 
-bpy.ops.mesh.primitive_uv_sphere_add(segments=32, ring_count=16, radius=0.28, location=(1.35, -0.48, 0.3))
+bpy.ops.mesh.primitive_uv_sphere_add(
+    segments=32, ring_count=16, radius=0.28, location=(1.35, -0.48, 0.3)
+)
 sphere = bpy.context.object
 sphere.name = 'Optical glass sphere'
 sphere.data.materials.append(glass)
@@ -253,7 +363,9 @@ scene.frame_set(1)
 scene.render.image_settings.media_type = 'IMAGE'
 scene.render.image_settings.file_format = 'PNG'
 scene.render.image_settings.color_mode = 'RGBA'
-scene.render.filepath = str(DOC / 'rin-pearl-preview.png' if args.preview else OUT / 'rin-pearl-poster.png')
+scene.render.filepath = str(
+    DOC / 'rin-pearl-preview.png' if args.preview else OUT / 'rin-pearl-poster.png'
+)
 bpy.ops.render.render(write_still=True)
 if not args.poster_only and not args.preview:
     scene.render.image_settings.media_type = 'VIDEO'
@@ -271,4 +383,3 @@ if args.save_blend:
 if not args.poster_only and not args.preview:
     bpy.ops.render.render(animation=True)
 print('RIN_PEARL_COMPLETE', scene.render.filepath)
-

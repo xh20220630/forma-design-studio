@@ -17,7 +17,12 @@ small = ImageFont.truetype('C:/Windows/Fonts/segoeui.ttf', 12)
 sheet = Image.new('RGB', (1008, 784), '#edf4f8')
 draw = ImageDraw.Draw(sheet)
 draw.text((24, 14), 'IDEA FOUNDRY / 6-second assembly study', font=font, fill='#203347')
-captions = ['00.00 / scattered machining', '01.96 / spine locks, hinge opens', '03.63 / interface modules dock', '05.96 / connected, completely still']
+captions = [
+    '00.00 / scattered machining',
+    '01.96 / spine locks, hinge opens',
+    '03.63 / interface modules dock',
+    '05.96 / connected, completely still',
+]
 for index, (path, caption) in enumerate(zip(manifest['frames'], captions)):
     frame = Image.open(path).convert('RGBA')
     x, y = 16 + (index % 2) * 496, 46 + (index // 2) * 362
@@ -40,7 +45,16 @@ composition.save(DOC / 'home-rin-overlay-guide.png')
 alpha_boxes = []
 for path in manifest['frames']:
     img = Image.open(path).convert('RGBA')
-    alpha_boxes.append({'frame': Path(path).stem, 'alphaBounds': img.getchannel('A').point(lambda x: 255 if x > 16 else 0).getbbox()})
+    alpha_boxes.append(
+        {
+            'frame': Path(path).stem,
+            'alphaBounds': img.getchannel('A')
+            .point(  # 将弱透明噪点排除在主体边界之外。入参 x 是透明度，返回 255（主体）或 0（背景）。
+                lambda x: 255 if x > 16 else 0
+            )
+            .getbbox(),
+        }
+    )
 (DOC / 'preview-verification.json').write_text(json.dumps(alpha_boxes, indent=2), encoding='utf-8')
 shutil.rmtree(temp)
 (DOC / 'preview-source.json').unlink()

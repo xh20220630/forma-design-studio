@@ -11,7 +11,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--preview', action='store_true')
 parser.add_argument('--poster-only', action='store_true')
 parser.add_argument('--save-only', action='store_true')
-args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
+args = parser.parse_args(sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
 DOC = Path(__file__).resolve().parent
 OUT = ROOT / 'apps/web/public/brand/rin/v5/motion'
@@ -35,6 +35,17 @@ world_background.inputs['Strength'].default_value = 0.38
 
 
 def material(name, color, roughness=0.3, metallic=0.0):
+    """创建带统一表面参数的 Blender 材质，确保同类模型使用一致的灯光响应。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        color：使用的颜色通道值。
+        roughness：表面粗糙度，越大反光越分散。
+        metallic：材质的金属程度。
+
+    返回：
+        创建的材质对象。
+    """
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1)
     mat.use_nodes = True
@@ -54,6 +65,16 @@ base_mat = material('Ceramic presentation tray', (0.88, 0.93, 0.97), 0.28, 0.10)
 
 
 def group(name, position=(0, 0, 0), parent=None):
+    """创建空物体作为一组模型的父级，便于整体移动和制作动画。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        parent：父级对象；未指定时不挂到其他对象下。
+
+    返回：
+        作为分组根节点的空物体。
+    """
     obj = bpy.data.objects.new(name, None)
     scene.collection.objects.link(obj)
     obj.parent = parent
@@ -62,6 +83,19 @@ def group(name, position=(0, 0, 0), parent=None):
 
 
 def cube(name, position, size, mat, parent=None, bevel=0.025):
+    """创建盒形对象并配置倒角与法线，让展示板边缘在灯光下更自然。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        size：对象尺寸或文字字号。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+        bevel：边缘倒角的宽度。
+
+    返回：
+        创建的场景对象。
+    """
     bpy.ops.mesh.primitive_cube_add(size=1)
     obj = bpy.context.object
     obj.name = name
@@ -77,6 +111,19 @@ def cube(name, position, size, mat, parent=None, bevel=0.025):
 
 
 def pin(name, position, radius, depth, mat, parent):
+    """创建铰链圆柱并平滑边缘，让折叠面板的连接结构更清楚。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        radius：几何半径或矩形圆角大小。
+        depth：圆柱长度。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+
+    返回：
+        创建的圆柱对象。
+    """
     bpy.ops.mesh.primitive_cylinder_add(vertices=24, radius=radius, depth=depth)
     obj = bpy.context.object
     obj.name, obj.parent, obj.location = name, parent, position
@@ -88,6 +135,15 @@ def pin(name, position, radius, depth, mat, parent):
 
 
 def artwork(path, name):
+    """把页面图片建立为自发光材质，让截图在场景灯光下仍然清晰可读。
+
+    参数：
+        path：输入图片的文件路径。
+        name：场景对象、材质或素材的名称。
+
+    返回：
+        包含图片纹理的材质。
+    """
     mat = bpy.data.materials.new(name)
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -105,6 +161,18 @@ def artwork(path, name):
 
 
 def face(name, parent, y, rotation, mat):
+    """创建展示板表面并关联父级，使翻转动画能带动正反面一起移动。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        parent：父级对象；未指定时不挂到其他对象下。
+        y：表面沿对应轴的偏移。
+        rotation：对象的旋转参数。
+        mat：供对象使用的材质。
+
+    返回：
+        创建的表面对象。
+    """
     bpy.ops.mesh.primitive_plane_add(size=1)
     obj = bpy.context.object
     obj.name, obj.parent = name, parent
@@ -116,6 +184,18 @@ def face(name, parent, y, rotation, mat):
 
 
 def pose(obj, frame, location=None, rotation=None, scale=None):
+    """在指定帧写入对象的姿态关键帧，复用相同的动画记录方式。
+
+    参数：
+        obj：需要记录动画的场景对象。
+        frame：需要采样或写入关键帧的帧号。
+        location：对象在所属坐标系中的位置。
+        rotation：对象的旋转参数。
+        scale：对象沿各轴的缩放比例。
+
+    返回：
+        无返回值；结果写入当前画布、场景或输出文件。
+    """
     if location is not None:
         obj.location = location
         obj.keyframe_insert('location', frame=frame)
@@ -132,18 +212,62 @@ cards = []
 for i in range(6):
     initial = (-width / 2, i * 0.17 - 0.32, 2.60)
     col, row = i % 3, i // 3
-    destination = ((col - 1) * 2.56 - width / 2, [0.08, -0.03, 0.10][col] + row * 0.06, 3.43 if row == 0 else 1.55)
+    destination = (
+        (col - 1) * 2.56 - width / 2,
+        [0.08, -0.03, 0.10][col] + row * 0.06,
+        3.43 if row == 0 else 1.55,
+    )
     carrier = group(f'Atlas {i + 1:02} magnetic carrier', initial)
     hinge = group(f'Atlas {i + 1:02} vertical spine hinge', parent=carrier)
     leaf = group(f'Atlas {i + 1:02} reversible leaf', (width / 2, 0, 0), hinge)
     edge_mat = [ink, pearl, blue][i % 3]
-    cube(f'Atlas {i + 1:02} solid laminated board', (0, 0, 0), (width, 0.105, height), edge_mat, leaf, 0.042)
-    cube(f'Atlas {i + 1:02} paper core', (0, 0, 0), (width - 0.014, 0.045, height - 0.014), pearl, leaf, 0.035)
-    face(f'Atlas {i + 1:02} numbered cover', leaf, -0.056, 0, artwork(DOC / 'textures' / f'cover-{i + 1:02}.png', f'Original numbered cover {i + 1:02}'))
-    face(f'Atlas {i + 1:02} designed template reverse', leaf, 0.056, math.pi, artwork(DOC / 'textures' / f'layout-{i + 1:02}.png', f'Designed template {i + 1:02}'))
+    cube(
+        f'Atlas {i + 1:02} solid laminated board',
+        (0, 0, 0),
+        (width, 0.105, height),
+        edge_mat,
+        leaf,
+        0.042,
+    )
+    cube(
+        f'Atlas {i + 1:02} paper core',
+        (0, 0, 0),
+        (width - 0.014, 0.045, height - 0.014),
+        pearl,
+        leaf,
+        0.035,
+    )
+    face(
+        f'Atlas {i + 1:02} numbered cover',
+        leaf,
+        -0.056,
+        0,
+        artwork(DOC / 'textures' / f'cover-{i + 1:02}.png', f'Original numbered cover {i + 1:02}'),
+    )
+    face(
+        f'Atlas {i + 1:02} designed template reverse',
+        leaf,
+        0.056,
+        math.pi,
+        artwork(DOC / 'textures' / f'layout-{i + 1:02}.png', f'Designed template {i + 1:02}'),
+    )
     for side in (-1, 1):
-        pin(f'Atlas {i + 1:02} spine knuckle {side}', (-width / 2 + 0.018, 0, side * 0.54), 0.051, 0.23, chrome, leaf)
-        cube(f'Atlas {i + 1:02} corner inlay {side}', (side * (width / 2 - 0.11), -0.059, height / 2 - 0.012), (0.115, 0.018, 0.018), blue, leaf, 0.005)
+        pin(
+            f'Atlas {i + 1:02} spine knuckle {side}',
+            (-width / 2 + 0.018, 0, side * 0.54),
+            0.051,
+            0.23,
+            chrome,
+            leaf,
+        )
+        cube(
+            f'Atlas {i + 1:02} corner inlay {side}',
+            (side * (width / 2 - 0.11), -0.059, height / 2 - 0.012),
+            (0.115, 0.018, 0.018),
+            blue,
+            leaf,
+            0.005,
+        )
     angle = [-73, -44, -15, 15, 44, 73][i]
     pose(carrier, 1, location=initial)
     pose(carrier, 82 + i * 3, location=initial)
@@ -165,9 +289,17 @@ for i in range(6):
     pose(leaf, 144, rotation=(0, 0, 180))
     cards.append(carrier)
 
-tray = cube('Atlas exhibition ceramic base', (0, 0.5, 0.14), (8.18, 1.60, 0.22), base_mat, bevel=0.10)
+tray = cube(
+    'Atlas exhibition ceramic base', (0, 0.5, 0.14), (8.18, 1.60, 0.22), base_mat, bevel=0.10
+)
 cube('Presentation tray ink underside', (0, 0.50, 0.055), (7.90, 1.40, 0.08), ink, bevel=0.035)
-cube('Presentation tray blue front signature', (-3.40, -0.321, 0.165), (0.58, 0.018, 0.025), blue, bevel=0.01)
+cube(
+    'Presentation tray blue front signature',
+    (-3.40, -0.321, 0.165),
+    (0.58, 0.018, 0.025),
+    blue,
+    bevel=0.01,
+)
 spine = group('Closed book spine stand')
 cube('Spine upright', (-1.2, 0.15, 1.24), (0.085, 0.14, 2.00), chrome, spine, 0.025)
 cube('Spine top magnetic cap', (-1.2, 0.15, 2.22), (0.18, 0.20, 0.1), blue, spine, 0.025)
@@ -176,9 +308,18 @@ pose(spine, 84, scale=(1, 1, 1))
 pose(spine, 103, scale=(1, 1, 0.001))
 for index, z in enumerate((1.55, 3.43)):
     rail = group(f'Exhibition rail {index}')
-    cube(f'Magnetic horizontal rail {index}', (0, 0.44, z), (7.48, 0.085, 0.060), chrome, rail, 0.025)
+    cube(
+        f'Magnetic horizontal rail {index}', (0, 0.44, z), (7.48, 0.085, 0.060), chrome, rail, 0.025
+    )
     for x in (-3.40, 3.40):
-        cube(f'Rail vertical stanchion {index} {x}', (x, 0.55, z / 2 + 0.16), (0.045, 0.055, z - 0.12), chrome, rail, 0.017)
+        cube(
+            f'Rail vertical stanchion {index} {x}',
+            (x, 0.55, z / 2 + 0.16),
+            (0.045, 0.055, z - 0.12),
+            chrome,
+            rail,
+            0.017,
+        )
     pose(rail, 1, scale=(0.001, 1, 0.001))
     pose(rail, 78, scale=(0.001, 1, 0.001))
     pose(rail, 109, scale=(1, 1, 1))
@@ -186,6 +327,14 @@ for index, z in enumerate((1.55, 3.43)):
 
 
 def contact_shadow():
+    """构造接触阴影，增强展示物与底部平面的空间关系。
+
+    参数：
+        无。
+
+    返回：
+        无返回值；结果写入当前画布、场景或输出文件。
+    """
     mat = bpy.data.materials.new('Transparent soft exhibition contact shadow')
     mat.use_nodes = True
     nodes, links = mat.node_tree.nodes, mat.node_tree.links
@@ -232,7 +381,9 @@ camera_data = bpy.data.cameras.new('Atlas exhibition camera')
 camera = bpy.data.objects.new('Atlas exhibition camera', camera_data)
 scene.collection.objects.link(camera)
 camera.location = (7.8, -17.5, 8.6)
-camera.rotation_euler = (Vector((0, 0.2, 2.2)) - camera.location).to_track_quat('-Z', 'Y').to_euler()
+camera.rotation_euler = (
+    (Vector((0, 0.2, 2.2)) - camera.location).to_track_quat('-Z', 'Y').to_euler()
+)
 camera.data.type, camera.data.ortho_scale = 'ORTHO', 10.0
 scene.camera = camera
 for name, position, energy, size in (

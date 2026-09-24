@@ -13,7 +13,7 @@ from mathutils import Vector
 parser = argparse.ArgumentParser()
 parser.add_argument('--mode', choices=['preview', 'render', 'source'], default='preview')
 parser.add_argument('--samples', type=int, default=32)
-args = parser.parse_args(sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else [])
+args = parser.parse_args(sys.argv[sys.argv.index('--') + 1 :] if '--' in sys.argv else [])
 ROOT = Path(__file__).resolve().parents[3]
 DOC = Path(__file__).resolve().parent
 OUT = ROOT / 'apps/web/public/brand/rin/v5/motion'
@@ -23,7 +23,9 @@ bpy.ops.object.delete(use_global=False)
 scene = bpy.context.scene
 scene.render.engine = 'BLENDER_EEVEE'
 scene.eevee.taa_render_samples = 16 if args.mode == 'preview' else args.samples
-scene.render.resolution_x, scene.render.resolution_y = (480, 320) if args.mode == 'preview' else (960, 640)
+scene.render.resolution_x, scene.render.resolution_y = (
+    (480, 320) if args.mode == 'preview' else (960, 640)
+)
 scene.render.resolution_percentage = 100
 scene.render.fps = 24
 scene.frame_start, scene.frame_end = 1, 144
@@ -37,13 +39,27 @@ scene.world.node_tree.nodes['Background'].inputs['Strength'].default_value = 0.4
 
 
 def material(name, color, roughness=0.3, metal=0, emission=0):
+    """创建带统一表面参数的 Blender 材质，确保同类模型使用一致的灯光响应。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        color：使用的颜色通道值。
+        roughness：表面粗糙度，越大反光越分散。
+        metal：材质的金属程度。
+        emission：材质自发光强度。
+
+    返回：
+        创建的材质对象。
+    """
     mat = bpy.data.materials.new(name)
     mat.diffuse_color = (*color, 1)
     mat.use_nodes = True
     shader = next((node for node in mat.node_tree.nodes if node.type == 'BSDF_PRINCIPLED'), None)
     if shader is None:
         shader = mat.node_tree.nodes.new('ShaderNodeBsdfPrincipled')
-        output = next((node for node in mat.node_tree.nodes if node.type == 'OUTPUT_MATERIAL'), None)
+        output = next(
+            (node for node in mat.node_tree.nodes if node.type == 'OUTPUT_MATERIAL'), None
+        )
         output = output or mat.node_tree.nodes.new('ShaderNodeOutputMaterial')
         mat.node_tree.links.new(shader.outputs['BSDF'], output.inputs['Surface'])
     shader.inputs['Base Color'].default_value = (*color, 1)
@@ -67,6 +83,16 @@ glow = material('Ice light / travelling route', (0.06, 0.68, 1), 0.2, 0.15, 2.0)
 
 
 def empty(name, location=(0, 0, 0), parent=None):
+    """创建可挂载子对象的空物体，把整组动画的变换集中到一个节点。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        location：对象在所属坐标系中的位置。
+        parent：父级对象；未指定时不挂到其他对象下。
+
+    返回：
+        创建的空物体。
+    """
     obj = bpy.data.objects.new(name, None)
     scene.collection.objects.link(obj)
     obj.parent, obj.location = parent, location
@@ -74,6 +100,19 @@ def empty(name, location=(0, 0, 0), parent=None):
 
 
 def box(name, location, dimensions, mat, parent=None, radius=0.04):
+    """创建具有实际尺寸和圆角的盒形对象，应用缩放后再倒角以保持边缘一致。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        location：对象在所属坐标系中的位置。
+        dimensions：盒体在三个坐标轴上的尺寸。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+        radius：几何半径或矩形圆角大小。
+
+    返回：
+        创建的场景对象。
+    """
     bpy.ops.mesh.primitive_cube_add(size=1)
     obj = bpy.context.object
     obj.name, obj.dimensions = name, dimensions
@@ -88,6 +127,18 @@ def box(name, location, dimensions, mat, parent=None, radius=0.04):
 
 
 def sphere(name, position, radius, mat, parent=None):
+    """创建球形装饰并挂到指定父级，使装饰能跟随整体场景移动。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        position：对象在所属坐标系中的位置。
+        radius：几何半径或矩形圆角大小。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+
+    返回：
+        创建的球形对象。
+    """
     bpy.ops.mesh.primitive_uv_sphere_add(segments=24, ring_count=12, radius=radius)
     obj = bpy.context.object
     obj.name, obj.parent, obj.location = name, parent, position
@@ -97,6 +148,18 @@ def sphere(name, position, radius, mat, parent=None):
 
 
 def tube(name, points, radius, mat, parent=None):
+    """沿路径创建有半径的曲线，给轨迹或线条提供可渲染的厚度。
+
+    参数：
+        name：场景对象、材质或素材的名称。
+        points：组成曲线的有序坐标点。
+        radius：几何半径或矩形圆角大小。
+        mat：供对象使用的材质。
+        parent：父级对象；未指定时不挂到其他对象下。
+
+    返回：
+        创建的曲线对象。
+    """
     data = bpy.data.curves.new(name, 'CURVE')
     data.dimensions = '3D'
     data.resolution_u = 16
@@ -114,6 +177,18 @@ def tube(name, points, radius, mat, parent=None):
 
 
 def label(body, position, size, parent, mat=slate):
+    """创建文字标签并设置字体尺寸与材质，使场景说明采用一致的视觉风格。
+
+    参数：
+        body：需要绘制的文字。
+        position：对象在所属坐标系中的位置。
+        size：对象尺寸或文字字号。
+        parent：父级对象；未指定时不挂到其他对象下。
+        mat：供对象使用的材质。
+
+    返回：
+        创建的文字对象；二维绘图版本直接绘制到目标图像。
+    """
     data = bpy.data.curves.new(body, 'FONT')
     data.body, data.size = body, size
     data.extrude = 0.0006
@@ -126,17 +201,47 @@ def label(body, position, size, parent, mat=slate):
 
 
 def ease(value):
+    """把线性进度映射为平滑进度，让装配动画在起止位置自然减速。
+
+    参数：
+        value：当前待处理的颜色或进度值。
+
+    返回：
+        平滑后的进度值。
+    """
     value = max(0, min(1, value))
     return value * value * (3 - 2 * value)
 
 
-def assemble(obj, start, end, origin, target, turn=(0, 0, 0), final_turn=(0, 0, 0), arc=(0, 0, 0), grow=False):
+def assemble(
+    obj, start, end, origin, target, turn=(0, 0, 0), final_turn=(0, 0, 0), arc=(0, 0, 0), grow=False
+):
+    """在起止位置之间设置装配动画，使用平滑节奏减少突然跳动。
+
+    参数：
+        obj：需要记录动画的场景对象。
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+        origin：动画开始时的位置。
+        target：动画结束时的位置。
+        turn：动画开始时的旋转姿态。
+        final_turn：动画结束时的旋转姿态。
+        arc：运动路径附加的弧线偏移。
+        grow：是否同时播放从小到大的缩放动画。
+
+    返回：
+        无返回值；结果写入当前画布、场景或输出文件。
+    """
     start_pos, end_pos = Vector(origin), Vector(target)
     control = (start_pos + end_pos) / 2 + Vector(arc)
     for frame in range(1, 145):
         value = ease((frame - start) / (end - start))
-        obj.location = (1 - value) ** 2 * start_pos + 2 * (1 - value) * value * control + value ** 2 * end_pos
-        obj.rotation_euler = tuple(math.radians(a + (b - a) * value) for a, b in zip(turn, final_turn))
+        obj.location = (
+            (1 - value) ** 2 * start_pos + 2 * (1 - value) * value * control + value**2 * end_pos
+        )
+        obj.rotation_euler = tuple(
+            math.radians(a + (b - a) * value) for a, b in zip(turn, final_turn)
+        )
         if grow:
             scale = max(0.001, value)
             obj.scale = (scale, scale, scale)
@@ -161,23 +266,69 @@ label('FORMA', (-0.57, -0.141, 0.735), 0.145, main)
 label('IDEA  /  01', (0.49, -0.142, 0.76), 0.065, main)
 box('Left navigation inset', (-0.85, -0.112, -0.23), (0.52, 0.033, 1.57), white, main, 0.05)
 for index in range(5):
-    box('Navigation row', (-0.84, -0.14, 0.35 - index * 0.245), (0.30, 0.018, 0.039), blue if index == 1 else mist, main, 0.012)
-assemble(main, 10, 59, (-2.25, 0.9, 1.15), (-0.83, 0.56, 1.53), (30, -20, 78), (0, 0, -3), arc=(-0.35, -1.45, 0.6))
+    box(
+        'Navigation row',
+        (-0.84, -0.14, 0.35 - index * 0.245),
+        (0.30, 0.018, 0.039),
+        blue if index == 1 else mist,
+        main,
+        0.012,
+    )
+assemble(
+    main,
+    10,
+    59,
+    (-2.25, 0.9, 1.15),
+    (-0.83, 0.56, 1.53),
+    (30, -20, 78),
+    (0, 0, -3),
+    arc=(-0.35, -1.45, 0.6),
+)
 
 graph = empty('03 / chart cassette clicks in', parent=main)
 box('Analytics cassette', (0, 0, 0), (1.58, 0.12, 0.85), white, graph, 0.055)
 label('IDEAS IN MOTION', (-0.65, -0.066, 0.23), 0.073, graph)
 for index, height in enumerate((0.13, 0.2, 0.29, 0.26, 0.39, 0.48)):
-    box('Extruded chart column', (-0.58 + index * 0.22, -0.085, -0.30 + height / 2), (0.13, 0.055, height), blue if index > 3 else ice, graph, 0.026)
-assemble(graph, 50, 88, (0.85, -1.0, 0.98), (0.32, -0.185, 0.17), (35, -35, -72), arc=(0.5, -0.3, 0.3))
+    box(
+        'Extruded chart column',
+        (-0.58 + index * 0.22, -0.085, -0.30 + height / 2),
+        (0.13, 0.055, height),
+        blue if index > 3 else ice,
+        graph,
+        0.026,
+    )
+assemble(
+    graph, 50, 88, (0.85, -1.0, 0.98), (0.32, -0.185, 0.17), (35, -35, -72), arc=(0.5, -0.3, 0.3)
+)
 
 for index, (width, mat) in enumerate(((0.75, blue), (0.66, white))):
     module = empty(f'04.{index} / metric card', parent=main)
     box('Metric card porcelain', (0, 0, 0), (width, 0.1, 0.52), mat, module, 0.05)
-    label('12' if index == 0 else '08', (-width / 2 + 0.11, -0.059, -0.045), 0.24, module, white if index == 0 else slate)
-    box('Metric card label', (0.07, -0.063, -0.17), (0.3, 0.015, 0.025), ice if index == 0 else mist, module, 0.01)
+    label(
+        '12' if index == 0 else '08',
+        (-width / 2 + 0.11, -0.059, -0.045),
+        0.24,
+        module,
+        white if index == 0 else slate,
+    )
+    box(
+        'Metric card label',
+        (0.07, -0.063, -0.17),
+        (0.3, 0.015, 0.025),
+        ice if index == 0 else mist,
+        module,
+        0.01,
+    )
     x = -0.09 if index == 0 else 0.73
-    assemble(module, 65 + index * 8, 99 + index * 7, (x - 0.8, -1.0, -0.7), (x, -0.19, -0.64), (15, 95 - index * 20, 45), arc=(-0.4, -0.15, 0.4))
+    assemble(
+        module,
+        65 + index * 8,
+        99 + index * 7,
+        (x - 0.8, -1.0, -0.7),
+        (x, -0.19, -0.64),
+        (15, 95 - index * 20, 45),
+        arc=(-0.4, -0.15, 0.4),
+    )
 
 hinge = empty('05 / swing leaf hinge', (0.49, 0.59, 0.47))
 for z in (0.3, 1.76):
@@ -187,9 +338,23 @@ box('Secondary page thick shell', (0.76, 0, 1.02), (1.5, 0.13, 2.02), pearl, lea
 box('Secondary page blue inset', (0.76, -0.077, 1.02), (1.35, 0.045, 1.86), ice, leaf, 0.055)
 label('MAKE IT REAL', (0.21, -0.105, 1.71), 0.09, leaf)
 for index, w in enumerate((0.90, 0.63, 0.8)):
-    box('Secondary page text rule', (0.22 + w / 2, -0.113, 1.51 - index * 0.13), (w, 0.023, 0.028), white, leaf, 0.011)
+    box(
+        'Secondary page text rule',
+        (0.22 + w / 2, -0.113, 1.51 - index * 0.13),
+        (w, 0.023, 0.028),
+        white,
+        leaf,
+        0.011,
+    )
 for index in range(2):
-    box('Secondary page component tile', (0.45 + index * 0.61, -0.118, 0.82), (0.48, 0.07, 0.45), white if index == 0 else blue, leaf, 0.045)
+    box(
+        'Secondary page component tile',
+        (0.45 + index * 0.61, -0.118, 0.82),
+        (0.48, 0.07, 0.45),
+        white if index == 0 else blue,
+        leaf,
+        0.045,
+    )
 box('Secondary page action', (0.59, -0.125, 0.36), (0.8, 0.07, 0.22), white, leaf, 0.065)
 assemble(hinge, 26, 69, (1.70, 1.3, 0.64), (0.49, 0.59, 0.47), (0, -24, 50), arc=(0.5, 0, 0.7))
 assemble(leaf, 49, 90, (0, 0, 0), (0, 0, 0), (0, 0, 112), (0, 0, -17))
@@ -198,25 +363,47 @@ for index, mat in enumerate((slate, ice, blue)):
     chip = empty(f'07.{index} / palette tile docks')
     box('Palette tile platinum edge', (0, 0, 0), (0.43, 0.44, 0.105), silver, chip, 0.055)
     box('Palette tile coloured face', (0, 0, 0.064), (0.37, 0.38, 0.035), mat, chip, 0.05)
-    assemble(chip, 54 + index * 9, 92 + index * 7, (2.4 - index * 0.3, -0.5, 1.5 + index * 0.22), (-1.49 + index * 0.49, -0.72, 0.39), (50, -85, 75 + index * 20), arc=(0.5, -0.7, 0.5))
+    assemble(
+        chip,
+        54 + index * 9,
+        92 + index * 7,
+        (2.4 - index * 0.3, -0.5, 1.5 + index * 0.22),
+        (-1.49 + index * 0.49, -0.72, 0.39),
+        (50, -85, 75 + index * 20),
+        arc=(0.5, -0.7, 0.5),
+    )
 
 dial = empty('08 / precision dial settles')
-bpy.ops.mesh.primitive_torus_add(major_segments=48, minor_segments=12, major_radius=0.235, minor_radius=0.07)
+bpy.ops.mesh.primitive_torus_add(
+    major_segments=48, minor_segments=12, major_radius=0.235, minor_radius=0.07
+)
 ring = bpy.context.object
 ring.name, ring.parent = 'Polished platinum focus dial', dial
 ring.data.materials.append(silver)
 bpy.ops.object.shade_smooth()
 sphere('Ice dial lens', (0, 0, 0), 0.12, blue, dial)
-assemble(dial, 39, 89, (-2.55, -0.6, 1.35), (-1.94, -0.69, 0.42), (80, 55, -90), arc=(-0.2, -0.5, 0.65))
+assemble(
+    dial, 39, 89, (-2.55, -0.6, 1.35), (-1.94, -0.69, 0.42), (80, 55, -90), arc=(-0.2, -0.5, 0.65)
+)
 
 button = empty('09 / foreground action plate')
 box('Action dock porcelain', (0, 0, 0), (1.12, 0.48, 0.12), pearl, button, 0.1)
 box('Action dock blue surface', (0, 0, 0.075), (1.0, 0.37, 0.045), blue, button, 0.08)
 for x in (-0.06, 0.06):
     box('Action glyph', (x, 0, 0.103), (0.04, 0.15, 0.015), white, button, 0.009)
-assemble(button, 73, 109, (1.65, -1.1, 1.3), (0.43, -0.80, 0.385), (15, 110, 35), arc=(0.4, -0.6, 0.6))
+assemble(
+    button, 73, 109, (1.65, -1.1, 1.3), (0.43, -0.80, 0.385), (15, 110, 35), arc=(0.4, -0.6, 0.6)
+)
 
-route_points = [(-1.78, -0.15, 0.296), (-1.30, -0.33, 0.296), (-0.55, -0.33, 0.296), (0.1, -0.45, 0.296), (0.75, -0.34, 0.296), (1.45, -0.22, 0.296), (1.95, 0.15, 0.296)]
+route_points = [
+    (-1.78, -0.15, 0.296),
+    (-1.30, -0.33, 0.296),
+    (-0.55, -0.33, 0.296),
+    (0.1, -0.45, 0.296),
+    (0.75, -0.34, 0.296),
+    (1.45, -0.22, 0.296),
+    (1.95, 0.15, 0.296),
+]
 tube('Inlaid circuit track', route_points, 0.013, mist, stage)
 route = tube('10 / light reveals connected workflow', route_points, 0.019, glow, stage)
 for frame in range(1, 145):
@@ -249,15 +436,28 @@ shadow.use_nodes = True
 nodes, links = shadow.node_tree.nodes, shadow.node_tree.links
 nodes.clear()
 uv = nodes.new('ShaderNodeTexCoord')
-offset = nodes.new('ShaderNodeVectorMath'); offset.operation = 'SUBTRACT'; offset.inputs[1].default_value = (0.5, 0.5, 0)
-length = nodes.new('ShaderNodeVectorMath'); length.operation = 'LENGTH'
-falloff = nodes.new('ShaderNodeMapRange'); falloff.inputs['From Min'].default_value = 0.1; falloff.inputs['From Max'].default_value = 0.5; falloff.inputs['To Min'].default_value = 0.32; falloff.inputs['To Max'].default_value = 0
-dark = nodes.new('ShaderNodeEmission'); dark.inputs['Color'].default_value = (0.025, 0.05, 0.085, 1)
+offset = nodes.new('ShaderNodeVectorMath')
+offset.operation = 'SUBTRACT'
+offset.inputs[1].default_value = (0.5, 0.5, 0)
+length = nodes.new('ShaderNodeVectorMath')
+length.operation = 'LENGTH'
+falloff = nodes.new('ShaderNodeMapRange')
+falloff.inputs['From Min'].default_value = 0.1
+falloff.inputs['From Max'].default_value = 0.5
+falloff.inputs['To Min'].default_value = 0.32
+falloff.inputs['To Max'].default_value = 0
+dark = nodes.new('ShaderNodeEmission')
+dark.inputs['Color'].default_value = (0.025, 0.05, 0.085, 1)
 clear = nodes.new('ShaderNodeBsdfTransparent')
 mix = nodes.new('ShaderNodeMixShader')
 output = nodes.new('ShaderNodeOutputMaterial')
-links.new(uv.outputs['UV'], offset.inputs[0]); links.new(offset.outputs[0], length.inputs[0]); links.new(length.outputs['Value'], falloff.inputs['Value'])
-links.new(falloff.outputs['Result'], mix.inputs[0]); links.new(clear.outputs[0], mix.inputs[1]); links.new(dark.outputs[0], mix.inputs[2]); links.new(mix.outputs[0], output.inputs['Surface'])
+links.new(uv.outputs['UV'], offset.inputs[0])
+links.new(offset.outputs[0], length.inputs[0])
+links.new(length.outputs['Value'], falloff.inputs['Value'])
+links.new(falloff.outputs['Result'], mix.inputs[0])
+links.new(clear.outputs[0], mix.inputs[1])
+links.new(dark.outputs[0], mix.inputs[2])
+links.new(mix.outputs[0], output.inputs['Surface'])
 shadow.surface_render_method = 'BLENDED'
 bpy.ops.mesh.primitive_plane_add(size=1, location=(0, 0, -0.08))
 patch = bpy.context.object
@@ -286,7 +486,18 @@ for name, position, power, size, color in (
 scene.frame_set(144)
 anchor = world_to_camera_view(scene, camera, Vector((1.15, -0.50, 0.30)))
 head = world_to_camera_view(scene, camera, Vector((1.15, -0.50, 2.60)))
-metadata = {'duration': 6, 'fps': 24, 'frames': 144, 'rinOverlay': {'feetX': round(anchor.x, 4), 'feetY': round(1-anchor.y, 4), 'height': round(head.y-anchor.y, 4), 'origin': 'bottom center', 'note': 'Normalized coordinates in uncropped 3:2 video; original IP rendered by DOM only.'}}
+metadata = {
+    'duration': 6,
+    'fps': 24,
+    'frames': 144,
+    'rinOverlay': {
+        'feetX': round(anchor.x, 4),
+        'feetY': round(1 - anchor.y, 4),
+        'height': round(head.y - anchor.y, 4),
+        'origin': 'bottom center',
+        'note': 'Normalized coordinates in uncropped 3:2 video; original IP rendered by DOM only.',
+    },
+}
 (DOC / 'scene-layout.json').write_text(json.dumps(metadata, indent=2), encoding='utf-8')
 scene.render.image_settings.media_type = 'IMAGE'
 scene.render.image_settings.file_format = 'PNG'
@@ -299,7 +510,9 @@ if args.mode == 'preview':
         scene.render.filepath = str(temp / f'key-{frame:03}.png')
         bpy.ops.render.render(write_still=True)
         previews.append(str(scene.render.filepath))
-    (DOC / 'preview-source.json').write_text(json.dumps({'directory': str(temp), 'frames': previews}, indent=2), encoding='utf-8')
+    (DOC / 'preview-source.json').write_text(
+        json.dumps({'directory': str(temp), 'frames': previews}, indent=2), encoding='utf-8'
+    )
 else:
     scene.render.filepath = str(OUT / 'home-idea-foundry-poster.png')
     if args.mode == 'render':

@@ -1,0 +1,7 @@
+# Only formatting is standardized here; these scripts also run inside Blender.
+line-length = 100
+indent-width = 4
+
+[format]
+quote-style = "single"
+indent-style = "space"

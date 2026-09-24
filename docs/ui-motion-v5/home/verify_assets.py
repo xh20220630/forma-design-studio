@@ -15,6 +15,15 @@ data = asset.read_bytes()
 
 
 def integer(offset, marker=False):
+    """读取指定字节中的整数值，为 WebM 元数据检查提供数值。
+
+    参数：
+        offset：相对最终姿态的初始偏移。
+        marker：是否保留可变长整数中的长度标记。
+
+    返回：
+        整数值和字节宽度。
+    """
     first = data[offset]
     if not first:
         raise ValueError('Invalid EBML integer')
@@ -22,11 +31,20 @@ def integer(offset, marker=False):
     while not first & bit:
         width += 1
         bit >>= 1
-    value = int.from_bytes(data[offset:offset + width], 'big')
+    value = int.from_bytes(data[offset : offset + width], 'big')
     return (value if marker else value & ((1 << (7 * width)) - 1)), width
 
 
 def elements(start, end):
+    """按声明的长度遍历 EBML 元素，限制在父元素范围内以防越界扫描。
+
+    参数：
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+
+    产出：
+        依次产生元素标识、内容起点和结束位置。
+    """
     cursor = start
     while cursor < end:
         identity, length = integer(cursor, True)
@@ -39,6 +57,15 @@ def elements(start, end):
 
 
 def number(start, end):
+    """把指定字节区间按大端序解释为整数，用于读取视频元数据。
+
+    参数：
+        start：帧区间或字节区间的起点。
+        end：帧区间或字节区间的终点。
+
+    返回：
+        区间对应的整数。
+    """
     return int.from_bytes(data[start:end], 'big')
 
 
@@ -66,7 +93,9 @@ for identity, start, end in elements(0, len(data)):
                     elif field == 0xE0:
                         for video_field, e, f in elements(c, d):
                             if video_field in (0xB0, 0xBA, 0x53C0):
-                                track[{0xB0: 'width', 0xBA: 'height', 0x53C0: 'alpha'}[video_field]] = number(e, f)
+                                track[
+                                    {0xB0: 'width', 0xBA: 'height', 0x53C0: 'alpha'}[video_field]
+                                ] = number(e, f)
                 tracks.append(track)
         elif section == 0x1F43B675:
             for block, a, b in elements(start, end):
@@ -83,6 +112,27 @@ poster = Image.open(OUT / 'home-idea-foundry-poster.png')
 assert poster.size == (960, 640) and poster.mode == 'RGBA'
 assert poster.getchannel('A').getextrema() == (0, 255)
 poster.save(OUT / 'home-idea-foundry-poster.webp', format='WEBP', quality=90, method=6)
-report = {'video': {'path': str(asset.relative_to(ROOT)).replace('\\', '/'), 'codec': 'VP9', 'width': 960, 'height': 640, 'fps': 24, 'duration': seconds, 'frames': frames, 'alpha': True, 'audio': False, 'loop': False, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}, 'poster': {'pngBytes': (OUT / 'home-idea-foundry-poster.png').stat().st_size, 'webpBytes': (OUT / 'home-idea-foundry-poster.webp').stat().st_size, 'rgba': True, 'frame': 144}}
+report = {
+    'video': {
+        'path': str(asset.relative_to(ROOT)).replace('\\', '/'),
+        'codec': 'VP9',
+        'width': 960,
+        'height': 640,
+        'fps': 24,
+        'duration': seconds,
+        'frames': frames,
+        'alpha': True,
+        'audio': False,
+        'loop': False,
+        'bytes': len(data),
+        'sha256': hashlib.sha256(data).hexdigest(),
+    },
+    'poster': {
+        'pngBytes': (OUT / 'home-idea-foundry-poster.png').stat().st_size,
+        'webpBytes': (OUT / 'home-idea-foundry-poster.webp').stat().st_size,
+        'rgba': True,
+        'frame': 144,
+    },
+}
 (DOC / 'asset-verification.json').write_text(json.dumps(report, indent=2), encoding='utf-8')
 print(json.dumps(report, indent=2))

@@ -1,36 +1,59 @@
-"use client"
+'use client';
 
-import * as React from "react"
-import { cn } from "cn"
-import { XIcon } from "lucide-react"
-import { Dialog as DialogPrimitive } from "radix-ui"
+import * as React from 'react';
+import { cn } from 'cn';
+import { XIcon } from 'lucide-react';
+import { Dialog as DialogPrimitive } from 'radix-ui';
 
-import { Button } from "./button"
+import { Button } from './button';
 
-function Dialog({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Root>) {
-  return <DialogPrimitive.Root data-slot="dialog" {...props} />
+/**
+ * 呈现对话框，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function Dialog({ ...props }: React.ComponentProps<typeof DialogPrimitive.Root>) {
+  return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+/**
+ * 呈现对话框触发入口，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function DialogTrigger({ ...props }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogPortal({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Portal>) {
-  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
+/**
+ * 呈现对话框挂载容器，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function DialogPortal({ ...props }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+  return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Close>) {
-  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
+/**
+ * 呈现对话框关闭入口，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @returns 供 React 渲染的界面内容。
+ */
+function DialogClose({ ...props }: React.ComponentProps<typeof DialogPrimitive.Close>) {
+  return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
+/**
+ * 呈现对话框遮罩，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
 function DialogOverlay({
   className,
   ...props
@@ -39,21 +62,31 @@ function DialogOverlay({
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
       className={cn(
-        "fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0",
-        className
+        'fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:animate-in data-[state=open]:fade-in-0',
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现对话框内容区域，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.children - 由调用方放入组件的子内容。
+ * @param props.showCloseButton - 是否显示弹层自带的关闭按钮。
+ * @returns 供 React 渲染的界面内容。
+ */
 function DialogContent({
   className,
   children,
   showCloseButton = true,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  showCloseButton?: boolean
+  /** 是否显示弹层自带的关闭按钮。 */
+  showCloseButton?: boolean;
 }) {
   return (
     <DialogPortal data-slot="dialog-portal">
@@ -61,8 +94,8 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg",
-          className
+          'fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border bg-background p-6 shadow-lg duration-200 outline-none data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 sm:max-w-lg',
+          className,
         )}
         {...props}
       >
@@ -78,34 +111,48 @@ function DialogContent({
         )}
       </DialogPrimitive.Content>
     </DialogPortal>
-  )
+  );
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+/**
+ * 呈现对话框头部，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
+function DialogHeader({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-2 text-center sm:text-left", className)}
+      className={cn('flex flex-col gap-2 text-center sm:text-left', className)}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现对话框底部操作区，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @param props.showCloseButton - 是否显示弹层自带的关闭按钮。
+ * @param props.children - 由调用方放入组件的子内容。
+ * @returns 供 React 渲染的界面内容。
+ */
 function DialogFooter({
   className,
   showCloseButton = false,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
-  showCloseButton?: boolean
+}: React.ComponentProps<'div'> & {
+  /** 是否显示弹层自带的关闭按钮。 */
+  showCloseButton?: boolean;
 }) {
   return (
     <div
       data-slot="dialog-footer"
-      className={cn(
-        "flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",
-        className
-      )}
+      className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)}
       {...props}
     >
       {children}
@@ -115,22 +162,33 @@ function DialogFooter({
         </DialogPrimitive.Close>
       )}
     </div>
-  )
+  );
 }
 
-function DialogTitle({
-  className,
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Title>) {
+/**
+ * 呈现对话框标题，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
+function DialogTitle({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn('text-lg leading-none font-semibold', className)}
       {...props}
     />
-  )
+  );
 }
 
+/**
+ * 呈现对话框说明，将展示与交互入口放在同一个组件中维护。
+ *
+ * @param props - 按字段解构的输入，字段用途见对应类型定义。
+ * @param props.className - 调用方追加的 CSS 类名。
+ * @returns 供 React 渲染的界面内容。
+ */
 function DialogDescription({
   className,
   ...props
@@ -138,10 +196,10 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-sm text-muted-foreground", className)}
+      className={cn('text-sm text-muted-foreground', className)}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -155,4 +213,4 @@ export {
   DialogPortal,
   DialogTitle,
   DialogTrigger,
-}
+};

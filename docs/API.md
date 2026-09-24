@@ -6,14 +6,14 @@
 
 ## 项目
 
-| 方法 | 路径 | 请求 / 响应 |
-| --- | --- | --- |
-| GET | `/api/health` | `{ok,service,providerConfigured}` |
-| GET | `/api/state` | `{projects: Project[]}` |
-| GET | `/api/projects/:id` | `Project` |
-| PUT | `/api/projects/:id` | 请求完整 Project，返回保存后的 Project |
-| DELETE | `/api/projects/:id` | 删除设计数据，返回 `{ok:true}`；保留工作空间与图片资源 |
-| GET | `/api/projects/:id/export` | 下载 `{projectId,revision,files:[{path,content}]}` |
+| 方法   | 路径                       | 请求 / 响应                                            |
+| ------ | -------------------------- | ------------------------------------------------------ |
+| GET    | `/api/health`              | `{ok,service,providerConfigured}`                      |
+| GET    | `/api/state`               | `{projects: Project[]}`                                |
+| GET    | `/api/projects/:id`        | `Project`                                              |
+| PUT    | `/api/projects/:id`        | 请求完整 Project，返回保存后的 Project                 |
+| DELETE | `/api/projects/:id`        | 删除设计数据，返回 `{ok:true}`；保留工作空间与图片资源 |
+| GET    | `/api/projects/:id/export` | 下载 `{projectId,revision,files:[{path,content}]}`     |
 
 项目结构见 `packages/schema/src/design.ts`。创建时 `revision: 0`；每次成功更新，使用返回对象中的新 revision 继续编辑。服务端对已有项目要求请求 revision 与当前相同，不同返回 409；读取最新项目、合并设计后再提交。普通 PUT 不能更改服务端管理的 generation 审批信息或绑定路径，只能切换已绑定 workspace 的 `autoSync`。
 
@@ -27,27 +27,46 @@
 
 ## 模型设置与生成
 
-| 方法 | 路径 | 请求 | 响应 |
-| --- | --- | --- | --- |
-| GET | `/api/settings` | — | `{configured,baseUrl,textModel,imageModel}` |
-| POST | `/api/settings` | `{apiKey?,baseUrl,textModel,imageModel}` | 同 GET；空 apiKey 保留当前密钥 |
-| POST | `/api/generate/theme` | `{prompt}` | `{name,description,tokens}` |
-| POST | `/api/generate/image` | `{projectId,prompt}` | `{imageUrl,project}` |
-| POST | `/api/generate/approve` | `{projectId}` | `{approved:true,project}` |
-| POST | `/api/generate/design` | `{projectId,prompt?}` | `{pages,components,project,syncWarning?}` |
+| 方法   | 路径                               | 请求                                                   | 响应                                                                             |
+| ------ | ---------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| GET    | `/api/settings`                    | —                                                      | `{configured,imageConfigured,providers,text,image,baseUrl,textModel,imageModel}` |
+| POST   | `/api/settings`                    | `{apiKey?,baseUrl,textModel,imageModel}`               | 兼容旧客户端；空 apiKey 保留当前密钥                                             |
+| POST   | `/api/providers`                   | 供应商配置                                             | 201，完整公开设置                                                                |
+| PUT    | `/api/providers/:id`               | 部分供应商配置                                         | 完整公开设置                                                                     |
+| DELETE | `/api/providers/:id`               | —                                                      | 完整公开设置，同时清除引用该供应商的绑定                                         |
+| POST   | `/api/settings/models`             | `{text?:{providerId,model},image?:{providerId,model}}` | 完整公开设置；分别绑定文本和生图                                                 |
+| GET    | `/api/providers/:id/models`        | —                                                      | `{models:[{id,name}]}`，从已保存的供应商获取目录                                 |
+| POST   | `/api/providers/probe`             | `{id?,...供应商配置}`                                  | `{models,latencyMs}`，使用草稿检测模型目录，不保存                               |
+| POST   | `/api/generate/theme`              | `{prompt}`                                             | `{name,description,tokens}`                                                      |
+| POST   | `/api/generate/image`              | `{projectId,prompt}`                                   | `{imageUrl,project}`                                                             |
+| POST   | `/api/generate/approve`            | `{projectId}`                                          | `{approved:true,project}`                                                        |
+| GET    | `/api/projects/:id/reconstruction` | —                                                      | `{phase,sourceImageUrl,assets,error?,updatedAt}` 或 `null`                       |
+| POST   | `/api/generate/design`             | `{projectId,prompt?}`                                  | `{pages,components,project,syncWarning?}`                                        |
+
+供应商配置包含 `name`、`baseUrl`、`textProtocol`（`openai` / `openai-responses` / `anthropic` / `gemini` / `none`）、`imageProtocol`（`openai-images` / `gemini` / `imagen` / `none`）、`auth`（`auto` / `bearer` / `api-key` / `none`）。`auto` 按协议发送 Bearer、`x-api-key` 或 `x-goog-api-key`。本地免认证服务可选 `none`。至少启用一种能力。
+
+可选字段：`apiKey`（空值保留，`clearApiKey:true` 清除）、`headers`（整体替换，`{}` 清除）、相对于基础地址的 `modelsPath` / `textPath` / `imagePath` / `imageEditPath`（支持 `{model}`）、`timeoutMs`（1000–600000，默认 180000）、`maxOutputTokens`（128–131072，默认 8192，用于 Responses/Claude/Gemini）、`jsonMode`（默认 true）。旧 `imageSize` 字段保留兼容，但生成请求不再发送固定尺寸；`imageEditPath` 默认 `images/edits`。服务地址要求 HTTPS，本机 loopback 地址允许 HTTP。
+
+公开供应商只返回 `hasApiKey` 和 `headerNames`，不返回密钥或请求头值。`configured` 表示文本通道配置完整，`imageConfigured` 表示生图通道配置完整，不代表上游已验证。模型目录支持分页；上游不提供目录时可手填 ID。检测连接只读取目录，不验证推理能力。禁用某种能力会清除该供应商对应的绑定。旧配置自动导入一个默认供应商；保存后不再回退到环境密钥。
 
 `image → approve → design` 是强制顺序。每次重新生成图片都会重置批准状态。修改 tokens、主题/变量模式、变量集合、主组件或页面规格会令设计上下文指纹失效，必须重新生成图片后再批准。还原接口的可选 `prompt` 必须与生成图片时的需求相同，或直接省略；不能跳过图片确认来改变设计需求。还原调用必须使用支持视觉输入的文本模型。主题生成只返回主题，调用方确认后将 tokens 应用到项目并 PUT 保存。
 
-从 UI 或 Agent 发起生成前，应先保存本地编辑。图像生成和视觉还原会真实调用配置模型并可能产生模型服务费用；自动化重试由调用方决定。未配置密钥时直接返回说明，不生成占位结果。
+还原步骤为：分析参考图并校验页面结构与 `assets` 清单 → 将完整参考图和来源区域交给生图模型重建独立素材 → 保存实际图片文件 → 把 `asset:ID` 引用替换为本地素材 URL 并装配页面。不会直接裁剪参考图。OpenAI Images 使用 multipart 图片编辑接口，Gemini 使用 inlineData 图片输入；Imagen 暂不支持参考图重建。外层页面文字和控件保持可编辑，复杂产品截图等素材内部保留为图片。
+
+进度 `phase` 为 `analyzing/assets/assembling/completed/failed`；素材包含 `id/name/prompt/background/bounds/status/url?/width?/height?/error?`，`bounds` 是原图内的 0–1 归一化区域。服务端按项目和参考图地址缓存草稿及素材，重试复用已完成文件；重新生成参考图使用新任务。素材失败时不更新页面；组装成功后仍执行项目版本检查。图片节点支持 `imageFit: "cover" | "contain"`，重建素材使用 `contain` 保持完整比例，导出时嵌入本地素材。
+
+生成参考图不发送固定 `size`，`project.generation.width/height` 记录模型返回的实际像素尺寸。预览适配显示，不改变图片原文件。
+
+从 UI 或 Agent 发起生成前，应先保存本地编辑。图像生成和视觉还原会真实调用配置模型并可能产生模型服务费用；自动化重试由调用方决定。对应通道未配置完整时直接返回说明，不生成占位结果；明确选择免认证的本地服务无需 API Key。
 
 ## 工作空间与同步
 
-| 方法 | 路径 | 请求 | 响应 |
-| --- | --- | --- | --- |
-| POST | `/api/workspace/bind` | `{projectId,kind:"local",path:"绝对目录"}` | `{workspace,project}` |
-| POST | `/api/workspace/bind` | `{projectId,kind:"github",repo:"https://github.com/owner/repo",branch?}` | 克隆完成后返回 `{workspace,project}` |
-| POST | `/api/sync/preview` | `{projectId}` | `{files:[{path,content,status}],revision,conflicts:string[]}` |
-| POST | `/api/sync/apply` | `{projectId,revision?}` | `{files,revision,project}`；文件冲突或指定的预览版本过时返回 409 |
+| 方法 | 路径                  | 请求                                                                     | 响应                                                             |
+| ---- | --------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| POST | `/api/workspace/bind` | `{projectId,kind:"local",path:"绝对目录"}`                               | `{workspace,project}`                                            |
+| POST | `/api/workspace/bind` | `{projectId,kind:"github",repo:"https://github.com/owner/repo",branch?}` | 克隆完成后返回 `{workspace,project}`                             |
+| POST | `/api/sync/preview`   | `{projectId}`                                                            | `{files:[{path,content,status}],revision,conflicts:string[]}`    |
+| POST | `/api/sync/apply`     | `{projectId,revision?}`                                                  | `{files,revision,project}`；文件冲突或指定的预览版本过时返回 409 |
 
 状态为 `added`、`modified`、`unchanged`、`conflict`。预览只读取文件，不修改工作空间。建议应用时传入预览返回的 `revision`；省略时明确使用当前最新设计。同步时会重新检查冲突并再次核对写入前的文件哈希；不会依据过时的文件预览直接覆盖。一个工作空间生成目录只能属于一个项目。
 
@@ -85,13 +104,13 @@ console.log(preview);
 
 对话使用配置的文本模型生成结构化操作计划，由服务端验证并执行。会话与消息保存在 `.data/agent-sessions.json`，重启后保留；每个会话的并发回复会被拒绝，执行中断后的历史会标记失败。全局会话用于创建项目，创建后绑定返回的项目继续工作；项目内会话固定绑定单个项目，不能访问、切换或修改其他项目。
 
-| 方法 | 路径 | 请求 / 响应 |
-| --- | --- | --- |
-| GET | `/api/agent/sessions` | `{sessions: AgentSessionSummary[]}`，仅全局会话 |
-| GET | `/api/agent/sessions?projectId=<id>` | 仅该项目的项目内会话 |
-| POST | `/api/agent/sessions` | `{projectId?,title?}` → HTTP 201，`AgentSession` |
-| GET | `/api/agent/sessions/:id` | `AgentSession`，包含完整消息及操作结果 |
-| POST | `/api/agent/sessions/:id/messages` | `{content?,sessionRevision?,projectRevision?,action?}` → `AgentTurnResponse` |
+| 方法 | 路径                                 | 请求 / 响应                                                                  |
+| ---- | ------------------------------------ | ---------------------------------------------------------------------------- |
+| GET  | `/api/agent/sessions`                | `{sessions: AgentSessionSummary[]}`，仅全局会话                              |
+| GET  | `/api/agent/sessions?projectId=<id>` | 仅该项目的项目内会话                                                         |
+| POST | `/api/agent/sessions`                | `{projectId?,title?}` → HTTP 201，`AgentSession`                             |
+| GET  | `/api/agent/sessions/:id`            | `AgentSession`，包含完整消息及操作结果                                       |
+| POST | `/api/agent/sessions/:id/messages`   | `{content?,sessionRevision?,projectRevision?,action?}` → `AgentTurnResponse` |
 
 类型契约在 `packages/schema/src/agent.ts`。`sessionRevision` 防止基于旧对话继续提交；`projectRevision` 可要求项目仍处于前端已保存的版本。响应包含 `session`、`message`，以及实际结果的 `project`、`syncPreview`。执行出错时返回对应 HTTP 状态及 `error`，已经开始的对话仍包含已保存的 `session/message`。部分操作成功、后续失败时，成功结果保留并明确列出；不会回滚已经完成的设计修改。并发设计冲突时，响应的 `project` 为服务端最新状态，不能用过时的推理快照覆盖当前设计。
 

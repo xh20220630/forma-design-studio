@@ -8,7 +8,7 @@
   --wf-mono: var(--font-mono, ui-monospace, monospace);
 }
 
-.wf-view :is(input, button, [data-slot="select-trigger"]) {
+.wf-view :is(input, button, [data-slot='select-trigger']) {
   font-size: 13px;
 }
 
@@ -105,7 +105,7 @@
   font-size: 12px;
 }
 
-.wf-panel-header [data-slot="badge"] {
+.wf-panel-header [data-slot='badge'] {
   padding: 3px 7px;
   font-size: 11px;
   font-weight: 400;
@@ -187,12 +187,13 @@
   background: var(--studio-surface-muted);
 }
 
-.wf-settings-nav > button[aria-current="page"] {
+.wf-settings-nav > button[aria-current='page'] {
   color: var(--studio-accent-ink);
   background: var(--studio-accent-soft);
 }
 
-.wf-settings-content, .wf-settings-content > div {
+.wf-settings-content,
+.wf-settings-content > div {
   min-width: 0;
 }
 
@@ -213,7 +214,7 @@
   border-radius: 50%;
 }
 
-.wf-provider-status > i[data-ready="true"] {
+.wf-provider-status > i[data-ready='true'] {
   background: var(--studio-accent);
 }
 
@@ -470,7 +471,7 @@
   gap: 5px;
 }
 
-.wf-agent-tags [data-slot="badge"] {
+.wf-agent-tags [data-slot='badge'] {
   padding: 2px 6px;
   border: 0;
   border-radius: 3px;
@@ -634,19 +635,19 @@
   line-height: 1.5;
 }
 
-.wf-sync-steps li[data-state="done"] > span {
+.wf-sync-steps li[data-state='done'] > span {
   color: var(--studio-accent-ink);
   background: var(--studio-accent-soft);
   border-color: transparent;
 }
 
-.wf-sync-steps li[data-state="current"] > span {
+.wf-sync-steps li[data-state='current'] > span {
   color: var(--primary-foreground);
   background: var(--primary);
   border-color: var(--primary);
 }
 
-.wf-sync-steps li[data-state="current"] strong {
+.wf-sync-steps li[data-state='current'] strong {
   color: var(--studio-text);
 }
 
@@ -883,7 +884,7 @@
   overflow-wrap: anywhere;
 }
 
-.wf-diff-code [data-slot="badge"] {
+.wf-diff-code [data-slot='badge'] {
   font-size: 11px;
   font-weight: 400;
 }
@@ -935,7 +936,7 @@
   font-size: 13px;
 }
 
-.wf-agent-dialog [data-slot="tabs-trigger"] {
+.wf-agent-dialog [data-slot='tabs-trigger'] {
   gap: 7px;
   font-size: 12px;
 }
@@ -1116,7 +1117,7 @@
   gap: 6px;
 }
 
-.wf-generated-image [data-slot="badge"] {
+.wf-generated-image [data-slot='badge'] {
   font-size: 11px;
   font-weight: 400;
 }
@@ -1428,13 +1429,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wf-view *, .wf-agent-dialog * {
+  .wf-view *,
+  .wf-agent-dialog * {
     transition: none !important;
     scroll-behavior: auto !important;
   }
 }
 
-html[data-motion="off"] :is(.wf-view, .wf-agent-dialog) * {
+html[data-motion='off'] :is(.wf-view, .wf-agent-dialog) * {
   transition: none !important;
   animation: none !important;
   scroll-behavior: auto !important;

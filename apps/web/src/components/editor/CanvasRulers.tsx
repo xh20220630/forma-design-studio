@@ -1,1 +1,1 @@
-export { default } from "@forma/ui/canvas-rulers";
+export { default } from '@forma/ui/canvas-rulers';

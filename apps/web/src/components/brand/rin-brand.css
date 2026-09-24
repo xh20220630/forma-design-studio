@@ -268,17 +268,13 @@
   inset: 13%;
   border-radius: 26%;
   border: 1px solid color-mix(in srgb, var(--studio-accent) 28%, transparent);
-  background: radial-gradient(
-    ellipse,
-    var(--studio-accent-soft),
-    transparent 72%
-  );
+  background: radial-gradient(ellipse, var(--studio-accent-soft), transparent 72%);
   transform: rotate(16deg);
   opacity: var(--studio-ip-opacity);
 }
 .rin-theme-companion__orbit::before,
 .rin-theme-companion__orbit::after {
-  content: "";
+  content: '';
   position: absolute;
   width: 7px;
   height: 7px;
@@ -323,9 +319,11 @@
 .rin-illustration--theme .rin-illustration__art {
   mix-blend-mode: normal;
 }
-.rin-illustration--theme { isolation: auto; }
-html[data-personality="immersive"] .rin-avatar::before {
-  content: "";
+.rin-illustration--theme {
+  isolation: auto;
+}
+html[data-personality='immersive'] .rin-avatar::before {
+  content: '';
   position: absolute;
   z-index: 2;
   top: -2px;
@@ -338,8 +336,8 @@ html[data-personality="immersive"] .rin-avatar::before {
   box-shadow: 0 0 0 2px var(--studio-surface-raised);
   pointer-events: none;
 }
-html[data-personality="immersive"] .rin-illustration::before {
-  content: "";
+html[data-personality='immersive'] .rin-illustration::before {
+  content: '';
   position: absolute;
   inset: 12% 10%;
   border-radius: 27%;
@@ -348,17 +346,17 @@ html[data-personality="immersive"] .rin-illustration::before {
   opacity: 0.65;
   z-index: -1;
 }
-html[data-personality="subtle"] .rin-theme-companion__chip,
-html[data-personality="subtle"] .rin-theme-companion__orbit {
+html[data-personality='subtle'] .rin-theme-companion__chip,
+html[data-personality='subtle'] .rin-theme-companion__orbit {
   display: none;
 }
-html[data-studio-theme="midnight"] .rin-illustration .rin-illustration__art {
+html[data-studio-theme='midnight'] .rin-illustration .rin-illustration__art {
   mix-blend-mode: normal;
   background: transparent;
 }
-html[data-studio-theme="midnight"] .rin-illustration .rin-illustration__ground {
+html[data-studio-theme='midnight'] .rin-illustration .rin-illustration__ground {
   opacity: 0;
 }
-html[data-motion="off"] .rin-illustration__art {
+html[data-motion='off'] .rin-illustration__art {
   transform: none !important;
 }

@@ -66,13 +66,13 @@ flowchart LR
 
 ## 4. 模块与 seam
 
-| Module | Interface | 隐藏的 Implementation |
-| --- | --- | --- |
-| Skill Plugin | `SKILL.md` 及其 references | 业务理解、出图、组件检索、流程维护和交付规则 |
+| Module               | Interface                                | 隐藏的 Implementation                                                 |
+| -------------------- | ---------------------------------------- | --------------------------------------------------------------------- |
+| Skill Plugin         | `SKILL.md` 及其 references               | 业务理解、出图、组件检索、流程维护和交付规则                          |
 | Design Workspace SDK | `openDesignWorkspace()` 返回的工作区对象 | JSON/Markdown 读取、图片测量、引用校验、布局加载、revision 与原子写入 |
-| Workbench CLI | `init / open / validate / skill` 命令 | Skill 检测安装、本地服务器、端口选择、浏览器启动和进程生命周期 |
-| Workspace Renderer | `WorkspaceDocument` | Image Node、连线、标注、检查器和大图查看器 |
-| Shared Canvas Core | 视口与几何函数 | 平移、缩放、适应画布、正交路径和命中测试 |
+| Workbench CLI        | `init / open / validate / skill` 命令    | Skill 检测安装、本地服务器、端口选择、浏览器启动和进程生命周期        |
+| Workspace Renderer   | `WorkspaceDocument`                      | Image Node、连线、标注、检查器和大图查看器                            |
+| Shared Canvas Core   | 视口与几何函数                           | 平移、缩放、适应画布、正交路径和命中测试                              |
 
 外部 seam 只放在设计资产目录与 SDK 之间。文件解析、兼容导入、布局和写入事务是 SDK 内部 seam，不暴露给 Skill 或工作台调用方。
 

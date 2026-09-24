@@ -7,7 +7,9 @@
   "bin": {
     "forma-design": "./dist/cli.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "engines": {
     "node": ">=22.18.0"
   },

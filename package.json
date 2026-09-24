@@ -19,9 +19,14 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "start": "pnpm --filter @forma/api start",
-    "preview": "pnpm --filter @forma/web preview"
+    "preview": "pnpm --filter @forma/web preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "format:python": "ruff format docs",
+    "format:python:check": "ruff format --check docs"
   },
   "devDependencies": {
-    "@forma/ai-design-workbench": "workspace:*"
+    "@forma/ai-design-workbench": "workspace:*",
+    "prettier": "3.6.2"
   }
 }

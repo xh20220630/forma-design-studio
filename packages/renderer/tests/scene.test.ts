@@ -4,15 +4,53 @@ import type { DesignNode, Project } from '@forma/schema';
 import { SceneCompiler } from '../src/canvas/scene.ts';
 import { transform } from '../src/canvas/geometry.ts';
 
+/**
+ * 构造具有默认字段的设计节点，减少样例中无关字段的干扰。
+ *
+ * @param id - 唯一标识，用于查找、更新和建立引用。
+ * @param patch - 仅包含本次要修改字段的局部更新。
+ * @returns 合并指定属性后的节点。
+ */
 function node(id: string, patch: Partial<DesignNode> = {}): DesignNode {
   return { id, name: id, type: 'rectangle', x: 0, y: 0, width: 100, height: 100, ...patch };
 }
+/**
+ * 构造包含指定页面与节点的项目，供渲染场景复用。
+ *
+ * @param nodes - 按约定顺序保存的设计节点集合。
+ * @returns 设计项目。
+ */
 function project(nodes: DesignNode[]): Project {
-  return { id: 'p', name: 'p', description: '', category: '', status: 'draft', themeId: 'default', revision: 1,
-    updatedAt: '', cover: 'blank', components: [], pages: [{ id: 'page', name: 'page', width: 1000, height: 1000, nodes }],
-    tokens: { primary: '#f00', background: '#fff', surface: '#fff', text: '#000', muted: '#888', border: '#ddd', radius: 8, fontFamily: 'sans-serif', spacing: 8 } };
+  return {
+    id: 'p',
+    name: 'p',
+    description: '',
+    category: '',
+    status: 'draft',
+    themeId: 'default',
+    revision: 1,
+    updatedAt: '',
+    cover: 'blank',
+    components: [],
+    pages: [{ id: 'page', name: 'page', width: 1000, height: 1000, nodes }],
+    tokens: {
+      primary: '#f00',
+      background: '#fff',
+      surface: '#fff',
+      text: '#000',
+      muted: '#888',
+      border: '#ddd',
+      radius: 8,
+      fontFamily: 'sans-serif',
+      spacing: 8,
+    },
+  };
 }
 
+/**
+ * 验证parent rotation, opacity, locks, and clips are inherited independent of array order。
+ * @returns 完成当前检查或生命周期操作。
+ */
 test('parent rotation, opacity, locks, and clips are inherited independent of array order', () => {
   const document = project([
     node('child', { parentId: 'parent', x: 110, y: 110, width: 20, height: 20, opacity: 0.5 }),
@@ -26,22 +64,67 @@ test('parent rotation, opacity, locks, and clips are inherited independent of ar
   assert.equal(child.clips.length, 1);
 });
 
+/**
+ * 验证hidden descendants are excluded; unchanged geometry is reused and ancestors invalidate descendants。
+ * @returns 完成当前检查或生命周期操作。
+ */
 test('hidden descendants are excluded; unchanged geometry is reused and ancestors invalidate descendants', () => {
-  const document = project([node('parent'), node('child', { parentId: 'parent' }), node('independent')]);
+  const document = project([
+    node('parent'),
+    node('child', { parentId: 'parent' }),
+    node('independent'),
+  ]);
   const compiler = new SceneCompiler();
   const first = compiler.compile(document.pages[0], document);
-  const nextPage = { ...document.pages[0], nodes: [node('parent', { rotation: 30 }), ...document.pages[0].nodes.slice(1)] };
+  const nextPage = {
+    ...document.pages[0],
+    nodes: [node('parent', { rotation: 30 }), ...document.pages[0].nodes.slice(1)],
+  };
   const next = compiler.compile(nextPage, document);
   assert.equal(first.nodes.get('independent'), next.nodes.get('independent'));
   assert.notEqual(first.nodes.get('child'), next.nodes.get('child'));
-  const hidden = compiler.compile({ ...nextPage, nodes: [node('parent', { visible: false }), ...nextPage.nodes.slice(1)] }, document);
-  assert.deepEqual(hidden.entries.map(entry => entry.node.id), ['independent']);
+  const hidden = compiler.compile(
+    { ...nextPage, nodes: [node('parent', { visible: false }), ...nextPage.nodes.slice(1)] },
+    document,
+  );
+  assert.deepEqual(
+    hidden.entries.map(
+      /** 提取记录的节点的标识，供后续计算或展示使用。 @param entry - 缓存的已编译场景条目。 @returns 记录的节点的标识。 */
+      (entry) => entry.node.id,
+    ),
+    ['independent'],
+  );
 });
 
+/**
+ * 验证component expansion uses instance coordinates, overrides and instance selection targets。
+ * @returns 完成当前检查或生命周期操作。
+ */
 test('component expansion uses instance coordinates, overrides and instance selection targets', () => {
-  const document = project([node('instance', { type: 'component', x: 400, y: 100, width: 200, height: 100, componentId: 'master', overrides: { child: { fill: '#00f' } } })]);
-  document.components = [{ id: 'master', name: 'master', description: '', category: '', width: 100, height: 100,
-    nodes: [node('child', { x: 10, y: 20, width: 20, height: 20, tokenBindings: { fill: 'primary' } })] }];
+  const document = project([
+    node('instance', {
+      type: 'component',
+      x: 400,
+      y: 100,
+      width: 200,
+      height: 100,
+      componentId: 'master',
+      overrides: { child: { fill: '#00f' } },
+    }),
+  ]);
+  document.components = [
+    {
+      id: 'master',
+      name: 'master',
+      description: '',
+      category: '',
+      width: 100,
+      height: 100,
+      nodes: [
+        node('child', { x: 10, y: 20, width: 20, height: 20, tokenBindings: { fill: 'primary' } }),
+      ],
+    },
+  ];
   const scene = new SceneCompiler().compile(document.pages[0], document);
   const child = scene.entries[1];
   assert.equal(child.node.fill, '#00f');
@@ -49,8 +132,15 @@ test('component expansion uses instance coordinates, overrides and instance sele
   assert.deepEqual(transform(child.matrix, { x: 0, y: 0 }), { x: 420, y: 120 });
 });
 
+/**
+ * 验证theme changes invalidate resolved values and malformed cycles terminate。
+ * @returns 完成当前检查或生命周期操作。
+ */
 test('theme changes invalidate resolved values and malformed cycles terminate', () => {
-  const document = project([node('a', { parentId: 'b', tokenBindings: { fill: 'primary' } }), node('b', { parentId: 'a' })]);
+  const document = project([
+    node('a', { parentId: 'b', tokenBindings: { fill: 'primary' } }),
+    node('b', { parentId: 'a' }),
+  ]);
   const compiler = new SceneCompiler();
   assert.equal(compiler.compile(document.pages[0], document).nodes.get('a')!.node.fill, '#f00');
   const updated = { ...document, tokens: { ...document.tokens, primary: '#00f' } };

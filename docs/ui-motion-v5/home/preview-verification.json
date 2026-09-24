@@ -1,38 +1,18 @@
 [
   {
     "frame": "key-001",
-    "alphaBounds": [
-      58,
-      12,
-      424,
-      313
-    ]
+    "alphaBounds": [58, 12, 424, 313]
   },
   {
     "frame": "key-048",
-    "alphaBounds": [
-      58,
-      10,
-      422,
-      289
-    ]
+    "alphaBounds": [58, 10, 422, 289]
   },
   {
     "frame": "key-088",
-    "alphaBounds": [
-      58,
-      22,
-      422,
-      289
-    ]
+    "alphaBounds": [58, 22, 422, 289]
   },
   {
     "frame": "key-144",
-    "alphaBounds": [
-      58,
-      22,
-      422,
-      289
-    ]
+    "alphaBounds": [58, 22, 422, 289]
   }
 ]

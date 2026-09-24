@@ -20,9 +20,7 @@
       "image": "flows/project-authoring/images/editor-v1.png",
       "image_revision": 1,
       "prompt_path": "flows/project-authoring/prompts/editor.md",
-      "reference_images": [
-        "flows/studio-browse/images/project-v1.png"
-      ],
+      "reference_images": ["flows/studio-browse/images/project-v1.png"],
       "width": 960,
       "height": 640,
       "component_usage": [
@@ -54,9 +52,7 @@
       "image": "flows/project-authoring/images/components-v1.png",
       "image_revision": 1,
       "prompt_path": "flows/project-authoring/prompts/components.md",
-      "reference_images": [
-        "flows/project-authoring/images/editor-v1.png"
-      ],
+      "reference_images": ["flows/project-authoring/images/editor-v1.png"],
       "width": 960,
       "height": 640,
       "component_usage": [
@@ -83,9 +79,7 @@
       "image": "flows/project-authoring/images/publish-dialog-v1.png",
       "image_revision": 1,
       "prompt_path": "flows/project-authoring/prompts/publish-dialog.md",
-      "reference_images": [
-        "flows/project-authoring/images/editor-v1.png"
-      ],
+      "reference_images": ["flows/project-authoring/images/editor-v1.png"],
       "width": 960,
       "height": 640,
       "component_usage": [

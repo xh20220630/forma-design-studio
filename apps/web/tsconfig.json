@@ -3,14 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     }
   },
-  "include": [
-    "src",
-    "vite.config.ts",
-    "tooling"
-  ]
+  "include": ["src", "vite.config.ts", "tooling"]
 }

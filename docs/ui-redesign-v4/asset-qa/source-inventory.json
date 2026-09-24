@@ -1,103 +1,70 @@
 [
   {
     "path": "apps/web/public/brand/rin/forma-rin-chibi-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1392579
   },
   {
     "path": "apps/web/public/brand/rin/forma-rin-concept-v1.png",
-    "size": [
-      1024,
-      1536
-    ],
+    "size": [1024, 1536],
     "mode": "RGBA",
-    "alpha_extrema": [
-      0,
-      254
-    ],
+    "alpha_extrema": [0, 254],
     "bytes": 1536012
   },
   {
     "path": "apps/web/public/brand/rin/rin-assembly-poster.png",
-    "size": [
-      400,
-      240
-    ],
+    "size": [400, 240],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 75912
   },
   {
     "path": "apps/web/public/brand/rin/rin-avatar-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1571414
   },
   {
     "path": "apps/web/public/brand/rin/rin-empty-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1310926
   },
   {
     "path": "apps/web/public/brand/rin/rin-error-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1541939
   },
   {
     "path": "apps/web/public/brand/rin/rin-studio-poster.png",
-    "size": [
-      720,
-      480
-    ],
+    "size": [720, 480],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 229246
   },
   {
     "path": "apps/web/public/brand/rin/rin-success-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1324954
   },
   {
     "path": "apps/web/public/brand/rin/rin-theme-v2.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1434236
   },
   {
     "path": "apps/web/public/brand/rin/rin-thinking-v1.png",
-    "size": [
-      1254,
-      1254
-    ],
+    "size": [1254, 1254],
     "mode": "RGB",
     "alpha_extrema": null,
     "bytes": 1309502
