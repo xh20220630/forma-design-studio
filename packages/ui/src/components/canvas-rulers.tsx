@@ -44,31 +44,17 @@ interface Props {
 function rulerTicks(length: number, origin: number, zoom: number) {
   const target = 72 / zoom;
   const magnitude = 10 ** Math.floor(Math.log10(target));
-  const step =
-    [1, 2, 5, 10].find(
-      /** 检查取值乘以magnitude不小于目标，供集合筛选或定位使用。 @param value - 当前字段、模式或控件的取值。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (value) => value * magnitude >= target,
-    )! * magnitude;
+  const step = [1, 2, 5, 10].find((value) => value * magnitude >= target)! * magnitude;
   const minor = step / 5;
   const start = Math.floor((20 - origin) / zoom / minor);
   const end = Math.ceil((length - origin) / zoom / minor);
-  return Array.from(
-    { length: Math.max(0, end - start + 1) },
-    /**
-     * 执行 rulerTicks 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param _ - 当前步骤不使用的占位参数。
-     * @param index - 空间查询索引或当前条目的位置。
-     * @returns 当前步骤的处理结果。
-     */
-    (_, index) => {
-      const tick = start + index;
-      return {
-        position: origin + tick * minor * zoom,
-        label: tick % 5 === 0 ? String(Math.round(tick * minor)) : undefined,
-      };
-    },
-  );
+  return Array.from({ length: Math.max(0, end - start + 1) }, (_, index) => {
+    const tick = start + index;
+    return {
+      position: origin + tick * minor * zoom,
+      label: tick % 5 === 0 ? String(Math.round(tick * minor)) : undefined,
+    };
+  });
 }
 
 /**
@@ -88,54 +74,32 @@ export default function CanvasRulers({ zoom, origin, viewport, onFit, onGuide }:
       <div
         className="ed-viewport-ruler is-horizontal"
         title={onGuide ? '点击添加垂直参考线' : '水平标尺'}
-        onPointerDown={
-          /** 响应 onPointerDown 交互，将用户操作应用到画布标尺。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-          (event) => onGuide?.('x', event)
-        }
+        onPointerDown={(event) => onGuide?.('x', event)}
       >
-        {rulerTicks(viewport.width, origin.x, zoom).map(
-          /**
-           * 转换画布标尺中的集合条目，供后续处理或展示。
-           *
-           * @param tick - 当前标尺刻度。
-           * @returns 当前条目转换后的结果。
-           */
-          (tick) => (
-            <span
-              key={tick.position}
-              className={tick.label !== undefined ? 'is-major' : ''}
-              style={{ left: tick.position }}
-            >
-              {tick.label}
-            </span>
-          ),
-        )}
+        {rulerTicks(viewport.width, origin.x, zoom).map((tick) => (
+          <span
+            key={tick.position}
+            className={tick.label !== undefined ? 'is-major' : ''}
+            style={{ left: tick.position }}
+          >
+            {tick.label}
+          </span>
+        ))}
       </div>
       <div
         className="ed-viewport-ruler is-vertical"
         title={onGuide ? '点击添加水平参考线' : '垂直标尺'}
-        onPointerDown={
-          /** 响应 onPointerDown 交互，将用户操作应用到画布标尺。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-          (event) => onGuide?.('y', event)
-        }
+        onPointerDown={(event) => onGuide?.('y', event)}
       >
-        {rulerTicks(viewport.height, origin.y, zoom).map(
-          /**
-           * 转换画布标尺中的集合条目，供后续处理或展示。
-           *
-           * @param tick - 当前标尺刻度。
-           * @returns 当前条目转换后的结果。
-           */
-          (tick) => (
-            <span
-              key={tick.position}
-              className={tick.label !== undefined ? 'is-major' : ''}
-              style={{ top: tick.position }}
-            >
-              {tick.label}
-            </span>
-          ),
-        )}
+        {rulerTicks(viewport.height, origin.y, zoom).map((tick) => (
+          <span
+            key={tick.position}
+            className={tick.label !== undefined ? 'is-major' : ''}
+            style={{ top: tick.position }}
+          >
+            {tick.label}
+          </span>
+        ))}
       </div>
       <button
         type="button"

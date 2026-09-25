@@ -134,10 +134,7 @@ export async function initializeProject(options: {
   if (gitignore === 'created') created.push('.gitignore');
 
   const installations = await inspectSkills(projectRoot);
-  const compatible = installations.find(
-    /** 检查条目的compatible，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.compatible,
-  );
+  const compatible = installations.find((item) => item.compatible);
   let skill = compatible;
   if (!compatible) {
     const scope = options.skill || (await chooseScope());

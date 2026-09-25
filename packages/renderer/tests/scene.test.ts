@@ -47,10 +47,6 @@ function project(nodes: DesignNode[]): Project {
   };
 }
 
-/**
- * 验证parent rotation, opacity, locks, and clips are inherited independent of array order。
- * @returns 完成当前检查或生命周期操作。
- */
 test('parent rotation, opacity, locks, and clips are inherited independent of array order', () => {
   const document = project([
     node('child', { parentId: 'parent', x: 110, y: 110, width: 20, height: 20, opacity: 0.5 }),
@@ -64,10 +60,6 @@ test('parent rotation, opacity, locks, and clips are inherited independent of ar
   assert.equal(child.clips.length, 1);
 });
 
-/**
- * 验证hidden descendants are excluded; unchanged geometry is reused and ancestors invalidate descendants。
- * @returns 完成当前检查或生命周期操作。
- */
 test('hidden descendants are excluded; unchanged geometry is reused and ancestors invalidate descendants', () => {
   const document = project([
     node('parent'),
@@ -88,18 +80,11 @@ test('hidden descendants are excluded; unchanged geometry is reused and ancestor
     document,
   );
   assert.deepEqual(
-    hidden.entries.map(
-      /** 提取记录的节点的标识，供后续计算或展示使用。 @param entry - 缓存的已编译场景条目。 @returns 记录的节点的标识。 */
-      (entry) => entry.node.id,
-    ),
+    hidden.entries.map((entry) => entry.node.id),
     ['independent'],
   );
 });
 
-/**
- * 验证component expansion uses instance coordinates, overrides and instance selection targets。
- * @returns 完成当前检查或生命周期操作。
- */
 test('component expansion uses instance coordinates, overrides and instance selection targets', () => {
   const document = project([
     node('instance', {
@@ -132,10 +117,6 @@ test('component expansion uses instance coordinates, overrides and instance sele
   assert.deepEqual(transform(child.matrix, { x: 0, y: 0 }), { x: 420, y: 120 });
 });
 
-/**
- * 验证theme changes invalidate resolved values and malformed cycles terminate。
- * @returns 完成当前检查或生命周期操作。
- */
 test('theme changes invalidate resolved values and malformed cycles terminate', () => {
   const document = project([
     node('a', { parentId: 'b', tokenBindings: { fill: 'primary' } }),

@@ -218,26 +218,8 @@ function components(tokens: ThemeTokens): DesignComponent[] {
  */
 function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string): DesignPage {
   const nodes: DesignNode[] = [];
-  /**
-   * 把新节点追加到当前构建的页面，集中维护种子数据的组装顺序。
-   *
-   * @param node - 当前处理的设计节点。
-   * @returns 节点添加操作的结果。
-   */
   const add = (node: Omit<DesignNode, 'id'>) =>
     nodes.push({ ...node, id: `node-${nodes.length + 1}` });
-  /**
-   * 构造示例容器节点，为页面布局提供明确的区域边界。
-   *
-   * @param name - 面向用户展示的名称。
-   * @param x - 水平方向的位置。
-   * @param y - 垂直方向的位置。
-   * @param width - 对象的宽度。
-   * @param height - 对象的高度。
-   * @param fill - 图层填充颜色；未设置时由渲染规则决定。
-   * @param radius - 圆角大小。
-   * @returns 容器创建操作的结果。
-   */
   const frame = (
     name: string,
     x: number,
@@ -258,19 +240,6 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
       radius,
       tokenBindings: { fill, ...(radius === tokens.radius ? { radius: 'radius' as const } : {}) },
     });
-  /**
-   * 构造带字体和颜色的示例文字节点，使种子页面保持一致排版。
-   *
-   * @param name - 面向用户展示的名称。
-   * @param value - 当前字段、模式或控件的取值。
-   * @param x - 水平方向的位置。
-   * @param y - 垂直方向的位置。
-   * @param width - 对象的宽度。
-   * @param fontSize - 文字字号。
-   * @param color - 文字或视觉元素的颜色。
-   * @param height - 对象的高度。
-   * @returns 文字节点的构造结果。
-   */
   const text = (
     name: string,
     value: string,
@@ -293,15 +262,6 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
       color: String(tokens[color]),
       tokenBindings: { color },
     });
-  /**
-   * 构造带主题样式的示例按钮，让种子页面沿用同一设计规范。
-   *
-   * @param value - 当前字段、模式或控件的取值。
-   * @param x - 水平方向的位置。
-   * @param y - 垂直方向的位置。
-   * @param width - 对象的宽度。
-   * @returns 按钮创建操作的结果。
-   */
   const button = (value: string, x: number, y: number, width = 148) =>
     add({
       name: value,
@@ -325,24 +285,16 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
     text('Brand', finance ? '◈  vault' : '◈  nexus', 28, 32, 152, 27);
     text('Workspace label', finance ? 'PERSONAL FINANCE' : 'WORKSPACE', 28, 100, 155, 10, 'muted');
     frame('Active navigation', 16, 141, 172, 44, 'background');
-    ['◫   总览', '▥   数据分析', '▤   项目管理', '◷   活动记录'].forEach(
-      /**
-       * 逐项处理 buildPage 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param label - 面向用户显示的简短标签。
-       * @param i - 当前循环位置，从 0 开始。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (label, i) =>
-        text(
-          `Navigation ${i + 1}`,
-          finance ? ['◫   资产总览', '↗   我的投资', '▤   交易记录', '◷   分析报告'][i] : label,
-          30,
-          154 + i * 55,
-          145,
-          14,
-          i === 0 ? 'primary' : 'muted',
-        ),
+    ['◫   总览', '▥   数据分析', '▤   项目管理', '◷   活动记录'].forEach((label, i) =>
+      text(
+        `Navigation ${i + 1}`,
+        finance ? ['◫   资产总览', '↗   我的投资', '▤   交易记录', '◷   分析报告'][i] : label,
+        30,
+        154 + i * 55,
+        145,
+        14,
+        i === 0 ? 'primary' : 'muted',
+      ),
     );
     text('Workspace name', '个人工作空间', 28, 692, 150, 12, 'muted');
     text(
@@ -380,21 +332,12 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
         : ['总收入', '¥128,450', '+18.6% 较上月'],
       finance ? ['本月收益', '¥8,240.60', '+8.2% 本月'] : ['活跃用户', '8,549', '+12.8% 较上月'],
       finance ? ['可用余额', '¥24,680.00', '随时可转出'] : ['转化率', '4.28%', '+2.4% 较上月'],
-    ].forEach(
-      /**
-       * 逐项处理 buildPage 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param metric - 当前文字测量的结果。
-       * @param i - 当前循环位置，从 0 开始。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (metric, i) => {
-        frame(`Metric card ${i + 1}`, 246 + i * 281, 195, 262, 140);
-        text(`Metric label ${i + 1}`, metric[0], 267 + i * 281, 216, 215, 12, 'muted');
-        text(`Metric value ${i + 1}`, metric[1], 267 + i * 281, 255, 218, finance ? 25 : 29);
-        text(`Metric trend ${i + 1}`, metric[2], 267 + i * 281, 302, 215, 11, 'primary');
-      },
-    );
+    ].forEach((metric, i) => {
+      frame(`Metric card ${i + 1}`, 246 + i * 281, 195, 262, 140);
+      text(`Metric label ${i + 1}`, metric[0], 267 + i * 281, 216, 215, 12, 'muted');
+      text(`Metric value ${i + 1}`, metric[1], 267 + i * 281, 255, 218, finance ? 25 : 29);
+      text(`Metric trend ${i + 1}`, metric[2], 267 + i * 281, 302, 215, 11, 'primary');
+    });
     frame('Analytics panel', 246, 359, 824, 335);
     text('Chart title', finance ? '资产趋势' : '收入概览', 270, 382, 300, 17);
     text(
@@ -406,27 +349,19 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
       13,
       'muted',
     );
-    [64, 104, 85, 142, 113, 165, 126, 185, 156, 198].forEach(
-      /**
-       * 逐项处理 buildPage 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param height - 对象的高度。
-       * @param i - 当前循环位置，从 0 开始。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (height, i) =>
-        add({
-          name: `Chart bar ${i + 1}`,
-          type: 'rectangle',
-          x: 282 + i * 75,
-          y: 659 - height,
-          width: 31,
-          height,
-          fill: tokens.primary,
-          radius: 5,
-          opacity: 0.35 + i * 0.065,
-          tokenBindings: { fill: 'primary' },
-        }),
+    [64, 104, 85, 142, 113, 165, 126, 185, 156, 198].forEach((height, i) =>
+      add({
+        name: `Chart bar ${i + 1}`,
+        type: 'rectangle',
+        x: 282 + i * 75,
+        y: 659 - height,
+        width: 31,
+        height,
+        fill: tokens.primary,
+        radius: 5,
+        opacity: 0.35 + i * 0.065,
+        tokenBindings: { fill: 'primary' },
+      }),
     );
     text(
       'Chart axis',
@@ -517,19 +452,10 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
     });
     text('Collection heading', '喜欢的日常，就在这里。', 55, 578, 600, 28);
     text('Collection link', '查看全部  ↗', 955, 590, 138, 13, 'muted');
-    ['慢生活 · 家居', '自然感 · 器物', '好时光 · 香氛'].forEach(
-      /**
-       * 逐项处理 buildPage 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param label - 面向用户显示的简短标签。
-       * @param i - 当前循环位置，从 0 开始。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (label, i) => {
-        frame(`Collection card ${i + 1}`, 55 + i * 346, 635, 319, 88, 'surface');
-        text(`Collection name ${i + 1}`, label, 80 + i * 346, 664, 270, 18);
-      },
-    );
+    ['慢生活 · 家居', '自然感 · 器物', '好时光 · 香氛'].forEach((label, i) => {
+      frame(`Collection card ${i + 1}`, 55 + i * 346, 635, 319, 88, 'surface');
+      text(`Collection name ${i + 1}`, label, 80 + i * 346, 664, 270, 18);
+    });
   } else if (cover === 'travel') {
     text('Brand', 'roam', 52, 30, 185, 32);
     text('Navigation', '目的地           精选体验           旅行故事', 417, 44, 535, 14);
@@ -603,19 +529,10 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
     button('探索目的地', 472, 460, 137);
     text('Featured heading', '让世界，给你一点惊喜。', 53, 565, 720, 27);
     text('Featured subtitle', '精心挑选的目的地，总有一处让你想出发。', 55, 610, 720, 13, 'muted');
-    ['巴厘岛 · 与海相遇', '京都 · 慢一点生活', '云南 · 山野之间'].forEach(
-      /**
-       * 逐项处理 buildPage 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param label - 面向用户显示的简短标签。
-       * @param i - 当前循环位置，从 0 开始。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (label, i) => {
-        frame(`Destination card ${i + 1}`, 54 + i * 346, 655, 319, 72, 'surface');
-        text(`Destination name ${i + 1}`, label, 78 + i * 346, 678, 272, 16);
-      },
-    );
+    ['巴厘岛 · 与海相遇', '京都 · 慢一点生活', '云南 · 山野之间'].forEach((label, i) => {
+      frame(`Destination card ${i + 1}`, 54 + i * 346, 655, 319, 72, 'surface');
+      text(`Destination name ${i + 1}`, label, 78 + i * 346, 678, 272, 16);
+    });
   } else {
     text('Brand', title, 64, 42, 890, 22);
     text('Hero title', '好设计，从一个想法开始。', 64, 215, 994, 54, 'text', 90);
@@ -634,12 +551,7 @@ function buildPage(cover: Project['cover'], tokens: ThemeTokens, title: string):
  * @returns 包含默认页面与组件的项目。
  */
 export function createProject(name: string, template?: DesignTemplate, description = ''): Project {
-  const selected =
-    template ??
-    seedTemplates.find(
-      /** 检查条目的标识等于“studio”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === 'studio',
-    )!;
+  const selected = template ?? seedTemplates.find((item) => item.id === 'studio')!;
   const tokens = { ...selected.tokens };
   return {
     id: `project-${crypto.randomUUID()}`,
@@ -694,33 +606,21 @@ export const seedProjects: Project[] = [
     category: '金融科技',
     hours: 24,
   },
-].map(
-  /**
-   * 转换 seed 中的集合条目，供后续处理或展示。
-   *
-   * @param item - 当前遍历的条目。
-   * @param i - 当前循环位置，从 0 开始。
-   * @returns 当前条目转换后的结果。
-   */
-  (item, i) => {
-    const template = seedTemplates.find(
-      /** 检查 candidate 的标识等于条目的templateId，供集合筛选或定位使用。 @param candidate - 正在校验或比较的候选值。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (candidate) => candidate.id === item.templateId,
-    )!;
-    const tokens = { ...template.tokens };
-    return {
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      category: item.category,
-      status: i < 2 ? 'in-progress' : 'draft',
-      themeId: template.id,
-      tokens,
-      pages: [buildPage(item.cover as Project['cover'], tokens, item.name)],
-      components: components(tokens),
-      updatedAt: new Date(Date.now() - item.hours * 3600000).toISOString(),
-      revision: 1,
-      cover: item.cover as Project['cover'],
-    };
-  },
-);
+].map((item, i) => {
+  const template = seedTemplates.find((candidate) => candidate.id === item.templateId)!;
+  const tokens = { ...template.tokens };
+  return {
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    category: item.category,
+    status: i < 2 ? 'in-progress' : 'draft',
+    themeId: template.id,
+    tokens,
+    pages: [buildPage(item.cover as Project['cover'], tokens, item.name)],
+    components: components(tokens),
+    updatedAt: new Date(Date.now() - item.hours * 3600000).toISOString(),
+    revision: 1,
+    cover: item.cover as Project['cover'],
+  };
+});

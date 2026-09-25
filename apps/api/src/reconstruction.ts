@@ -69,63 +69,54 @@ function parseAssets(value: unknown): ReconstructionAsset[] {
     502,
   );
   const ids = new Set<string>();
-  return value.map(
-    /**
-     * 转换 parseAssets 中的集合条目，供后续处理或展示。
-     *
-     * @param item - 当前遍历的条目。
-     * @returns 当前条目转换后的结果。
-     */
-    (item) => {
-      requireValue(isRecord(item) && typeof item.id === 'string', '素材清单格式无效。', 502);
-      validateId(item.id);
-      requireValue(!ids.has(item.id), '素材 ID 重复。', 502);
-      ids.add(item.id);
-      requireValue(
-        typeof item.name === 'string' &&
-          item.name.length > 0 &&
-          item.name.length <= 200 &&
-          typeof item.prompt === 'string' &&
-          item.prompt.length > 0 &&
-          item.prompt.length <= 6000,
-        '素材名称或重建描述无效。',
-        502,
-      );
-      const bounds = item.bounds;
-      requireValue(
-        isRecord(bounds) &&
-          ['x', 'y', 'width', 'height'].every(
-            /** 判断 parseAssets 中的条目是否符合检查条件。 @param key - 要访问或更新的字段名。 @returns 该条目是否符合条件。 */
-            (key) =>
-              typeof bounds[key] === 'number' &&
-              Number.isFinite(bounds[key]) &&
-              bounds[key] >= 0 &&
-              bounds[key] <= 1,
-          ),
-        '素材区域必须是 0–1 的归一化坐标。',
-        502,
-      );
-      const { x, y, width, height } = bounds as ReconstructionAsset['bounds'];
-      requireValue(
-        width > 0 && height > 0 && x + width <= 1.001 && y + height <= 1.001,
-        '素材区域超出参考图。',
-        502,
-      );
-      requireValue(
-        item.background === 'transparent' || item.background === 'opaque',
-        '请指定素材的透明或不透明背景。',
-        502,
-      );
-      return {
-        id: item.id,
-        name: item.name,
-        prompt: item.prompt,
-        background: item.background,
-        bounds: { x, y, width, height },
-        status: 'pending',
-      };
-    },
-  );
+  return value.map((item) => {
+    requireValue(isRecord(item) && typeof item.id === 'string', '素材清单格式无效。', 502);
+    validateId(item.id);
+    requireValue(!ids.has(item.id), '素材 ID 重复。', 502);
+    ids.add(item.id);
+    requireValue(
+      typeof item.name === 'string' &&
+        item.name.length > 0 &&
+        item.name.length <= 200 &&
+        typeof item.prompt === 'string' &&
+        item.prompt.length > 0 &&
+        item.prompt.length <= 6000,
+      '素材名称或重建描述无效。',
+      502,
+    );
+    const bounds = item.bounds;
+    requireValue(
+      isRecord(bounds) &&
+        ['x', 'y', 'width', 'height'].every(
+          (key) =>
+            typeof bounds[key] === 'number' &&
+            Number.isFinite(bounds[key]) &&
+            bounds[key] >= 0 &&
+            bounds[key] <= 1,
+        ),
+      '素材区域必须是 0–1 的归一化坐标。',
+      502,
+    );
+    const { x, y, width, height } = bounds as ReconstructionAsset['bounds'];
+    requireValue(
+      width > 0 && height > 0 && x + width <= 1.001 && y + height <= 1.001,
+      '素材区域超出参考图。',
+      502,
+    );
+    requireValue(
+      item.background === 'transparent' || item.background === 'opaque',
+      '请指定素材的透明或不透明背景。',
+      502,
+    );
+    return {
+      id: item.id,
+      name: item.name,
+      prompt: item.prompt,
+      background: item.background,
+      bounds: { x, y, width, height },
+      status: 'pending',
+    };
+  });
 }
 /**
  * 将素材占位引用替换成实际图片地址，并校验整张页面的可编辑结构。
@@ -143,57 +134,33 @@ function assemble(
   placeholders = false,
 ) {
   const used = new Set<string>();
-  /**
-   * 替换还原草稿中的素材引用，确保图片节点只使用清单中声明的素材。
-   *
-   * @param input - 当前步骤需要处理的输入。
-   * @returns 替换后的页面或组件集合。
-   */
+  // 还原时只允许引用素材清单中的图片，禁止直接嵌入整张参考图。
   const replace = (input: unknown): unknown =>
     !Array.isArray(input)
       ? input
-      : input.map(
-          /**
-           * 转换 replace 中的集合条目，供后续处理或展示。
-           *
-           * @param entry - 缓存的已编译场景条目。
-           * @returns 当前条目转换后的结果。
-           */
-          (entry) => {
-            if (!isRecord(entry) || !Array.isArray(entry.nodes)) return entry;
-            return {
-              ...entry,
-              nodes: entry.nodes.map(
-                /**
-                 * 转换 replace 中的集合条目，供后续处理或展示。
-                 *
-                 * @param value - 当前字段、模式或控件的取值。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (value) => {
-                  if (!isRecord(value) || value.type !== 'image') return value;
-                  requireValue(
-                    typeof value.src === 'string' && value.src.startsWith('asset:'),
-                    '还原中的图片节点必须引用素材清单，不能使用整张参考图或未识别的图片地址。',
-                    502,
-                  );
-                  const id = value.src.slice(6);
-                  const asset = assets.find(
-                    /** 检查 a 的标识等于标识，供集合筛选或定位使用。 @param a - 第一个比较或计算对象。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                    (a) => a.id === id,
-                  );
-                  requireValue(asset && (placeholders || asset.url), `素材 ${id} 尚未生成。`, 502);
-                  used.add(id);
-                  return {
-                    ...value,
-                    src: placeholders ? `/api/assets/pending-${id}.png` : asset.url,
-                    imageFit: 'contain',
-                  };
-                },
-              ),
-            };
-          },
-        );
+      : input.map((entry) => {
+          if (!isRecord(entry) || !Array.isArray(entry.nodes)) return entry;
+          return {
+            ...entry,
+            nodes: entry.nodes.map((value) => {
+              if (!isRecord(value) || value.type !== 'image') return value;
+              requireValue(
+                typeof value.src === 'string' && value.src.startsWith('asset:'),
+                '还原中的图片节点必须引用素材清单，不能使用整张参考图或未识别的图片地址。',
+                502,
+              );
+              const id = value.src.slice(6);
+              const asset = assets.find((a) => a.id === id);
+              requireValue(asset && (placeholders || asset.url), `素材 ${id} 尚未生成。`, 502);
+              used.add(id);
+              return {
+                ...value,
+                src: placeholders ? `/api/assets/pending-${id}.png` : asset.url,
+                imageFit: 'contain',
+              };
+            }),
+          };
+        });
   const normalized = normalizeGeneratedDesign(draft);
   requireValue(
     Array.isArray(normalized.pages) && normalized.pages.length === 1,
@@ -207,10 +174,7 @@ function assemble(
       normalized.components === undefined ? project.components : replace(normalized.components),
   });
   requireValue(
-    assets.every(
-      /** 检查used包含 a 的标识，供集合筛选或定位使用。 @param a - 第一个比较或计算对象。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (a) => used.has(a.id),
-    ),
+    assets.every((a) => used.has(a.id)),
     '素材清单中有未放置到页面或组件的素材，请重新分析。',
     502,
   );
@@ -240,10 +204,6 @@ export async function reconstructWithAssets(
     assets: [],
     updatedAt: new Date().toISOString(),
   };
-  /**
-   * 在每个还原阶段更新时间并保存状态，让轮询和失败重试使用同一份进度。
-   * @returns 完成进度文件写入的 Promise。
-   */
   const save = async () => {
     state.updatedAt = new Date().toISOString();
     await writeJson(file, state);
@@ -266,20 +226,8 @@ export async function reconstructWithAssets(
       assemble(project, draft, plan, true);
       const previous = state.assets;
       state.assets = plan.map(
-        /**
-         * 转换 reconstructWithAssets 中的集合条目，供后续处理或展示。
-         *
-         * @param asset - 当前图片素材记录。
-         * @returns 当前条目转换后的结果。
-         */
         (asset) =>
           previous.find(
-            /**
-             * 判断 reconstructWithAssets 中的条目是否符合查找条件。
-             *
-             * @param p - 当前坐标点或内容片段。
-             * @returns 该条目是否符合条件。
-             */
             (p) =>
               p.id === asset.id &&
               p.prompt === asset.prompt &&

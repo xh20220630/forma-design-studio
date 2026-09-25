@@ -87,20 +87,11 @@ export class CanvasEngine {
     if (!context || !overlayContext) throw new Error('浏览器不支持 Canvas 2D');
     this.context = context;
     this.overlayContext = overlayContext;
-    this.painter = new CanvasPainter(
-      /** 执行function Object() { [native code] }传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 无返回值；通过副作用完成当前操作。 */
-      () => this.invalidate(true),
-    );
+    this.painter = new CanvasPainter(() => this.invalidate(true));
     document.fonts.addEventListener('loadingdone', this.painter.clearCaches);
-    void document.fonts.ready.then(
-      /**
-       * 在function Object() { [native code] }的异步步骤结束后处理结果。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      () => {
-        if (!this.disposed) this.painter.clearCaches();
-      },
-    );
+    void document.fonts.ready.then(() => {
+      if (!this.disposed) this.painter.clearCaches();
+    });
     canvas.addEventListener('contextrestored', this.restore);
     overlayCanvas.addEventListener('contextrestored', this.restore);
     window.addEventListener('resize', this.resize);
@@ -208,48 +199,20 @@ export class CanvasEngine {
    */
   private intersectsClips(entry: SceneEntry, bounds: Bounds) {
     // Clip bounds are a conservative broad phase; exact point hits below use paths.
-    return entry.clips.every(
-      /**
-       * 判断 intersectsClips 中的条目是否符合检查条件。
-       *
-       * @param clip - 当前祖先裁剪区域。
-       * @returns 该条目是否符合条件。
-       */
-      (clip) => {
-        const corners = [
-          transform(clip.inverse, bounds),
-          transform(clip.inverse, { x: bounds.x + bounds.width, y: bounds.y }),
-          transform(clip.inverse, { x: bounds.x, y: bounds.y + bounds.height }),
-          transform(clip.inverse, { x: bounds.x + bounds.width, y: bounds.y + bounds.height }),
-        ];
-        return (
-          Math.max(
-            ...corners.map(
-              /** 提取当前项的横坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的横坐标。 */
-              (p) => p.x,
-            ),
-          ) >= 0 &&
-          Math.min(
-            ...corners.map(
-              /** 提取当前项的横坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的横坐标。 */
-              (p) => p.x,
-            ),
-          ) <= clip.node.width &&
-          Math.max(
-            ...corners.map(
-              /** 提取当前项的纵坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的纵坐标。 */
-              (p) => p.y,
-            ),
-          ) >= 0 &&
-          Math.min(
-            ...corners.map(
-              /** 提取当前项的纵坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的纵坐标。 */
-              (p) => p.y,
-            ),
-          ) <= clip.node.height
-        );
-      },
-    );
+    return entry.clips.every((clip) => {
+      const corners = [
+        transform(clip.inverse, bounds),
+        transform(clip.inverse, { x: bounds.x + bounds.width, y: bounds.y }),
+        transform(clip.inverse, { x: bounds.x, y: bounds.y + bounds.height }),
+        transform(clip.inverse, { x: bounds.x + bounds.width, y: bounds.y + bounds.height }),
+      ];
+      return (
+        Math.max(...corners.map((p) => p.x)) >= 0 &&
+        Math.min(...corners.map((p) => p.x)) <= clip.node.width &&
+        Math.max(...corners.map((p) => p.y)) >= 0 &&
+        Math.min(...corners.map((p) => p.y)) <= clip.node.height
+      );
+    });
   }
 
   /**
@@ -267,28 +230,17 @@ export class CanvasEngine {
         width: tolerance * 2,
         height: tolerance * 2,
       }) ?? [];
-    candidates.sort(
-      /** 比较 b 的绘制顺序减去 a 的绘制顺序，确定条目顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 排序用的差值。 */
-      (a, b) => b.order - a.order,
-    );
+    candidates.sort((a, b) => b.order - a.order);
     const ctx = this.overlayContext;
     ctx.save();
     ctx.resetTransform();
     for (const entry of candidates) {
       if (
         !entry.visible ||
-        !entry.clips.every(
-          /**
-           * 判断 hitTest 中的条目是否符合检查条件。
-           *
-           * @param clip - 当前祖先裁剪区域。
-           * @returns 该条目是否符合条件。
-           */
-          (clip) => {
-            const local = transform(clip.inverse, point);
-            return ctx.isPointInPath(this.painter.paths.clip(clip.node), local.x, local.y);
-          },
-        )
+        !entry.clips.every((clip) => {
+          const local = transform(clip.inverse, point);
+          return ctx.isPointInPath(this.painter.paths.clip(clip.node), local.x, local.y);
+        })
       )
         continue;
       const node = entry.node,
@@ -374,10 +326,7 @@ export class CanvasEngine {
     )
       return;
     const camera = this.camera;
-    const visible = this.scene.index.query(this.visibleBounds).sort(
-      /** 比较 a 的绘制顺序减去 b 的绘制顺序，确定条目顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 排序用的差值。 */
-      (a, b) => a.order - b.order,
-    );
+    const visible = this.scene.index.query(this.visibleBounds).sort((a, b) => a.order - b.order);
     if (this.contentDirty) {
       const ctx = this.context;
       ctx.resetTransform();
@@ -500,9 +449,8 @@ export class CanvasEngine {
       ctx.strokeStyle = '#0d99ff';
       ctx.fillStyle = '#fff';
       ctx.beginPath();
-      this.overlay.penPoints.forEach(
-        /** 逐项处理 drawOverlay 中的内容，把结果写入外层维护的集合或绘制上下文。 @param point - 当前处理的坐标点。 @param index - 空间查询索引或当前条目的位置。 @returns 无返回值；当前项的处理通过副作用完成。 */
-        (point, index) => (index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y)),
+      this.overlay.penPoints.forEach((point, index) =>
+        index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y),
       );
       ctx.stroke();
       for (const point of this.overlay.penPoints) {

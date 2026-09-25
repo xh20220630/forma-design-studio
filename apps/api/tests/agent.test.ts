@@ -65,10 +65,7 @@ const fixture = (id) => ({
   cover: 'blank',
 });
 const server = createApp().listen(0, '127.0.0.1');
-await new Promise(
-  /** 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-  (resolve) => server.once('listening', resolve),
-);
+await new Promise((resolve) => server.once('listening', resolve));
 const base = `http://127.0.0.1:${server.address().port}/api`;
 /**
  * 统一请求 API 并转换失败响应，使调用方只处理业务数据。
@@ -89,52 +86,40 @@ async function api(route, method = 'GET', body) {
 const plans = [];
 const providerRequests = [];
 const provider = http
-  .createServer(
-    /**
-     * 执行 agent.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param req - 当前 HTTP 请求。
-     * @param res - 当前 HTTP 响应对象。
-     * @returns 当前步骤的处理结果。
-     */
-    async (req, res) => {
-      try {
-        let body = '';
-        for await (const chunk of req) body += chunk;
-        const input = JSON.parse(body);
-        providerRequests.push(input);
-        res.setHeader('Content-Type', 'application/json');
-        if (req.url === '/v1/images/generations')
-          return res.end(
-            JSON.stringify({
-              data: [
-                {
-                  b64_json:
-                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-                },
-              ],
-            }),
-          );
-        let output;
-        if (Array.isArray(input.messages?.[1]?.content))
-          output = { pages: fixture('vision').pages, components: [], assets: [] };
-        else {
-          const planned = plans.shift();
-          assert.ok(planned, 'Unexpected provider request');
-          output = typeof planned === 'function' ? await planned(input) : planned;
-        }
-        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
-      } catch (error) {
-        res.statusCode = 500;
-        res.end(JSON.stringify({ error: { message: error.message } }));
+  .createServer(async (req, res) => {
+    try {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const input = JSON.parse(body);
+      providerRequests.push(input);
+      res.setHeader('Content-Type', 'application/json');
+      if (req.url === '/v1/images/generations')
+        return res.end(
+          JSON.stringify({
+            data: [
+              {
+                b64_json:
+                  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+              },
+            ],
+          }),
+        );
+      let output;
+      if (Array.isArray(input.messages?.[1]?.content))
+        output = { pages: fixture('vision').pages, components: [], assets: [] };
+      else {
+        const planned = plans.shift();
+        assert.ok(planned, 'Unexpected provider request');
+        output = typeof planned === 'function' ? await planned(input) : planned;
       }
-    },
-  )
+      res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
+    } catch (error) {
+      res.statusCode = 500;
+      res.end(JSON.stringify({ error: { message: error.message } }));
+    }
+  })
   .listen(0, '127.0.0.1');
-await new Promise(
-  /** 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-  (resolve) => provider.once('listening', resolve),
-);
+await new Promise((resolve) => provider.once('listening', resolve));
 /**
  * 配置场景所需的模型连接，让检查过程使用可控的上游响应。
  * @returns 配置操作的结果。
@@ -153,32 +138,16 @@ const configure = () =>
  * @returns 模拟计划数据。
  */
 const plan = (actions) => ({ message: '准备执行请求。', actions });
-after(
-  /**
-   * 组织当前场景的准备或清理步骤。
-   * @returns 完成当前检查或生命周期操作。
-   */
-  async () => {
-    await Promise.all([
-      new Promise(
-        /** 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-        (resolve) => server.close(resolve),
-      ),
-      new Promise(
-        /** 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-        (resolve) => provider.close(resolve),
-      ),
-    ]);
-    assert.equal(path.dirname(path.resolve(directory)), path.resolve(os.tmpdir()));
-    assert.ok(path.basename(directory).startsWith('forma-agent-test-'));
-    await rm(directory, { recursive: true, force: true });
-  },
-);
+after(async () => {
+  await Promise.all([
+    new Promise((resolve) => server.close(resolve)),
+    new Promise((resolve) => provider.close(resolve)),
+  ]);
+  assert.equal(path.dirname(path.resolve(directory)), path.resolve(os.tmpdir()));
+  assert.ok(path.basename(directory).startsWith('forma-agent-test-'));
+  await rm(directory, { recursive: true, force: true });
+});
 
-/**
- * 验证provider errors and real conversation history persist across a new process。
- * @returns 完成当前检查或生命周期操作。
- */
 test('provider errors and real conversation history persist across a new process', async () => {
   const session = (await api('/agent/sessions', 'POST', {})).body;
   const reply = await api(`/agent/sessions/${session.id}/messages`, 'POST', {
@@ -204,10 +173,6 @@ test('provider errors and real conversation history persist across a new process
   await configure();
 });
 
-/**
- * 验证global chat creates a bound project, tokens, variables and reusable components。
- * @returns 完成当前检查或生命周期操作。
- */
 test('global chat creates a bound project, tokens, variables and reusable components', async () => {
   const session = (await api('/agent/sessions', 'POST', {})).body;
   plans.push(
@@ -267,12 +232,7 @@ test('global chat creates a bound project, tokens, variables and reusable compon
   assert.equal(reply.body.session.scope, 'global');
   assert.equal(reply.body.session.projectId, reply.body.project.id);
   assert.equal(reply.body.message.actions.length, 4);
-  assert.ok(
-    reply.body.message.actions.every(
-      /** 检查 action 的状态等于“completed”，供集合筛选或定位使用。 @param action - 当前要执行的操作或操作结果分类。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (action) => action.status === 'completed',
-    ),
-  );
+  assert.ok(reply.body.message.actions.every((action) => action.status === 'completed'));
   const persisted = (await api(`/projects/${reply.body.project.id}`)).body;
   assert.equal(persisted.components[0].id, 'agent-button');
   assert.equal(persisted.revision, 4);
@@ -284,10 +244,6 @@ test('global chat creates a bound project, tokens, variables and reusable compon
   assert.equal(followup.status, 409);
 });
 
-/**
- * 验证project chat isolates scope and keeps active theme modes and bindings consistent。
- * @returns 完成当前检查或生命周期操作。
- */
 test('project chat isolates scope and keeps active theme modes and bindings consistent', async () => {
   const initial = fixture('scope-a');
   initial.themeModes = { dark: { ...tokens, background: '#101010' } };
@@ -322,18 +278,9 @@ test('project chat isolates scope and keeps active theme modes and bindings cons
     (await api(`/agent/sessions?projectId=${first.id}`)).body.sessions[0].id,
     session.id,
   );
-  assert.ok(
-    !(await api('/agent/sessions')).body.sessions.some(
-      /** 检查条目的标识等于会话的标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === session.id,
-    ),
-  );
+  assert.ok(!(await api('/agent/sessions')).body.sessions.some((item) => item.id === session.id));
 });
 
-/**
- * 验证model planning cannot approve images and explicit image review gates reconstruction。
- * @returns 完成当前检查或生命周期操作。
- */
 test('model planning cannot approve images and explicit image review gates reconstruction', async () => {
   const project = (await api('/projects/image-chat', 'PUT', fixture('image-chat'))).body;
   const session = (await api('/agent/sessions', 'POST', { projectId: project.id })).body;
@@ -385,35 +332,20 @@ test('model planning cannot approve images and explicit image review gates recon
   });
   assert.equal(reconstructed.status, 200);
   assert.equal(reconstructed.body.project.pages[0].nodes[0].text, 'Existing');
-  assert.ok(
-    providerRequests.some(
-      /** 判断 agent.test 中的条目是否符合检查条件。 @param request - 当前请求或待处理的请求参数。 @returns 该条目是否符合条件。 */
-      (request) => Array.isArray(request.messages?.[1]?.content),
-    ),
-  );
+  assert.ok(providerRequests.some((request) => Array.isArray(request.messages?.[1]?.content)));
 });
 
-/**
- * 验证concurrent project changes reject a stale planned mutation and preserve actual state。
- * @returns 完成当前检查或生命周期操作。
- */
 test('concurrent project changes reject a stale planned mutation and preserve actual state', async () => {
   const project = (await api('/projects/stale-chat', 'PUT', fixture('stale-chat'))).body;
   const session = (await api('/agent/sessions', 'POST', { projectId: project.id })).body;
-  plans.push(
-    /**
-     * 执行 agent.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const update = await api(`/projects/${project.id}`, 'PUT', {
-        ...project,
-        name: 'Changed elsewhere',
-      });
-      assert.equal(update.status, 200);
-      return plan([{ type: 'update_tokens', tokens: { primary: '#ff0000' } }]);
-    },
-  );
+  plans.push(async () => {
+    const update = await api(`/projects/${project.id}`, 'PUT', {
+      ...project,
+      name: 'Changed elsewhere',
+    });
+    assert.equal(update.status, 200);
+    return plan([{ type: 'update_tokens', tokens: { primary: '#ff0000' } }]);
+  });
   const reply = await api(`/agent/sessions/${session.id}/messages`, 'POST', {
     content: '修改主色',
   });
@@ -426,10 +358,6 @@ test('concurrent project changes reject a stale planned mutation and preserve ac
   assert.equal(reply.body.project.revision, stored.revision);
 });
 
-/**
- * 验证sync requires a reviewed session preview and rejects stale revisions or file changes。
- * @returns 完成当前检查或生命周期操作。
- */
 test('sync requires a reviewed session preview and rejects stale revisions or file changes', async () => {
   let project = (await api('/projects/sync-chat', 'PUT', fixture('sync-chat'))).body;
   const workspace = path.join(directory, 'workspace');
@@ -506,10 +434,6 @@ test('sync requires a reviewed session preview and rejects stale revisions or fi
   );
 });
 
-/**
- * 验证chat mutations respect established automatic sync without bypassing first manual synchronization。
- * @returns 完成当前检查或生命周期操作。
- */
 test('chat mutations respect established automatic sync without bypassing first manual synchronization', async () => {
   let project = (await api('/projects/auto-chat', 'PUT', fixture('auto-chat'))).body;
   const workspace = path.join(directory, 'auto-workspace');
@@ -530,11 +454,9 @@ test('chat mutations respect established automatic sync without bypassing first 
   });
   assert.equal(beforeFirstSync.status, 200);
   assert.equal(beforeFirstSync.body.message.actions[0].autoSynced, undefined);
-  await assert.rejects(
-    /** 执行 agent.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => readFile(path.join(workspace, 'forma-generated', 'tokens.css')),
-    { code: 'ENOENT' },
-  );
+  await assert.rejects(() => readFile(path.join(workspace, 'forma-generated', 'tokens.css')), {
+    code: 'ENOENT',
+  });
   project = (
     await api('/sync/apply', 'POST', {
       projectId: project.id,
@@ -566,47 +488,21 @@ test('chat mutations respect established automatic sync without bypassing first 
   );
 });
 
-/**
- * 验证a session rejects a second turn while its model request is still running。
- * @returns 完成当前检查或生命周期操作。
- */
 test('a session rejects a second turn while its model request is still running', async () => {
   const project = (await api('/projects/busy-chat', 'PUT', fixture('busy-chat'))).body;
   const session = (await api('/agent/sessions', 'POST', { projectId: project.id })).body;
   let begin, release;
-  const entered = new Promise(
-    /**
-     * 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-     *
-     * @param resolve - 异步操作成功时调用的完成函数。
-     * @returns 无返回值；通过 resolve 或 reject 结束等待。
-     */
-    (resolve) => {
-      begin = resolve;
-    },
-  );
-  const gate = new Promise(
-    /**
-     * 把 agent.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-     *
-     * @param resolve - 异步操作成功时调用的完成函数。
-     * @returns 无返回值；通过 resolve 或 reject 结束等待。
-     */
-    (resolve) => {
-      release = resolve;
-    },
-  );
-  plans.push(
-    /**
-     * 执行 agent.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      begin();
-      await gate;
-      return plan([]);
-    },
-  );
+  const entered = new Promise((resolve) => {
+    begin = resolve;
+  });
+  const gate = new Promise((resolve) => {
+    release = resolve;
+  });
+  plans.push(async () => {
+    begin();
+    await gate;
+    return plan([]);
+  });
   const first = api(`/agent/sessions/${session.id}/messages`, 'POST', { content: '第一条消息' });
   await entered;
   try {

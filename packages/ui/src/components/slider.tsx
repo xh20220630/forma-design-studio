@@ -22,7 +22,6 @@ function Slider({
   ...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
   const _values = React.useMemo(
-    /** 计算滑块的派生数据，并在依赖未变化时复用结果。 @returns 当前步骤的处理结果。 */
     () => (Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min, max]),
     [value, defaultValue, min, max],
   );
@@ -53,23 +52,13 @@ function Slider({
           )}
         />
       </SliderPrimitive.Track>
-      {Array.from(
-        { length: _values.length },
-        /**
-         * 执行滑块传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param _ - 当前步骤不使用的占位参数。
-         * @param index - 空间查询索引或当前条目的位置。
-         * @returns 当前步骤的处理结果。
-         */
-        (_, index) => (
-          <SliderPrimitive.Thumb
-            data-slot="slider-thumb"
-            key={index}
-            className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
-          />
-        ),
-      )}
+      {Array.from({ length: _values.length }, (_, index) => (
+        <SliderPrimitive.Thumb
+          data-slot="slider-thumb"
+          key={index}
+          className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring/50 transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+        />
+      ))}
     </SliderPrimitive.Root>
   );
 }

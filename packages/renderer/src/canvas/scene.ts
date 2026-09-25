@@ -89,22 +89,12 @@ export class SceneCompiler {
       project.activeVariableModes,
       project.components,
     ];
-    if (
-      dependencies.some(
-        /** 检查取值不等于的dependencies中指定项，供集合筛选或定位使用。 @param value - 当前字段、模式或控件的取值。 @param index - 空间查询索引或当前条目的位置。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (value, index) => value !== this.dependencies[index],
-      )
-    ) {
+    if (dependencies.some((value, index) => value !== this.dependencies[index])) {
       this.resolved = new WeakMap();
       this.geometry = new WeakMap();
       this.dependencies = dependencies;
     }
-    /**
-     * 复用节点属性解析结果，避免相机或选择变化时破坏绘图缓存。
-     *
-     * @param input - 当前步骤需要处理的输入。
-     * @returns 应用主题和变量后的节点。
-     */
+    // 复用解析后的节点对象，让相机或选区变化时仍可命中绘图缓存。
     const resolve = (input: DesignNode) => {
       let node = this.resolved.get(input);
       if (!node) {
@@ -114,36 +104,12 @@ export class SceneCompiler {
       return node;
     };
     const scene: CanvasScene = { entries: [], index: new SpatialIndex(), nodes: new Map() };
-    const components = new Map(
-      project.components.map(
-        /** 转换 compile 中的集合条目，供后续处理或展示。 @param component - 当前组件母版或组件规范。 @returns 当前条目转换后的结果。 */
-        (component) => [component.id, component],
-      ),
-    );
-    /**
-     * 递归展开节点与组件实例，继承透明度、裁剪和交互目标。
-     *
-     * @param inputs - 当前递归层需要处理的节点集合。
-     * @param base - 当前层级继承的基础变换或比较基线。
-     * @param inherited - 从父层或组件实例继承的场景条目。
-     * @param depth - 当前递归层级，用于控制缩进或限制展开深度。
-     * @returns 无返回值；向当前场景追加条目。
-     */
+    const components = new Map(project.components.map((component) => [component.id, component]));
+    // 展开组件实例时继续继承祖先的透明度、裁剪和交互目标。
     const append = (inputs: DesignNode[], base: Matrix, inherited?: SceneEntry, depth = 0) => {
-      const byId = new Map(
-        inputs.map(
-          /** 转换 append 中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-          (node) => [node.id, node],
-        ),
-      );
+      const byId = new Map(inputs.map((node) => [node.id, node]));
       const computed = new Map<string, SceneEntry>();
       const visiting = new Set<string>();
-      /**
-       * 沿祖先链计算场景条目并拦截循环引用，避免畸形层级卡住渲染。
-       *
-       * @param input - 当前步骤需要处理的输入。
-       * @returns 计算或缓存的场景条目；无效几何返回 undefined。
-       */
       const entryFor = (input: DesignNode): SceneEntry | undefined => {
         if (computed.has(input.id)) return computed.get(input.id);
         // Imported malformed hierarchies must not hang the renderer.
@@ -219,23 +185,15 @@ export class SceneCompiler {
           component.width > 0 &&
           component.height > 0
         ) {
-          const children = component.nodes.map(
-            /**
-             * 转换 append 中的集合条目，供后续处理或展示。
-             *
-             * @param child - 当前处理的子节点。
-             * @returns 当前条目转换后的结果。
-             */
-            (child) => ({
-              ...resolve(child),
-              ...entry.node.overrides?.[child.id],
-              ...(entry.node.overrides?.[child.id]?.fill !== undefined
-                ? { gradient: undefined }
-                : {}),
-              tokenBindings: undefined,
-              variableBindings: undefined,
-            }),
-          );
+          const children = component.nodes.map((child) => ({
+            ...resolve(child),
+            ...entry.node.overrides?.[child.id],
+            ...(entry.node.overrides?.[child.id]?.fill !== undefined
+              ? { gradient: undefined }
+              : {}),
+            tokenBindings: undefined,
+            variableBindings: undefined,
+          }));
           append(
             children,
             multiply(entry.matrix, [

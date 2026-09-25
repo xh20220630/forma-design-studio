@@ -68,30 +68,17 @@ export function Choice({
   return (
     <Select
       value={value || '__none'}
-      onValueChange={
-        /** 响应 onValueChange 交互，将用户操作应用到选项选择控件。 @param value - 当前字段、模式或控件的取值。 @returns 无返回值；通过副作用完成当前操作。 */
-        (value) => onChange(value === '__none' ? '' : value)
-      }
+      onValueChange={(value) => onChange(value === '__none' ? '' : value)}
     >
       <SelectTrigger aria-label={label} className="ed-select">
         <SelectValue />
       </SelectTrigger>
       <SelectContent className="ed-select-menu">
-        {options.map(
-          /**
-           * 转换选项选择控件中的集合条目，供后续处理或展示。
-           *
-           * @param options - 按顺序解构的当前条目。
-           * @param options.key - 要访问或更新的字段名。
-           * @param options.text - 需要展示或编辑的文字内容。
-           * @returns 当前条目转换后的结果。
-           */
-          ([key, text]) => (
-            <SelectItem key={key || '__none'} value={key || '__none'}>
-              {text}
-            </SelectItem>
-          ),
-        )}
+        {options.map(([key, text]) => (
+          <SelectItem key={key || '__none'} value={key || '__none'}>
+            {text}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -143,19 +130,11 @@ export function NumberField({
         min={min}
         max={max}
         step={step}
-        onChange={
-          /**
-           * 响应 onChange 交互，将用户操作应用到数值属性输入框。
-           *
-           * @param event - 当前事件及其触发位置。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          (event) => {
-            const next = Number(event.target.value);
-            if (Number.isFinite(next))
-              onChange(Math.min(max ?? Infinity, Math.max(min ?? -Infinity, next)));
-          }
-        }
+        onChange={(event) => {
+          const next = Number(event.target.value);
+          if (Number.isFinite(next))
+            onChange(Math.min(max ?? Infinity, Math.max(min ?? -Infinity, next)));
+        }}
       />
     </label>
   );
@@ -190,30 +169,14 @@ function ColorTextField({
       key={value}
       aria-label={label}
       defaultValue={value}
-      onBlur={
-        /**
-         * 响应 onBlur 交互，将用户操作应用到颜色属性输入框。
-         *
-         * @param event - 当前事件及其触发位置。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (event) => {
-          const next = event.target.value.trim();
-          if (next && CSS.supports('color', next)) onChange(next);
-          else event.target.value = value;
-        }
-      }
-      onKeyDown={
-        /**
-         * 响应 onKeyDown 交互，将用户操作应用到颜色属性输入框。
-         *
-         * @param event - 当前事件及其触发位置。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (event) => {
-          if (event.key === 'Enter') event.currentTarget.blur();
-        }
-      }
+      onBlur={(event) => {
+        const next = event.target.value.trim();
+        if (next && CSS.supports('color', next)) onChange(next);
+        else event.target.value = value;
+      }}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter') event.currentTarget.blur();
+      }}
     />
   );
 }
@@ -246,17 +209,7 @@ export function PropertySection({
       <h3>
         <button
           className="ed-property-heading"
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到属性分组。
-             * @returns 当前步骤的处理结果。
-             */
-            () =>
-              setCollapsed(
-                /** 基于最新状态计算 Collapsed 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                (value) => !value,
-              )
-          }
+          onClick={() => setCollapsed((value) => !value)}
           aria-expanded={!collapsed}
         >
           <motion.span animate={{ rotate: collapsed ? -90 : 0 }} transition={transition}>
@@ -420,12 +373,6 @@ export default function Inspector({
   /** 界面状态：当前正在编辑的组件母版。通过状态更新驱动界面刷新。 */
   const [editingMaster, setEditingMaster] = useState(false);
   const tokens = getProjectTokens(project);
-  /**
-   * 把检查面板的主题修改提交到项目。
-   *
-   * @param patch - 仅包含本次要修改字段的局部更新。
-   * @returns 无返回值；通过副作用完成当前操作。
-   */
   const updateTokens = (patch: Partial<ThemeTokens>) => {
     const next = { ...tokens, ...patch };
     commit({
@@ -437,57 +384,22 @@ export default function Inspector({
     });
   };
   const selected = selection[0];
-  const component = project.components.find(
-    /** 检查条目的标识等于 selected 的组件引用，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.id === selected?.componentId,
-  );
-  /**
-   * 更新当前输入草稿，保留原内容供保存时检测冲突。
-   *
-   * @param patch - 仅包含本次要修改字段的局部更新。
-   * @returns 无返回值；更新编辑草稿。
-   */
+  const component = project.components.find((item) => item.id === selected?.componentId);
   const change = (patch: Partial<DesignNode>) => selected && updateNode(selected.id, patch);
-  /**
-   * 构建变量绑定控件，让属性面板可以选择集合与变量。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param type - 用于区分数据形态或行为分支的类型。
-   * @param title - 界面显示的标题。
-   * @returns 当前步骤的处理结果。
-   */
   const variableField = (
     key: string,
     type: 'color' | 'number' | 'string' | 'boolean',
     title: string,
   ) => {
-    const variables = (project.variableCollections ?? []).flatMap(
-      /**
-       * 转换 variableField 中的集合条目并展开结果，供后续处理或展示。
-       *
-       * @param collection - 当前处理的设计变量集合。
-       * @returns 当前条目展开后的结果。
-       */
-      (collection) =>
-        collection.variables
-          .filter(
-            /** 检查 variable 的类型等于类型，供集合筛选或定位使用。 @param variable - 当前设计变量定义。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (variable) => variable.type === type,
-          )
-          .map(
-            /**
-             * 转换 variableField 中的集合条目，供后续处理或展示。
-             *
-             * @param variable - 当前设计变量定义。
-             * @returns 当前条目转换后的结果。
-             */
-            (variable) => ({
-              value: `${collection.id}:${variable.id}`,
-              label: `${collection.name} / ${variable.name}`,
-              collectionId: collection.id,
-              variableId: variable.id,
-            }),
-          ),
+    const variables = (project.variableCollections ?? []).flatMap((collection) =>
+      collection.variables
+        .filter((variable) => variable.type === type)
+        .map((variable) => ({
+          value: `${collection.id}:${variable.id}`,
+          label: `${collection.name} / ${variable.name}`,
+          collectionId: collection.id,
+          variableId: variable.id,
+        })),
     );
     if (!variables.length) return null;
     const current = selected.variableBindings?.[key];
@@ -497,43 +409,22 @@ export default function Inspector({
         value={current ? `${current.collectionId}:${current.variableId}` : ''}
         options={[
           ['', `${title} · 不绑定`],
-          ...variables.map(
-            /** 转换 variableField 中的集合条目，供后续处理或展示。 @param variable - 当前设计变量定义。 @returns 当前条目转换后的结果。 */
-            (variable) => [variable.value, variable.label] as [string, string],
-          ),
+          ...variables.map((variable) => [variable.value, variable.label] as [string, string]),
         ]}
-        onChange={
-          /**
-           * 响应 onChange 交互，将用户操作应用到variableField。
-           *
-           * @param value - 当前字段、模式或控件的取值。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          (value) => {
-            const variableBindings = { ...selected.variableBindings };
-            const next = variables.find(
-              /** 检查 variable 的取值等于取值，供集合筛选或定位使用。 @param variable - 当前设计变量定义。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-              (variable) => variable.value === value,
-            );
-            if (next)
-              variableBindings[key] = {
-                collectionId: next.collectionId,
-                variableId: next.variableId,
-              };
-            else delete variableBindings[key];
-            change({ variableBindings });
-          }
-        }
+        onChange={(value) => {
+          const variableBindings = { ...selected.variableBindings };
+          const next = variables.find((variable) => variable.value === value);
+          if (next)
+            variableBindings[key] = {
+              collectionId: next.collectionId,
+              variableId: next.variableId,
+            };
+          else delete variableBindings[key];
+          change({ variableBindings });
+        }}
       />
     );
   };
-  /**
-   * 校验模型绑定与供应商能力是否匹配。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param token - 当前处理的设计 Token。
-   * @returns 通过校验的模型绑定。
-   */
   const binding = (key: string, token: string) => {
     if (!selected) return;
     const tokenBindings = { ...selected.tokenBindings };
@@ -541,24 +432,11 @@ export default function Inspector({
     else delete tokenBindings[key];
     change({ tokenBindings });
   };
-  /**
-   * 移除当前属性绑定，使直接填写的属性值重新生效。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @returns 当前步骤的处理结果。
-   */
   const unbound = (key: string) => {
     const bindings = { ...selected.tokenBindings };
     delete bindings[key];
     return bindings;
   };
-  /**
-   * 构建颜色属性控件，统一颜色值和绑定入口。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param label - 面向用户显示的简短标签。
-   * @returns 当前步骤的处理结果。
-   */
   const colorField = (key: 'fill' | 'color' | 'stroke', label: string) => {
     const token = selected.tokenBindings?.[key];
     const value = String(
@@ -571,34 +449,22 @@ export default function Inspector({
             type="color"
             aria-label={`${label}拾色器`}
             value={/^#[0-9a-f]{6}$/i.test(value) ? value : '#ffffff'}
-            onChange={
-              /** 响应 onChange 交互，将用户操作应用到colorField。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-              (event) => change({ [key]: event.target.value, tokenBindings: unbound(key) })
-            }
+            onChange={(event) => change({ [key]: event.target.value, tokenBindings: unbound(key) })}
           />
           <ColorTextField
             label={label}
             value={value}
-            onChange={
-              /** 响应 onChange 交互，将用户操作应用到colorField。 @param color - 文字或视觉元素的颜色。 @returns 无返回值；通过副作用完成当前操作。 */
-              (color) => change({ [key]: color, tokenBindings: unbound(key) })
-            }
+            onChange={(color) => change({ [key]: color, tokenBindings: unbound(key) })}
           />
           <span>100%</span>
         </div>
         <Choice
           label={`${label}变量`}
           value={String(token ?? '')}
-          onChange={
-            /** 响应 onChange 交互，将用户操作应用到colorField。 @param value - 当前字段、模式或控件的取值。 @returns 无返回值；通过副作用完成当前操作。 */
-            (value) => binding(key, value)
-          }
+          onChange={(value) => binding(key, value)}
           options={[
             ['', '独立值 · 绑定变量'],
-            ...colorKeys.map(
-              /** 转换 colorField 中的集合条目，供后续处理或展示。 @param key - 要访问或更新的字段名。 @returns 当前条目转换后的结果。 */
-              (key) => [key, `◇ ${key}`] as [string, string],
-            ),
+            ...colorKeys.map((key) => [key, `◇ ${key}`] as [string, string]),
           ]}
         />
       </>
@@ -629,10 +495,7 @@ export default function Inspector({
                       size="icon"
                       variant="ghost"
                       title="锁定图层"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => updateSelected({ locked: !selected.locked })
-                      }
+                      onClick={() => updateSelected({ locked: !selected.locked })}
                     >
                       <LockKeyhole size={13} />
                     </Button>
@@ -641,10 +504,7 @@ export default function Inspector({
                   <Input
                     aria-label="图层名称"
                     value={selected.name}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                      (event) => change({ name: event.target.value })
-                    }
+                    onChange={(event) => change({ name: event.target.value })}
                   />
                 </PropertySection>
                 <PropertySection title="位置">
@@ -656,69 +516,35 @@ export default function Inspector({
                       ['top', '顶部对齐', AlignStartHorizontal],
                       ['middle', '垂直居中', AlignCenterHorizontal],
                       ['bottom', '底部对齐', AlignEndHorizontal],
-                    ].map(
-                      /**
-                       * 转换属性检查面板中的集合条目，供后续处理或展示。
-                       *
-                       * @param options - 按顺序解构的当前条目。
-                       * @param options.mode - 当前使用的模式或操作方式。
-                       * @param options.title - 界面显示的标题。
-                       * @param options.Icon - 作为控件图标渲染的 React 组件。
-                       * @returns 当前条目转换后的结果。
-                       */
-                      ([mode, title, Icon]) => {
-                        const Glyph = Icon as typeof AlignStartVertical;
-                        return (
-                          <Button
-                            key={String(mode)}
-                            size="icon"
-                            variant="ghost"
-                            title={String(title)}
-                            onClick={
-                              /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                              () => align(String(mode))
-                            }
-                          >
-                            <Glyph size={15} />
-                          </Button>
-                        );
-                      },
-                    )}
+                    ].map(([mode, title, Icon]) => {
+                      const Glyph = Icon as typeof AlignStartVertical;
+                      return (
+                        <Button
+                          key={String(mode)}
+                          size="icon"
+                          variant="ghost"
+                          title={String(title)}
+                          onClick={() => align(String(mode))}
+                        >
+                          <Glyph size={15} />
+                        </Button>
+                      );
+                    })}
                   </div>
                   <div className="ed-two-fields">
-                    <NumberField
-                      label="X"
-                      value={selected.x}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param x - 水平方向的位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (x) => change({ x })
-                      }
-                    />
-                    <NumberField
-                      label="Y"
-                      value={selected.y}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param y - 垂直方向的位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (y) => change({ y })
-                      }
-                    />
+                    <NumberField label="X" value={selected.x} onChange={(x) => change({ x })} />
+                    <NumberField label="Y" value={selected.y} onChange={(y) => change({ y })} />
                     <NumberField
                       label="旋转"
                       value={selected.rotation ?? 0}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param rotation - 围绕中心旋转的角度，单位为度。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (rotation) => updateSelected({ rotation })
-                      }
+                      onChange={(rotation) => updateSelected({ rotation })}
                     />
                     <div className="ed-inline-actions">
                       <Button
                         size="icon"
                         variant="ghost"
                         title="水平翻转"
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => updateSelected({ flipX: !selected.flipX })
-                        }
+                        onClick={() => updateSelected({ flipX: !selected.flipX })}
                       >
                         <FlipHorizontal2 size={15} />
                       </Button>
@@ -726,10 +552,7 @@ export default function Inspector({
                         size="icon"
                         variant="ghost"
                         title="垂直翻转"
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => updateSelected({ flipY: !selected.flipY })
-                        }
+                        onClick={() => updateSelected({ flipY: !selected.flipY })}
                       >
                         <FlipVertical2 size={15} />
                       </Button>
@@ -737,23 +560,11 @@ export default function Inspector({
                   </div>
                   {selection.length > 2 && (
                     <div className="ed-row-buttons">
-                      <Button
-                        variant="secondary"
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => align('distributeX')
-                        }
-                      >
+                      <Button variant="secondary" onClick={() => align('distributeX')}>
                         <AlignHorizontalDistributeCenter size={13} />
                         水平分布
                       </Button>
-                      <Button
-                        variant="secondary"
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => align('distributeY')
-                        }
-                      >
+                      <Button variant="secondary" onClick={() => align('distributeY')}>
                         <AlignVerticalDistributeCenter size={13} />
                         垂直分布
                       </Button>
@@ -768,12 +579,10 @@ export default function Inspector({
                       variant="ghost"
                       title="锁定宽高比"
                       data-active={selected.aspectRatioLocked}
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () =>
-                          change({
-                            aspectRatioLocked: !selected.aspectRatioLocked,
-                          })
+                      onClick={() =>
+                        change({
+                          aspectRatioLocked: !selected.aspectRatioLocked,
+                        })
                       }
                     >
                       <Link2 size={13} />
@@ -785,44 +594,30 @@ export default function Inspector({
                       label="W"
                       value={selected.width}
                       min={1}
-                      onChange={
-                        /**
-                         * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                         *
-                         * @param width - 对象的宽度。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        (width) =>
-                          change({
-                            width,
-                            ...(selected.aspectRatioLocked
-                              ? {
-                                  height: (width / selected.width) * selected.height,
-                                }
-                              : {}),
-                          })
+                      onChange={(width) =>
+                        change({
+                          width,
+                          ...(selected.aspectRatioLocked
+                            ? {
+                                height: (width / selected.width) * selected.height,
+                              }
+                            : {}),
+                        })
                       }
                     />
                     <NumberField
                       label="H"
                       value={selected.height}
                       min={1}
-                      onChange={
-                        /**
-                         * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                         *
-                         * @param height - 对象的高度。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        (height) =>
-                          change({
-                            height,
-                            ...(selected.aspectRatioLocked
-                              ? {
-                                  width: (height / selected.height) * selected.width,
-                                }
-                              : {}),
-                          })
+                      onChange={(height) =>
+                        change({
+                          height,
+                          ...(selected.aspectRatioLocked
+                            ? {
+                                width: (height / selected.height) * selected.width,
+                              }
+                            : {}),
+                        })
                       }
                     />
                   </div>
@@ -833,10 +628,7 @@ export default function Inspector({
                         <Choice
                           label="自动布局方向"
                           value={selected.layout ?? 'none'}
-                          onChange={
-                            /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param layout - 容器的排列方式，决定是否自动计算子节点位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (layout) => change({ layout: layout as DesignNode['layout'] })
-                          }
+                          onChange={(layout) => change({ layout: layout as DesignNode['layout'] })}
                           options={[
                             ['none', '自由布局'],
                             ['horizontal', '→ 水平'],
@@ -851,59 +643,41 @@ export default function Inspector({
                             <NumberField
                               label="间距"
                               value={selected.gap ?? 16}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param gap - 相邻子元素之间的间距。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (gap) => change({ gap })
-                              }
+                              onChange={(gap) => change({ gap })}
                             />
                             <NumberField
                               label="内边距"
                               value={selected.padding ?? 16}
                               min={0}
-                              onChange={
-                                /**
-                                 * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                                 *
-                                 * @param padding - 四个方向共用的内边距。
-                                 * @returns 无返回值；通过副作用完成当前操作。
-                                 */
-                                (padding) =>
-                                  change({
-                                    padding,
-                                    paddingX: undefined,
-                                    paddingY: undefined,
-                                  })
+                              onChange={(padding) =>
+                                change({
+                                  padding,
+                                  paddingX: undefined,
+                                  paddingY: undefined,
+                                })
                               }
                             />
                             <NumberField
                               label="水平边距"
                               value={selected.paddingX ?? selected.padding ?? 16}
                               min={0}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param paddingX - 水平方向内边距，用于覆盖共用内边距。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (paddingX) => change({ paddingX })
-                              }
+                              onChange={(paddingX) => change({ paddingX })}
                             />
                             <NumberField
                               label="垂直边距"
                               value={selected.paddingY ?? selected.padding ?? 16}
                               min={0}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param paddingY - 垂直方向内边距，用于覆盖共用内边距。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (paddingY) => change({ paddingY })
-                              }
+                              onChange={(paddingY) => change({ paddingY })}
                             />
                           </div>
                           <div className="ed-two-fields">
                             <Choice
                               label="交叉轴对齐"
                               value={selected.alignItems ?? 'start'}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param alignItems - 子元素在布局交叉轴上的对齐方式。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (alignItems) =>
-                                  change({
-                                    alignItems: alignItems as DesignNode['alignItems'],
-                                  })
+                              onChange={(alignItems) =>
+                                change({
+                                  alignItems: alignItems as DesignNode['alignItems'],
+                                })
                               }
                               options={[
                                 ['start', '起点对齐'],
@@ -915,12 +689,10 @@ export default function Inspector({
                             <Choice
                               label="主轴分布"
                               value={selected.justifyContent ?? 'start'}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param justifyContent - 子元素在布局主轴上的对齐或分布方式。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (justifyContent) =>
-                                  change({
-                                    justifyContent: justifyContent as DesignNode['justifyContent'],
-                                  })
+                              onChange={(justifyContent) =>
+                                change({
+                                  justifyContent: justifyContent as DesignNode['justifyContent'],
+                                })
                               }
                               options={[
                                 ['start', '起点分布'],
@@ -934,18 +706,11 @@ export default function Inspector({
                             <Choice
                               label="容器宽度策略"
                               value={selected.sizingHorizontal ?? 'fixed'}
-                              onChange={
-                                /**
-                                 * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                                 *
-                                 * @param sizingHorizontal - 宽度策略：fixed 固定、hug 随内容、fill 填满可用空间。
-                                 * @returns 无返回值；通过副作用完成当前操作。
-                                 */
-                                (sizingHorizontal) =>
-                                  change({
-                                    sizingHorizontal:
-                                      sizingHorizontal as DesignNode['sizingHorizontal'],
-                                  })
+                              onChange={(sizingHorizontal) =>
+                                change({
+                                  sizingHorizontal:
+                                    sizingHorizontal as DesignNode['sizingHorizontal'],
+                                })
                               }
                               options={[
                                 ['fixed', '固定宽度'],
@@ -955,12 +720,10 @@ export default function Inspector({
                             <Choice
                               label="容器高度策略"
                               value={selected.sizingVertical ?? 'fixed'}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param sizingVertical - 高度策略：fixed 固定、hug 随内容、fill 填满可用空间。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (sizingVertical) =>
-                                  change({
-                                    sizingVertical: sizingVertical as DesignNode['sizingVertical'],
-                                  })
+                              onChange={(sizingVertical) =>
+                                change({
+                                  sizingVertical: sizingVertical as DesignNode['sizingVertical'],
+                                })
                               }
                               options={[
                                 ['fixed', '固定高度'],
@@ -975,10 +738,7 @@ export default function Inspector({
                         <Switch
                           aria-label="裁剪内容"
                           checked={!!selected.clipContent}
-                          onCheckedChange={
-                            /** 响应 onCheckedChange 交互，将用户操作应用到属性检查面板。 @param clipContent - 是否裁剪超出容器边界的子内容。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (clipContent) => change({ clipContent })
-                          }
+                          onCheckedChange={(clipContent) => change({ clipContent })}
                         />
                       </label>
                     </>
@@ -989,20 +749,13 @@ export default function Inspector({
                         <Choice
                           label="水平约束"
                           value={selected.constraints?.horizontal ?? 'left'}
-                          onChange={
-                            /**
-                             * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                             *
-                             * @param horizontal - 水平方向的约束或布局设置。
-                             * @returns 无返回值；通过副作用完成当前操作。
-                             */
-                            (horizontal) =>
-                              change({
-                                constraints: {
-                                  horizontal: horizontal as 'left',
-                                  vertical: selected.constraints?.vertical ?? 'top',
-                                },
-                              })
+                          onChange={(horizontal) =>
+                            change({
+                              constraints: {
+                                horizontal: horizontal as 'left',
+                                vertical: selected.constraints?.vertical ?? 'top',
+                              },
+                            })
                           }
                           options={[
                             ['left', '固定左侧'],
@@ -1015,20 +768,13 @@ export default function Inspector({
                         <Choice
                           label="垂直约束"
                           value={selected.constraints?.vertical ?? 'top'}
-                          onChange={
-                            /**
-                             * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                             *
-                             * @param vertical - 垂直方向的约束或布局设置。
-                             * @returns 无返回值；通过副作用完成当前操作。
-                             */
-                            (vertical) =>
-                              change({
-                                constraints: {
-                                  vertical: vertical as 'top',
-                                  horizontal: selected.constraints?.horizontal ?? 'left',
-                                },
-                              })
+                          onChange={(vertical) =>
+                            change({
+                              constraints: {
+                                vertical: vertical as 'top',
+                                horizontal: selected.constraints?.horizontal ?? 'left',
+                              },
+                            })
                           }
                           options={[
                             ['top', '固定顶部'],
@@ -1049,10 +795,7 @@ export default function Inspector({
                       value={(selected.opacity ?? 1) * 100}
                       min={0}
                       max={100}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param opacity - 不透明度，0 为完全透明，1 为完全不透明。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (opacity) => updateSelected({ opacity: opacity / 100 })
-                      }
+                      onChange={(opacity) => updateSelected({ opacity: opacity / 100 })}
                     />
                     <NumberField
                       label="圆角"
@@ -1062,21 +805,16 @@ export default function Inspector({
                           : (selected.radius ?? 0)
                       }
                       min={0}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param radius - 圆角大小。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (radius) => change({ radius, tokenBindings: unbound('radius') })
-                      }
+                      onChange={(radius) => change({ radius, tokenBindings: unbound('radius') })}
                     />
                   </div>
                   <Choice
                     label="混合模式"
                     value={selected.blendMode ?? 'normal'}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param blendMode - 图层与背景的颜色混合方式。 @returns 无返回值；通过副作用完成当前操作。 */
-                      (blendMode) =>
-                        updateSelected({
-                          blendMode: blendMode as DesignNode['blendMode'],
-                        })
+                    onChange={(blendMode) =>
+                      updateSelected({
+                        blendMode: blendMode as DesignNode['blendMode'],
+                      })
                     }
                     options={[
                       ['normal', '正常'],
@@ -1096,17 +834,12 @@ export default function Inspector({
                         size="icon"
                         variant="ghost"
                         title="移除填充"
-                        onClick={
-                          /**
-                           * 响应 onClick 交互，将用户操作应用到属性检查面板。
-                           * @returns 无返回值；通过副作用完成当前操作。
-                           */
-                          () =>
-                            change({
-                              fill: 'transparent',
-                              gradient: undefined,
-                              tokenBindings: unbound('fill'),
-                            })
+                        onClick={() =>
+                          change({
+                            fill: 'transparent',
+                            gradient: undefined,
+                            tokenBindings: unbound('fill'),
+                          })
                         }
                       >
                         <X size={13} />
@@ -1116,27 +849,18 @@ export default function Inspector({
                     <Choice
                       label="填充类型"
                       value={selected.gradient?.type ?? 'solid'}
-                      onChange={
-                        /**
-                         * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                         *
-                         * @param value - 当前字段、模式或控件的取值。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        (value) =>
-                          change({
-                            gradient:
-                              value === 'solid'
-                                ? undefined
-                                : {
-                                    type: value as 'linear' | 'radial',
-                                    from: selected.fill?.startsWith('#')
-                                      ? selected.fill
-                                      : '#0d99ff',
-                                    to: '#b9dfff',
-                                    angle: 135,
-                                  },
-                          })
+                      onChange={(value) =>
+                        change({
+                          gradient:
+                            value === 'solid'
+                              ? undefined
+                              : {
+                                  type: value as 'linear' | 'radial',
+                                  from: selected.fill?.startsWith('#') ? selected.fill : '#0d99ff',
+                                  to: '#b9dfff',
+                                  angle: 135,
+                                },
+                        })
                       }
                       options={[
                         ['solid', '纯色'],
@@ -1147,67 +871,43 @@ export default function Inspector({
                     {selected.gradient ? (
                       <>
                         <div className="ed-two-fields">
-                          {(['from', 'to'] as const).map(
-                            /**
-                             * 转换属性检查面板中的集合条目，供后续处理或展示。
-                             *
-                             * @param key - 要访问或更新的字段名。
-                             * @returns 当前条目转换后的结果。
-                             */
-                            (key) => (
-                              <label className="ed-gradient-stop" key={key}>
-                                <input
-                                  type="color"
-                                  aria-label={key === 'from' ? '渐变起始色' : '渐变结束色'}
-                                  value={selected.gradient![key]}
-                                  onChange={
-                                    /**
-                                     * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                                     *
-                                     * @param event - 当前事件及其触发位置。
-                                     * @returns 无返回值；通过副作用完成当前操作。
-                                     */
-                                    (event) =>
-                                      change({
-                                        gradient: {
-                                          ...selected.gradient!,
-                                          [key]: event.target.value,
-                                        },
-                                      })
-                                  }
-                                />
-                                <ColorTextField
-                                  label={key === 'from' ? '渐变起始色' : '渐变结束色'}
-                                  value={selected.gradient![key]}
-                                  onChange={
-                                    /**
-                                     * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                                     *
-                                     * @param color - 文字或视觉元素的颜色。
-                                     * @returns 无返回值；通过副作用完成当前操作。
-                                     */
-                                    (color) =>
-                                      change({
-                                        gradient: {
-                                          ...selected.gradient!,
-                                          [key]: color,
-                                        },
-                                      })
-                                  }
-                                />
-                              </label>
-                            ),
-                          )}
+                          {(['from', 'to'] as const).map((key) => (
+                            <label className="ed-gradient-stop" key={key}>
+                              <input
+                                type="color"
+                                aria-label={key === 'from' ? '渐变起始色' : '渐变结束色'}
+                                value={selected.gradient![key]}
+                                onChange={(event) =>
+                                  change({
+                                    gradient: {
+                                      ...selected.gradient!,
+                                      [key]: event.target.value,
+                                    },
+                                  })
+                                }
+                              />
+                              <ColorTextField
+                                label={key === 'from' ? '渐变起始色' : '渐变结束色'}
+                                value={selected.gradient![key]}
+                                onChange={(color) =>
+                                  change({
+                                    gradient: {
+                                      ...selected.gradient!,
+                                      [key]: color,
+                                    },
+                                  })
+                                }
+                              />
+                            </label>
+                          ))}
                         </div>
                         <NumberField
                           label="渐变角度"
                           value={selected.gradient.angle}
-                          onChange={
-                            /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param angle - 旋转或渐变方向的角度。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (angle) =>
-                              change({
-                                gradient: { ...selected.gradient!, angle },
-                              })
+                          onChange={(angle) =>
+                            change({
+                              gradient: { ...selected.gradient!, angle },
+                            })
                           }
                         />
                       </>
@@ -1223,16 +923,11 @@ export default function Inspector({
                       size="icon"
                       variant="ghost"
                       title={selected.stroke ? '移除描边' : '添加描边'}
-                      onClick={
-                        /**
-                         * 响应 onClick 交互，将用户操作应用到属性检查面板。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        () =>
-                          change({
-                            stroke: selected.stroke ? undefined : '#000000',
-                            strokeWidth: selected.stroke ? undefined : 1,
-                          })
+                      onClick={() =>
+                        change({
+                          stroke: selected.stroke ? undefined : '#000000',
+                          strokeWidth: selected.stroke ? undefined : 1,
+                        })
                       }
                     >
                       {selected.stroke ? <X size={13} /> : <Plus size={13} />}
@@ -1247,20 +942,15 @@ export default function Inspector({
                           label="粗细"
                           value={selected.strokeWidth ?? 1}
                           min={0}
-                          onChange={
-                            /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param strokeWidth - 描边宽度。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (strokeWidth) => change({ strokeWidth })
-                          }
+                          onChange={(strokeWidth) => change({ strokeWidth })}
                         />
                         <Choice
                           label="描边样式"
                           value={selected.strokeDash ?? 'solid'}
-                          onChange={
-                            /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param strokeDash - 描边线型。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (strokeDash) =>
-                              change({
-                                strokeDash: strokeDash as DesignNode['strokeDash'],
-                              })
+                          onChange={(strokeDash) =>
+                            change({
+                              strokeDash: strokeDash as DesignNode['strokeDash'],
+                            })
                           }
                           options={[
                             ['solid', '实线'],
@@ -1277,18 +967,12 @@ export default function Inspector({
                     <Textarea
                       aria-label="文字内容"
                       value={selected.text ?? ''}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (event) => change({ text: event.target.value })
-                      }
+                      onChange={(event) => change({ text: event.target.value })}
                     />
                     <Choice
                       label="字体"
                       value={selected.fontFamily ?? ''}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param fontFamily - 字体族名称，可包含回退字体。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (fontFamily) => change({ fontFamily: fontFamily || undefined })
-                      }
+                      onChange={(fontFamily) => change({ fontFamily: fontFamily || undefined })}
                       options={[
                         ['', `使用主题字体 · ${tokens.fontFamily.split(',')[0]}`],
                         ...[
@@ -1300,20 +984,14 @@ export default function Inspector({
                             'Microsoft YaHei, sans-serif',
                             'monospace',
                           ]),
-                        ].map(
-                          /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param font - 用于文字测量和绘制的完整字体设置。 @returns 当前条目转换后的结果。 */
-                          (font) => [font, font.split(',')[0]] as [string, string],
-                        ),
+                        ].map((font) => [font, font.split(',')[0]] as [string, string]),
                       ]}
                     />
                     <div className="ed-two-fields">
                       <Choice
                         label="字重"
                         value={String(selected.fontWeight ?? 400)}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param fontWeight - 字体粗细，通常使用 400 表示常规、700 表示加粗。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (fontWeight) => change({ fontWeight: Number(fontWeight) })
-                        }
+                        onChange={(fontWeight) => change({ fontWeight: Number(fontWeight) })}
                         options={[
                           ['300', 'Light'],
                           ['400', 'Regular'],
@@ -1327,41 +1005,30 @@ export default function Inspector({
                         label="字号"
                         value={selected.fontSize ?? 14}
                         min={1}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param fontSize - 文字字号。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (fontSize) => change({ fontSize })
-                        }
+                        onChange={(fontSize) => change({ fontSize })}
                       />
                       <NumberField
                         label="行高"
                         value={selected.lineHeight ?? 1.4}
                         min={0.5}
                         step={0.1}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param lineHeight - 行高设置，用于多行文字排版。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (lineHeight) => change({ lineHeight })
-                        }
+                        onChange={(lineHeight) => change({ lineHeight })}
                       />
                       <NumberField
                         label="字间距"
                         value={selected.letterSpacing ?? 0}
                         step={0.1}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param letterSpacing - 文字字符之间的附加间距。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (letterSpacing) => change({ letterSpacing })
-                        }
+                        onChange={(letterSpacing) => change({ letterSpacing })}
                       />
                     </div>
                     <div className="ed-two-fields">
                       <Choice
                         label="文本对齐"
                         value={selected.textAlign ?? 'left'}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param textAlign - 文字在行内的水平对齐方式。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (textAlign) =>
-                            change({
-                              textAlign: textAlign as DesignNode['textAlign'],
-                            })
+                        onChange={(textAlign) =>
+                          change({
+                            textAlign: textAlign as DesignNode['textAlign'],
+                          })
                         }
                         options={[
                           ['left', '左对齐'],
@@ -1373,12 +1040,10 @@ export default function Inspector({
                       <Choice
                         label="文本装饰"
                         value={selected.textDecoration ?? 'none'}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param textDecoration - 文字的下划线或删除线样式。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (textDecoration) =>
-                            change({
-                              textDecoration: textDecoration as DesignNode['textDecoration'],
-                            })
+                        onChange={(textDecoration) =>
+                          change({
+                            textDecoration: textDecoration as DesignNode['textDecoration'],
+                          })
                         }
                         options={[
                           ['none', '无装饰'],
@@ -1391,9 +1056,8 @@ export default function Inspector({
                       <span>斜体</span>
                       <Switch
                         checked={selected.fontStyle === 'italic'}
-                        onCheckedChange={
-                          /** 响应 onCheckedChange 交互，将用户操作应用到属性检查面板。 @param italic - 是否使用斜体。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (italic) => change({ fontStyle: italic ? 'italic' : 'normal' })
+                        onCheckedChange={(italic) =>
+                          change({ fontStyle: italic ? 'italic' : 'normal' })
                         }
                         aria-label="斜体"
                       />
@@ -1408,10 +1072,7 @@ export default function Inspector({
                       value={selected.polygonSides ?? 5}
                       min={3}
                       max={24}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param polygonSides - 正多边形的边数。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (polygonSides) => change({ polygonSides })
-                      }
+                      onChange={(polygonSides) => change({ polygonSides })}
                     />
                     {selected.type === 'star' && (
                       <NumberField
@@ -1420,10 +1081,7 @@ export default function Inspector({
                         min={0.05}
                         max={0.95}
                         step={0.05}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param starRatio - 星形内半径与外半径的比例，控制尖角深度。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (starRatio) => change({ starRatio })
-                        }
+                        onChange={(starRatio) => change({ starRatio })}
                       />
                     )}
                   </PropertySection>
@@ -1435,64 +1093,36 @@ export default function Inspector({
                       <Switch
                         aria-label="闭合路径"
                         checked={!!selected.closed}
-                        onCheckedChange={
-                          /** 响应 onCheckedChange 交互，将用户操作应用到属性检查面板。 @param closed - 路径是否闭合，决定首尾相连及填充行为。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (closed) => change({ closed })
-                        }
+                        onCheckedChange={(closed) => change({ closed })}
                       />
                     </label>
                     <p className="ed-muted">双击路径可编辑锚点，拖动蓝色锚点调整矢量。</p>
-                    {selected.points?.map(
-                      /**
-                       * 转换属性检查面板中的集合条目，供后续处理或展示。
-                       *
-                       * @param point - 当前处理的坐标点。
-                       * @param index - 空间查询索引或当前条目的位置。
-                       * @returns 当前条目转换后的结果。
-                       */
-                      (point, index) => (
-                        <div className="ed-two-fields" key={index}>
-                          <NumberField
-                            label={`X${index + 1}`}
-                            value={point.x}
-                            onChange={
-                              /**
-                               * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                               *
-                               * @param x - 水平方向的位置。
-                               * @returns 无返回值；通过副作用完成当前操作。
-                               */
-                              (x) =>
-                                change({
-                                  points: selected.points!.map(
-                                    /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @param i - 当前循环位置，从 0 开始。 @returns 当前条目转换后的结果。 */
-                                    (p, i) => (i === index ? { ...p, x } : p),
-                                  ),
-                                })
-                            }
-                          />
-                          <NumberField
-                            label={`Y${index + 1}`}
-                            value={point.y}
-                            onChange={
-                              /**
-                               * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                               *
-                               * @param y - 垂直方向的位置。
-                               * @returns 无返回值；通过副作用完成当前操作。
-                               */
-                              (y) =>
-                                change({
-                                  points: selected.points!.map(
-                                    /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @param i - 当前循环位置，从 0 开始。 @returns 当前条目转换后的结果。 */
-                                    (p, i) => (i === index ? { ...p, y } : p),
-                                  ),
-                                })
-                            }
-                          />
-                        </div>
-                      ),
-                    )}
+                    {selected.points?.map((point, index) => (
+                      <div className="ed-two-fields" key={index}>
+                        <NumberField
+                          label={`X${index + 1}`}
+                          value={point.x}
+                          onChange={(x) =>
+                            change({
+                              points: selected.points!.map((p, i) =>
+                                i === index ? { ...p, x } : p,
+                              ),
+                            })
+                          }
+                        />
+                        <NumberField
+                          label={`Y${index + 1}`}
+                          value={point.y}
+                          onChange={(y) =>
+                            change({
+                              points: selected.points!.map((p, i) =>
+                                i === index ? { ...p, y } : p,
+                              ),
+                            })
+                          }
+                        />
+                      </div>
+                    ))}
                   </PropertySection>
                 )}
                 {selected.type === 'image' && (
@@ -1500,10 +1130,7 @@ export default function Inspector({
                     <Input
                       aria-label="图片地址"
                       value={selected.src ?? ''}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (event) => change({ src: event.target.value })
-                      }
+                      onChange={(event) => change({ src: event.target.value })}
                       placeholder="图片 URL 或 data URL"
                     />
                   </PropertySection>
@@ -1515,23 +1142,18 @@ export default function Inspector({
                       size="icon"
                       variant="ghost"
                       title={selected.shadow ? '移除阴影' : '添加阴影'}
-                      onClick={
-                        /**
-                         * 响应 onClick 交互，将用户操作应用到属性检查面板。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        () =>
-                          change({
-                            shadow: selected.shadow
-                              ? undefined
-                              : {
-                                  x: 0,
-                                  y: 4,
-                                  blur: 12,
-                                  spread: 0,
-                                  color: '#00000026',
-                                },
-                          })
+                      onClick={() =>
+                        change({
+                          shadow: selected.shadow
+                            ? undefined
+                            : {
+                                x: 0,
+                                y: 4,
+                                blur: 12,
+                                spread: 0,
+                                color: '#00000026',
+                              },
+                        })
                       }
                     >
                       {selected.shadow ? <X size={13} /> : <Plus size={13} />}
@@ -1542,36 +1164,23 @@ export default function Inspector({
                     <>
                       <div className="ed-effect-label">投影</div>
                       <div className="ed-two-fields">
-                        {(['x', 'y', 'blur', 'spread'] as const).map(
-                          /**
-                           * 转换属性检查面板中的集合条目，供后续处理或展示。
-                           *
-                           * @param key - 要访问或更新的字段名。
-                           * @returns 当前条目转换后的结果。
-                           */
-                          (key) => (
-                            <NumberField
-                              key={key}
-                              label={{ x: 'X', y: 'Y', blur: '模糊', spread: '扩展' }[key]}
-                              value={selected.shadow![key]}
-                              onChange={
-                                /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param value - 当前字段、模式或控件的取值。 @returns 无返回值；通过副作用完成当前操作。 */
-                                (value) =>
-                                  change({
-                                    shadow: { ...selected.shadow!, [key]: value },
-                                  })
-                              }
-                            />
-                          ),
-                        )}
+                        {(['x', 'y', 'blur', 'spread'] as const).map((key) => (
+                          <NumberField
+                            key={key}
+                            label={{ x: 'X', y: 'Y', blur: '模糊', spread: '扩展' }[key]}
+                            value={selected.shadow![key]}
+                            onChange={(value) =>
+                              change({
+                                shadow: { ...selected.shadow!, [key]: value },
+                              })
+                            }
+                          />
+                        ))}
                       </div>
                       <ColorTextField
                         label="阴影颜色"
                         value={selected.shadow.color}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param color - 文字或视觉元素的颜色。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (color) => change({ shadow: { ...selected.shadow!, color } })
-                        }
+                        onChange={(color) => change({ shadow: { ...selected.shadow!, color } })}
                       />
                     </>
                   )}
@@ -1580,10 +1189,7 @@ export default function Inspector({
                     value={selected.blur ?? 0}
                     min={0}
                     max={100}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param blur - 模糊半径。 @returns 无返回值；通过副作用完成当前操作。 */
-                      (blur) => change({ blur })
-                    }
+                    onChange={(blur) => change({ blur })}
                   />
                 </PropertySection>
                 {component && (
@@ -1591,10 +1197,7 @@ export default function Inspector({
                     <Button
                       variant="secondary"
                       className="ed-wide"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 当前步骤的处理结果。 */
-                        () => setEditingMaster(true)
-                      }
+                      onClick={() => setEditingMaster(true)}
                     >
                       <Component size={13} />
                       编辑主组件
@@ -1602,87 +1205,44 @@ export default function Inspector({
                     <Choice
                       label="交换组件"
                       value={component.id}
-                      onChange={
-                        /**
-                         * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                         *
-                         * @param componentId - 引用的组件母版标识。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        (componentId) => {
-                          const next = project.components.find(
-                            /** 检查条目的标识等于组件引用，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                            (item) => item.id === componentId,
-                          );
-                          if (next)
-                            change({
-                              componentId,
-                              name: next.name,
-                              overrides: undefined,
-                            });
-                        }
-                      }
-                      options={project.components.map(
-                        /**
-                         * 转换属性检查面板中的集合条目，供后续处理或展示。
-                         *
-                         * @param item - 当前遍历的条目。
-                         * @returns 当前条目转换后的结果。
-                         */
-                        (item) => [
-                          item.id,
-                          `${item.name}${item.setId && item.setId === component.setId ? ' · ' + Object.values(item.variantProperties ?? {}).join(' / ') : ''}`,
-                        ],
-                      )}
+                      onChange={(componentId) => {
+                        const next = project.components.find((item) => item.id === componentId);
+                        if (next)
+                          change({
+                            componentId,
+                            name: next.name,
+                            overrides: undefined,
+                          });
+                      }}
+                      options={project.components.map((item) => [
+                        item.id,
+                        `${item.name}${item.setId && item.setId === component.setId ? ' · ' + Object.values(item.variantProperties ?? {}).join(' / ') : ''}`,
+                      ])}
                     />
                     {component.nodes
-                      .filter(
-                        /** 检查节点的文字内容不等于未设置值，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                        (node) => node.text !== undefined,
-                      )
-                      .map(
-                        /**
-                         * 转换属性检查面板中的集合条目，供后续处理或展示。
-                         *
-                         * @param node - 当前处理的设计节点。
-                         * @returns 当前条目转换后的结果。
-                         */
-                        (node) => (
-                          <label className="ed-stack-label" key={node.id}>
-                            {node.name}
-                            <Input
-                              aria-label={`${node.name}实例文字`}
-                              value={selected.overrides?.[node.id]?.text ?? node.text ?? ''}
-                              onChange={
-                                /**
-                                 * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                                 *
-                                 * @param event - 当前事件及其触发位置。
-                                 * @returns 无返回值；通过副作用完成当前操作。
-                                 */
-                                (event) =>
-                                  change({
-                                    overrides: {
-                                      ...selected.overrides,
-                                      [node.id]: {
-                                        ...selected.overrides?.[node.id],
-                                        text: event.target.value,
-                                      },
-                                    },
-                                  })
-                              }
-                            />
-                          </label>
-                        ),
-                      )}
+                      .filter((node) => node.text !== undefined)
+                      .map((node) => (
+                        <label className="ed-stack-label" key={node.id}>
+                          {node.name}
+                          <Input
+                            aria-label={`${node.name}实例文字`}
+                            value={selected.overrides?.[node.id]?.text ?? node.text ?? ''}
+                            onChange={(event) =>
+                              change({
+                                overrides: {
+                                  ...selected.overrides,
+                                  [node.id]: {
+                                    ...selected.overrides?.[node.id],
+                                    text: event.target.value,
+                                  },
+                                },
+                              })
+                            }
+                          />
+                        </label>
+                      ))}
                     <div className="ed-row-buttons">
-                      <Button
-                        variant="secondary"
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => change({ overrides: undefined })
-                        }
-                      >
+                      <Button variant="secondary" onClick={() => change({ overrides: undefined })}>
                         <RotateCcw size={13} />
                         重置
                       </Button>
@@ -1710,12 +1270,7 @@ export default function Inspector({
                     <Button
                       variant="secondary"
                       onClick={ungroup}
-                      disabled={
-                        !selection.some(
-                          /** 检查containers包含节点的类型，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                          (node) => containers.has(node.type),
-                        )
-                      }
+                      disabled={!selection.some((node) => containers.has(node.type))}
                     >
                       取消编组
                     </Button>
@@ -1729,34 +1284,19 @@ export default function Inspector({
                   <Choice
                     label="父级容器"
                     value={selected.parentId ?? ''}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param parentId - 父节点标识；未设置时表示根层级。 @returns 无返回值；通过副作用完成当前操作。 */
-                      (parentId) => change({ parentId: parentId || undefined })
-                    }
+                    onChange={(parentId) => change({ parentId: parentId || undefined })}
                     options={[
                       ['', '页面'],
                       ...page.nodes
                         .filter(
-                          /**
-                           * 检查containers包含节点的类型且包含节点的标识不成立，供集合筛选或定位使用。
-                           *
-                           * @param node - 当前处理的设计节点。
-                           * @returns 用于判断条件的值；真值表示该条目符合条件。
-                           */
                           (node) =>
                             containers.has(node.type) &&
                             !descendants(
                               page.nodes,
-                              selection.map(
-                                /** 提取节点的标识，供后续计算或展示使用。 @param n - 当前节点或数值。 @returns 节点的标识。 */
-                                (n) => n.id,
-                              ),
+                              selection.map((n) => n.id),
                             ).includes(node.id),
                         )
-                        .map(
-                          /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-                          (node) => [node.id, node.name] as [string, string],
-                        ),
+                        .map((node) => [node.id, node.name] as [string, string]),
                     ]}
                   />
                   <div className="ed-row-buttons">
@@ -1777,10 +1317,7 @@ export default function Inspector({
                   <Input
                     aria-label="页面名称"
                     value={page.name}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                      (event) => updatePage({ name: event.target.value })
-                    }
+                    onChange={(event) => updatePage({ name: event.target.value })}
                   />
                   <div className="ed-two-fields">
                     <NumberField
@@ -1788,37 +1325,23 @@ export default function Inspector({
                       value={page.width}
                       min={100}
                       max={20000}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param width - 对象的宽度。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (width) => updatePage({ width })
-                      }
+                      onChange={(width) => updatePage({ width })}
                     />
                     <NumberField
                       label="高度"
                       value={page.height}
                       min={100}
                       max={20000}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param height - 对象的高度。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (height) => updatePage({ height })
-                      }
+                      onChange={(height) => updatePage({ height })}
                     />
                   </div>
                   <Choice
                     label="设备预设"
                     value=""
-                    onChange={
-                      /**
-                       * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                       *
-                       * @param value - 当前字段、模式或控件的取值。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (value) => {
-                        const [width, height] = value.split('x').map(Number);
-                        if (width && height) updatePage({ width, height });
-                      }
-                    }
+                    onChange={(value) => {
+                      const [width, height] = value.split('x').map(Number);
+                      if (width && height) updatePage({ width, height });
+                    }}
                     options={[
                       ['', '选择画布尺寸'],
                       ['1440x1000', 'Desktop · 1440 × 1000'],
@@ -1833,18 +1356,12 @@ export default function Inspector({
                       type="color"
                       aria-label="画布背景颜色"
                       value={page.background ?? tokens.background}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (event) => updatePage({ background: event.target.value })
-                      }
+                      onChange={(event) => updatePage({ background: event.target.value })}
                     />
                     <ColorTextField
                       label="画布背景"
                       value={page.background ?? tokens.background}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param background - 背景颜色或背景类型。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (background) => updatePage({ background })
-                      }
+                      onChange={(background) => updatePage({ background })}
                     />
                   </div>
                 </PropertySection>
@@ -1854,9 +1371,8 @@ export default function Inspector({
                     <Switch
                       aria-label="显示布局网格"
                       checked={!!page.grid?.enabled}
-                      onCheckedChange={
-                        /** 响应 onCheckedChange 交互，将用户操作应用到属性检查面板。 @param enabled - 是否启用该项能力。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (enabled) => updatePage({ grid: { size: 8, ...page.grid, enabled } })
+                      onCheckedChange={(enabled) =>
+                        updatePage({ grid: { size: 8, ...page.grid, enabled } })
                       }
                     />
                   }
@@ -1864,22 +1380,15 @@ export default function Inspector({
                   <Choice
                     label="网格类型"
                     value={page.grid?.type ?? 'grid'}
-                    onChange={
-                      /**
-                       * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                       *
-                       * @param type - 用于区分数据形态或行为分支的类型。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (type) =>
-                        updatePage({
-                          grid: {
-                            size: 8,
-                            enabled: true,
-                            ...page.grid,
-                            type: type as 'grid' | 'columns',
-                          },
-                        })
+                    onChange={(type) =>
+                      updatePage({
+                        grid: {
+                          size: 8,
+                          enabled: true,
+                          ...page.grid,
+                          type: type as 'grid' | 'columns',
+                        },
+                      })
                     }
                     options={[
                       ['grid', '网格'],
@@ -1893,28 +1402,19 @@ export default function Inspector({
                         value={page.grid.columns ?? 12}
                         min={1}
                         max={32}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param columns - 布局网格的列数。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (columns) => updatePage({ grid: { ...page.grid!, columns } })
-                        }
+                        onChange={(columns) => updatePage({ grid: { ...page.grid!, columns } })}
                       />
                       <NumberField
                         label="栏间距"
                         value={page.grid.gutter ?? 20}
                         min={0}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param gutter - 网格列之间的间距。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (gutter) => updatePage({ grid: { ...page.grid!, gutter } })
-                        }
+                        onChange={(gutter) => updatePage({ grid: { ...page.grid!, gutter } })}
                       />
                       <NumberField
                         label="边距"
                         value={page.grid.margin ?? 32}
                         min={0}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param margin - 网格与页面边缘的留白。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (margin) => updatePage({ grid: { ...page.grid!, margin } })
-                        }
+                        onChange={(margin) => updatePage({ grid: { ...page.grid!, margin } })}
                       />
                     </div>
                   ) : (
@@ -1923,60 +1423,41 @@ export default function Inspector({
                       value={page.grid?.size ?? 8}
                       min={1}
                       max={256}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param size - 当前对象的尺寸或尺寸规格。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (size) =>
-                          updatePage({
-                            grid: { enabled: true, ...page.grid, size },
-                          })
+                      onChange={(size) =>
+                        updatePage({
+                          grid: { enabled: true, ...page.grid, size },
+                        })
                       }
                     />
                   )}
                 </PropertySection>
                 <PropertySection title="本地变量">
                   <div className="ed-token-list">
-                    {colorKeys.map(
-                      /**
-                       * 转换属性检查面板中的集合条目，供后续处理或展示。
-                       *
-                       * @param key - 要访问或更新的字段名。
-                       * @returns 当前条目转换后的结果。
-                       */
-                      (key) => (
-                        <label key={key}>
-                          <input
-                            type="color"
-                            aria-label={`${key}主题颜色`}
-                            value={String(tokens[key])}
-                            onChange={
-                              /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                              (event) => updateTokens({ [key]: event.target.value })
-                            }
-                          />
-                          <span>{key}</span>
-                          <code>{tokens[key]}</code>
-                        </label>
-                      ),
-                    )}
+                    {colorKeys.map((key) => (
+                      <label key={key}>
+                        <input
+                          type="color"
+                          aria-label={`${key}主题颜色`}
+                          value={String(tokens[key])}
+                          onChange={(event) => updateTokens({ [key]: event.target.value })}
+                        />
+                        <span>{key}</span>
+                        <code>{tokens[key]}</code>
+                      </label>
+                    ))}
                   </div>
                   <div className="ed-two-fields">
                     <NumberField
                       label="圆角"
                       value={tokens.radius}
                       min={0}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param radius - 圆角大小。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (radius) => updateTokens({ radius })
-                      }
+                      onChange={(radius) => updateTokens({ radius })}
                     />
                     <NumberField
                       label="间距"
                       value={tokens.spacing}
                       min={0}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param spacing - 布局间距的基准值或语义 Token 分组。 @returns 无返回值；通过副作用完成当前操作。 */
-                        (spacing) => updateTokens({ spacing })
-                      }
+                      onChange={(spacing) => updateTokens({ spacing })}
                     />
                   </div>
                 </PropertySection>
@@ -1998,31 +1479,13 @@ export default function Inspector({
             )}
             <PropertySection title="导出">
               <div className="ed-row-buttons">
-                <Button
-                  variant="secondary"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => exportFile('png')
-                  }
-                >
+                <Button variant="secondary" onClick={() => exportFile('png')}>
                   PNG
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => exportFile('svg')
-                  }
-                >
+                <Button variant="secondary" onClick={() => exportFile('svg')}>
                   SVG
                 </Button>
-                <Button
-                  variant="secondary"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => exportFile('json')
-                  }
-                >
+                <Button variant="secondary" onClick={() => exportFile('json')}>
                   JSON
                 </Button>
               </div>
@@ -2038,10 +1501,7 @@ export default function Inspector({
                       size="icon"
                       variant="ghost"
                       title="移除交互"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到属性检查面板。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => change({ prototype: undefined })
-                      }
+                      onClick={() => change({ prototype: undefined })}
                     >
                       <X size={13} />
                     </Button>
@@ -2050,21 +1510,14 @@ export default function Inspector({
                   <Choice
                     label="触发方式"
                     value={selected.prototype?.trigger ?? 'click'}
-                    onChange={
-                      /**
-                       * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                       *
-                       * @param trigger - 触发跳转或动作的交互条件。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (trigger) =>
-                        change({
-                          prototype: {
-                            action: 'navigate',
-                            ...selected.prototype,
-                            trigger: trigger as 'click' | 'hover',
-                          },
-                        })
+                    onChange={(trigger) =>
+                      change({
+                        prototype: {
+                          action: 'navigate',
+                          ...selected.prototype,
+                          trigger: trigger as 'click' | 'hover',
+                        },
+                      })
                     }
                     options={[
                       ['click', '点击时'],
@@ -2074,28 +1527,18 @@ export default function Inspector({
                   <Choice
                     label="原型动作"
                     value={selected.prototype?.action ?? ''}
-                    onChange={
-                      /**
-                       * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                       *
-                       * @param action - 当前要执行的操作或操作结果分类。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (action) =>
-                        change({
-                          prototype: action
-                            ? {
-                                action: action as 'navigate',
-                                target: project.pages.find(
-                                  /** 检查当前项的标识不等于页面的标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                                  (p) => p.id !== page.id,
-                                )?.id,
-                                trigger: 'click',
-                                animation: 'instant',
-                                duration: 300,
-                              }
-                            : undefined,
-                        })
+                    onChange={(action) =>
+                      change({
+                        prototype: action
+                          ? {
+                              action: action as 'navigate',
+                              target: project.pages.find((p) => p.id !== page.id)?.id,
+                              trigger: 'click',
+                              animation: 'instant',
+                              duration: 300,
+                            }
+                          : undefined,
+                      })
                     }
                     options={[
                       ['', '添加交互'],
@@ -2111,19 +1554,14 @@ export default function Inspector({
                         <Choice
                           label="目标页面"
                           value={selected.prototype.target ?? ''}
-                          onChange={
-                            /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param target - 操作作用的目标。 @returns 无返回值；通过副作用完成当前操作。 */
-                            (target) =>
-                              change({
-                                prototype: { ...selected.prototype!, target },
-                              })
+                          onChange={(target) =>
+                            change({
+                              prototype: { ...selected.prototype!, target },
+                            })
                           }
                           options={[
                             ['', '选择目标页面'],
-                            ...project.pages.map(
-                              /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-                              (p) => [p.id, p.name] as [string, string],
-                            ),
+                            ...project.pages.map((p) => [p.id, p.name] as [string, string]),
                           ]}
                         />
                       )}
@@ -2132,40 +1570,26 @@ export default function Inspector({
                           aria-label="目标网址"
                           placeholder="https://example.com"
                           value={selected.prototype.target ?? ''}
-                          onChange={
-                            /**
-                             * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                             *
-                             * @param event - 当前事件及其触发位置。
-                             * @returns 无返回值；通过副作用完成当前操作。
-                             */
-                            (event) =>
-                              change({
-                                prototype: {
-                                  ...selected.prototype!,
-                                  target: event.target.value,
-                                },
-                              })
+                          onChange={(event) =>
+                            change({
+                              prototype: {
+                                ...selected.prototype!,
+                                target: event.target.value,
+                              },
+                            })
                           }
                         />
                       )}
                       <Choice
                         label="过渡动画"
                         value={selected.prototype.animation ?? 'instant'}
-                        onChange={
-                          /**
-                           * 响应 onChange 交互，将用户操作应用到属性检查面板。
-                           *
-                           * @param animation - 原型切换采用的动画方式。
-                           * @returns 无返回值；通过副作用完成当前操作。
-                           */
-                          (animation) =>
-                            change({
-                              prototype: {
-                                ...selected.prototype!,
-                                animation: animation as 'instant',
-                              },
-                            })
+                        onChange={(animation) =>
+                          change({
+                            prototype: {
+                              ...selected.prototype!,
+                              animation: animation as 'instant',
+                            },
+                          })
                         }
                         options={[
                           ['instant', '即时'],
@@ -2178,12 +1602,10 @@ export default function Inspector({
                         value={selected.prototype.duration ?? 300}
                         min={0}
                         max={5000}
-                        onChange={
-                          /** 响应 onChange 交互，将用户操作应用到属性检查面板。 @param duration - 动画持续时间。 @returns 无返回值；通过副作用完成当前操作。 */
-                          (duration) =>
-                            change({
-                              prototype: { ...selected.prototype!, duration },
-                            })
+                        onChange={(duration) =>
+                          change({
+                            prototype: { ...selected.prototype!, duration },
+                          })
                         }
                       />
                     </>
@@ -2200,24 +1622,14 @@ export default function Inspector({
                   <Switch
                     checked={!!page.prototypeStart}
                     aria-label="原型起点"
-                    onCheckedChange={
-                      /**
-                       * 响应 onCheckedChange 交互，将用户操作应用到属性检查面板。
-                       *
-                       * @param prototypeStart - 是否作为原型预览的起始页面。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (prototypeStart) =>
-                        commit({
-                          ...project,
-                          pages: project.pages.map(
-                            /** 转换属性检查面板中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-                            (p) => ({
-                              ...p,
-                              prototypeStart: p.id === page.id ? prototypeStart : false,
-                            }),
-                          ),
-                        })
+                    onCheckedChange={(prototypeStart) =>
+                      commit({
+                        ...project,
+                        pages: project.pages.map((p) => ({
+                          ...p,
+                          prototypeStart: p.id === page.id ? prototypeStart : false,
+                        })),
+                      })
                     }
                   />
                 </label>
@@ -2225,30 +1637,14 @@ export default function Inspector({
               </PropertySection>
             )}
             <PropertySection title="页面流程">
-              {project.pages.map(
-                /**
-                 * 转换属性检查面板中的集合条目，供后续处理或展示。
-                 *
-                 * @param p - 当前坐标点或内容片段。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (p) => (
-                  <div className="ed-prototype-page" key={p.id}>
-                    <span>
-                      {p.prototypeStart ? '▶' : '◇'} {p.name}
-                    </span>
-                    <span>
-                      {
-                        p.nodes.filter(
-                          /** 检查节点的原型交互，供集合筛选或定位使用。 @param n - 当前节点或数值。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                          (n) => n.prototype,
-                        ).length
-                      }{' '}
-                      个交互
-                    </span>
-                  </div>
-                ),
-              )}
+              {project.pages.map((p) => (
+                <div className="ed-prototype-page" key={p.id}>
+                  <span>
+                    {p.prototypeStart ? '▶' : '◇'} {p.name}
+                  </span>
+                  <span>{p.nodes.filter((n) => n.prototype).length} 个交互</span>
+                </div>
+              ))}
             </PropertySection>
           </TabsContent>
           <TabsContent value="inspect">
@@ -2260,17 +1656,12 @@ export default function Inspector({
                   variant="ghost"
                   size="icon"
                   title="复制 CSS"
-                  onClick={
-                    /**
-                     * 响应 onClick 交互，将用户操作应用到属性检查面板。
-                     * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                     */
-                    () =>
-                      navigator.clipboard.writeText(
-                        selected
-                          ? nodeCss(selected, tokens)
-                          : `width: ${page.width}px;\nheight: ${page.height}px;`,
-                      )
+                  onClick={() =>
+                    navigator.clipboard.writeText(
+                      selected
+                        ? nodeCss(selected, tokens)
+                        : `width: ${page.width}px;\nheight: ${page.height}px;`,
+                    )
                   }
                 >
                   <Copy size={13} />
@@ -2326,10 +1717,7 @@ export default function Inspector({
           project={project}
           componentId={component.id}
           onChange={commit}
-          onClose={
-            /** 响应 onClose 交互，将用户操作应用到属性检查面板。 @returns 当前步骤的处理结果。 */
-            () => setEditingMaster(false)
-          }
+          onClose={() => setEditingMaster(false)}
         />
       )}
     </aside>

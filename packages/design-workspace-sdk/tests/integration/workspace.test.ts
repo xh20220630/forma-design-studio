@@ -2,14 +2,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { openDesignWorkspace, WorkspaceConflictError } from '../src/index.ts';
-import { exportStaticReview } from '../src/static-review.ts';
-import { createV1Workspace } from './fixture.ts';
+import { openDesignWorkspace, WorkspaceConflictError } from '@forma/design-workspace-sdk';
+import { exportStaticReview } from '@forma/design-workspace-sdk/static-review';
+import { createV1Workspace } from '../helpers/fixture.ts';
 
-/**
- * 验证reads a v1 delivery as an image-node flow document。
- * @returns 完成当前检查或生命周期操作。
- */
 test('reads a v1 delivery as an image-node flow document', async () => {
   const root = await createV1Workspace();
   try {
@@ -29,10 +25,7 @@ test('reads a v1 delivery as an image-node flow document', async () => {
       locked: true,
     });
     assert.deepEqual(
-      document.flows[0].edges.map(
-        /** 转换 workspace.test 中的集合条目，供后续处理或展示。 @param edge - 连接两个页面的流程边。 @returns 当前条目转换后的结果。 */
-        (edge) => [edge.id, edge.from, edge.to],
-      ),
+      document.flows[0].edges.map((edge) => [edge.id, edge.from, edge.to]),
       [['order/list-to-order/detail', 'order/list', 'order/detail']],
     );
   } finally {
@@ -40,10 +33,6 @@ test('reads a v1 delivery as an image-node flow document', async () => {
   }
 });
 
-/**
- * 验证applies layout changes with revision conflict protection。
- * @returns 完成当前检查或生命周期操作。
- */
 test('applies layout changes with revision conflict protection', async () => {
   const root = await createV1Workspace();
   try {
@@ -77,9 +66,7 @@ test('applies layout changes with revision conflict protection', async () => {
     assert.equal(revisions.revisions[0].revision, 1);
     assert.equal(revisions.revisions[0].files.includes('flows/order/layout.json'), true);
     await assert.rejects(
-      /** 执行 workspace.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
       () => workspace.apply({ baseRevision: 0, operations: [] }),
-      /** 执行 workspace.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param error - 当前操作的失败信息，供界面反馈或重试判断。 @returns 条件是否成立的布尔值。 */
       (error) =>
         error instanceof WorkspaceConflictError &&
         error.currentRevision === 1 &&
@@ -90,10 +77,6 @@ test('applies layout changes with revision conflict protection', async () => {
   }
 });
 
-/**
- * 验证ignores legacy review metadata and reports token and component upgrade impacts。
- * @returns 完成当前检查或生命周期操作。
- */
 test('ignores legacy review metadata and reports token and component upgrade impacts', async () => {
   const root = await createV1Workspace();
   try {
@@ -149,24 +132,15 @@ test('ignores legacy review metadata and reports token and component upgrade imp
     assert.equal('review' in page, false);
     assert.deepEqual(
       document.designSystem.impacts
-        .find(
-          /** 检查 impact 的pageRef等于页面的pageRef，供集合筛选或定位使用。 @param impact - 当前页面的版本影响记录。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (impact) => impact.pageRef === page.pageRef,
-        )
-        ?.reasons.map(
-          /** 提取 reason 的类型，供后续计算或展示使用。 @param reason - 本次影响或失败的原因。 @returns reason的类型。 */
-          (reason) => reason.type,
-        )
+        .find((impact) => impact.pageRef === page.pageRef)
+        ?.reasons.map((reason) => reason.type)
         .sort(),
       ['component', 'tokens'],
     );
     const report = await workspace.validate();
     assert.equal(report.valid, true);
     assert.equal(
-      report.issues.some(
-        /** 检查条目的code包含“review”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (item) => item.code.includes('review'),
-      ),
+      report.issues.some((item) => item.code.includes('review')),
       false,
     );
   } finally {
@@ -174,10 +148,6 @@ test('ignores legacy review metadata and reports token and component upgrade imp
   }
 });
 
-/**
- * 验证requires all seven v2 token groups and a semantic modal exit。
- * @returns 完成当前检查或生命周期操作。
- */
 test('requires all seven v2 token groups and a semantic modal exit', async () => {
   const root = await createV1Workspace();
   try {
@@ -205,17 +175,11 @@ test('requires all seven v2 token groups and a semantic modal exit', async () =>
     const report = await (await openDesignWorkspace({ root })).validate();
     assert.equal(report.valid, false);
     assert.equal(
-      report.issues.some(
-        /** 检查条目的code等于“missing-token-group”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (item) => item.code === 'missing-token-group',
-      ),
+      report.issues.some((item) => item.code === 'missing-token-group'),
       true,
     );
     assert.equal(
-      report.issues.some(
-        /** 检查条目的code等于“missing-close-transition”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (item) => item.code === 'missing-close-transition',
-      ),
+      report.issues.some((item) => item.code === 'missing-close-transition'),
       true,
     );
   } finally {
@@ -223,10 +187,6 @@ test('requires all seven v2 token groups and a semantic modal exit', async () =>
   }
 });
 
-/**
- * 验证exports a portable review with embedded image assets。
- * @returns 完成当前检查或生命周期操作。
- */
 test('exports a portable review with embedded image assets', async () => {
   const root = await createV1Workspace();
   const output = path.join(root, '..', `${path.basename(root)}-review.html`);

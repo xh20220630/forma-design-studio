@@ -69,17 +69,7 @@ export async function providerRequest(
   const timeoutMs = body === undefined ? Math.min(provider.timeoutMs, 30000) : provider.timeoutMs;
   const signal = AbortSignal.timeout(timeoutMs);
   const started = performance.now();
-  /**
-   * 计算请求已经消耗的时间，供超时提示说明等待时长。
-   * @returns 已等待的时间。
-   */
   const elapsed = () => ((performance.now() - started) / 1000).toFixed(1);
-  /**
-   * 生成带等待时长的超时错误，帮助用户区分慢响应与配置问题。
-   *
-   * @param stage - 当前渲染区域或请求执行阶段。
-   * @returns 描述本次超时的 API 错误。
-   */
   const deadlineError = (stage: string) =>
     new ApiError(
       502,
@@ -205,10 +195,7 @@ export async function listProviderModels(provider: PrivateProvider): Promise<{
           : '';
     if (!next)
       return {
-        models: [...results.values()].sort(
-          /** 比较 listProviderModels 中的两个条目，确定它们的先后顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 负数、零或正数，分别表示前排、相同顺序或后排。 */
-          (a, b) => a.id.localeCompare(b.id),
-        ),
+        models: [...results.values()].sort((a, b) => a.id.localeCompare(b.id)),
       };
     requireValue(!seen.has(next), '上游模型列表分页重复，未能读取完整列表。', 502);
     seen.add(next);
@@ -249,50 +236,21 @@ function geminiMessages(messages: ChatMessage[]) {
   return {
     systemInstruction: {
       parts: messages
-        .filter(
-          /** 检查 m 的角色等于“system”，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (m) => m.role === 'system',
-        )
-        .flatMap(
-          /**
-           * 转换 geminiMessages 中的集合条目并展开结果，供后续处理或展示。
-           *
-           * @param m - 当前变换矩阵或消息。
-           * @returns 当前条目展开后的结果。
-           */
-          (m) =>
-            parts(m)
-              .filter(
-                /** 检查当前项的类型等于“text”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                (p) => p.type === 'text',
-              )
-              .map(
-                /** 转换 geminiMessages 中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-                (p) => ({ text: p.text }),
-              ),
+        .filter((m) => m.role === 'system')
+        .flatMap((m) =>
+          parts(m)
+            .filter((p) => p.type === 'text')
+            .map((p) => ({ text: p.text })),
         ),
     },
     contents: messages
-      .filter(
-        /** 检查 m 的角色不等于“system”，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (m) => m.role !== 'system',
-      )
-      .map(
-        /**
-         * 转换 geminiMessages 中的集合条目，供后续处理或展示。
-         *
-         * @param m - 当前变换矩阵或消息。
-         * @returns 当前条目转换后的结果。
-         */
-        (m) => ({
-          role: m.role === 'assistant' ? 'model' : 'user',
-          parts: parts(m).map(
-            /** 转换 geminiMessages 中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-            (p) =>
-              p.type === 'text' ? { text: p.text } : { inlineData: inlineImage(p.image_url.url) },
-          ),
-        }),
-      ),
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: parts(m).map((p) =>
+          p.type === 'text' ? { text: p.text } : { inlineData: inlineImage(p.image_url.url) },
+        ),
+      })),
   };
 }
 /**
@@ -346,78 +304,37 @@ export async function requestText(
         model,
         max_tokens: provider.maxOutputTokens,
         system: messages
-          .filter(
-            /** 检查 m 的角色等于“system”，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (m) => m.role === 'system',
-          )
-          .flatMap(
-            /**
-             * 转换 requestText 中的集合条目并展开结果，供后续处理或展示。
-             *
-             * @param m - 当前变换矩阵或消息。
-             * @returns 当前条目展开后的结果。
-             */
-            (m) =>
-              parts(m)
-                .filter(
-                  /** 检查当前项的类型等于“text”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                  (p) => p.type === 'text',
-                )
-                .map(
-                  /** 提取当前项的文字内容，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的文字内容。 */
-                  (p) => p.text,
-                ),
+          .filter((m) => m.role === 'system')
+          .flatMap((m) =>
+            parts(m)
+              .filter((p) => p.type === 'text')
+              .map((p) => p.text),
           )
           .join('\n'),
         messages: messages
-          .filter(
-            /** 检查 m 的角色不等于“system”，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (m) => m.role !== 'system',
-          )
-          .map(
-            /**
-             * 转换 requestText 中的集合条目，供后续处理或展示。
-             *
-             * @param m - 当前变换矩阵或消息。
-             * @returns 当前条目转换后的结果。
-             */
-            (m) => ({
-              role: m.role === 'assistant' ? 'assistant' : 'user',
-              content: parts(m).map(
-                /**
-                 * 转换 requestText 中的集合条目，供后续处理或展示。
-                 *
-                 * @param p - 当前坐标点或内容片段。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (p) => {
-                  if (p.type === 'text') return p;
-                  const image = inlineImage(p.image_url.url);
-                  return {
-                    type: 'image',
-                    source: {
-                      type: 'base64',
-                      media_type: image.mimeType,
-                      data: image.data,
-                    },
-                  };
+          .filter((m) => m.role !== 'system')
+          .map((m) => ({
+            role: m.role === 'assistant' ? 'assistant' : 'user',
+            content: parts(m).map((p) => {
+              if (p.type === 'text') return p;
+              const image = inlineImage(p.image_url.url);
+              return {
+                type: 'image',
+                source: {
+                  type: 'base64',
+                  media_type: image.mimeType,
+                  data: image.data,
                 },
-              ),
+              };
             }),
-          ),
+          })),
       },
     );
     return Array.isArray(response.content)
       ? response.content
           .filter(isRecord)
-          .filter(
-            /** 检查当前项的类型等于“text”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (p) => p.type === 'text',
-          )
-          .map(
-            /** 提取当前项的文字内容，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的文字内容。 */
-            (p) => p.text,
-          )
+          .filter((p) => p.type === 'text')
+          .map((p) => p.text)
           .join('')
       : '';
   }
@@ -435,14 +352,8 @@ export async function requestText(
       },
     );
     return geminiParts(response)
-      .filter(
-        /** 判断 requestText 中的条目是否符合保留条件。 @param p - 当前坐标点或内容片段。 @returns 该条目是否符合条件。 */
-        (p) => typeof p.text === 'string' && p.thought !== true,
-      )
-      .map(
-        /** 提取当前项的文字内容，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的文字内容。 */
-        (p) => p.text,
-      )
+      .filter((p) => typeof p.text === 'string' && p.thought !== true)
+      .map((p) => p.text)
       .join('');
   }
   if (protocol === 'openai-responses') {
@@ -454,27 +365,17 @@ export async function requestText(
         model,
         store: false,
         max_output_tokens: provider.maxOutputTokens,
-        input: messages.map(
-          /**
-           * 转换 requestText 中的集合条目，供后续处理或展示。
-           *
-           * @param m - 当前变换矩阵或消息。
-           * @returns 当前条目转换后的结果。
-           */
-          (m) => ({
-            role: m.role,
-            content:
-              typeof m.content === 'string'
-                ? m.content
-                : m.content.map(
-                    /** 转换 requestText 中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-                    (p) =>
-                      p.type === 'text'
-                        ? { type: 'input_text', text: p.text }
-                        : { type: 'input_image', image_url: p.image_url.url },
-                  ),
-          }),
-        ),
+        input: messages.map((m) => ({
+          role: m.role,
+          content:
+            typeof m.content === 'string'
+              ? m.content
+              : m.content.map((p) =>
+                  p.type === 'text'
+                    ? { type: 'input_text', text: p.text }
+                    : { type: 'input_image', image_url: p.image_url.url },
+                ),
+        })),
         ...(provider.jsonMode ? { text: { format: { type: 'json_object' } } } : {}),
       },
     );
@@ -482,18 +383,9 @@ export async function requestText(
     return Array.isArray(response.output)
       ? response.output
           .filter(isRecord)
-          .flatMap(
-            /** 转换 requestText 中的集合条目并展开结果，供后续处理或展示。 @param item - 当前遍历的条目。 @returns 当前条目展开后的结果。 */
-            (item) => (Array.isArray(item.content) ? item.content.filter(isRecord) : []),
-          )
-          .filter(
-            /** 检查当前项的类型等于“output_text”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (p) => p.type === 'output_text',
-          )
-          .map(
-            /** 提取当前项的文字内容，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的文字内容。 */
-            (p) => p.text,
-          )
+          .flatMap((item) => (Array.isArray(item.content) ? item.content.filter(isRecord) : []))
+          .filter((p) => p.type === 'output_text')
+          .map((p) => p.text)
           .join('')
       : '';
   }
@@ -514,10 +406,7 @@ export async function requestText(
     : Array.isArray(content)
       ? content
           .filter(isRecord)
-          .map(
-            /** 提取当前项的文字内容或“”，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的文字内容或“”。 */
-            (p) => p.text || '',
-          )
+          .map((p) => p.text || '')
           .join('')
       : '';
 }
@@ -579,10 +468,7 @@ export async function requestImage(
       },
     );
     const image = geminiParts(response)
-      .map(
-        /** 提取当前项的inlineData或当前项的inline_data，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的inlineData或当前项的inline_data。 */
-        (p) => p.inlineData || p.inline_data,
-      )
+      .map((p) => p.inlineData || p.inline_data)
       .find(isRecord);
     requireValue(
       image && typeof image.data === 'string',

@@ -105,36 +105,26 @@ export async function generateDesign(project: Project, prompt: unknown = '') {
     : filename.endsWith('.webp')
       ? 'image/webp'
       : 'image/png';
-  return reconstructWithAssets(
-    project,
-    image,
-    mime,
-    /**
-     * 执行 generateDesign 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param assetInstructions - 素材分析与还原时需要遵守的补充要求。
-     * @returns 当前步骤的处理结果。
-     */
-    async (assetInstructions) =>
-      generateJson([
-        {
-          role: 'system',
-          content: `You translate approved web UI images into editable scene graphs. Return JSON {"pages": [...], "components": [...], "assets": [...]}. Preserve existing stable page IDs where appropriate. Node IDs must be unique stable ASCII letters/digits/hyphens/underscores. Every page/component: {id,name,width,height,nodes}. Component additionally has description/category. Every node: {id,name,type,x,y,width,height,fill?,color?,text?,fontSize?,radius?,opacity?,parentId?,componentId?,tokenBindings?,visible?,layout?,gap?,src?,stroke?,strokeWidth?,rotation?,fontWeight?,textAlign?,lineHeight?,letterSpacing?,gradient?,shadow?,path?,points?,closed?}. Types: frame,text,rectangle,button,image,component,group,ellipse,line,polygon,star,path,section. gradient={type:"linear"|"radial",from:color,to:color,angle:number}; shadow={x,y,blur,spread,color}; points=[{x,y}] use local shape coordinates. path contains SVG path coordinate commands only, never XML markup. All node x/y are absolute coordinates within the page, even children; parentId is optional and must refer to another node in the same page. Avoid deep nesting. Use tokenBindings such as {fill:"primary",color:"text",radius:"radius"}. Bind the exact project theme tokens. Colors are CSS hex/rgb/hsl strings. No executable code, XML markup or remote image URLs. Reuse existing component IDs when meaningful. Accurately reconstruct the approved screenshot with editable typography, shapes, cards and controls. Preserve its hierarchy. The project graph is the source of truth for consistency. Return exactly one page matching the approved screenshot, with as many editable nodes as needed; do not invent additional screens. Use compact JSON and omit unused optional properties instead of null. All numeric fields must be JSON numbers; fontWeight must be a number between 1 and 1000, never a CSS name or a string. Token bindings use node property names: bind fill/color/stroke to color tokens, fontFamily to fontFamily, and radius/gap/padding/paddingX/paddingY to radius or spacing. Never use border as a binding property; the border token is bound through stroke. Token keys: primary,background,surface,text,muted,border,radius,fontFamily,spacing.`,
-        },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Project: ${projectContext(project)}\nApproved image request: ${project.generation.prompt}\nReconstruct only the approved image. Preserve the full reference image aspect ratio; do not force it into existing page height. ${assetInstructions} Preserve flat node array stacking order from background to foreground. parentId is grouping metadata; all positions remain absolute to the page or component surface. Use type component only for actual reusable instances; do not attach componentId to ordinary buttons.`,
-            },
-            {
-              type: 'image_url',
-              image_url: { url: `data:${mime};base64,${image.toString('base64')}` },
-            },
-          ],
-        },
-      ]),
+  return reconstructWithAssets(project, image, mime, async (assetInstructions) =>
+    generateJson([
+      {
+        role: 'system',
+        content: `You translate approved web UI images into editable scene graphs. Return JSON {"pages": [...], "components": [...], "assets": [...]}. Preserve existing stable page IDs where appropriate. Node IDs must be unique stable ASCII letters/digits/hyphens/underscores. Every page/component: {id,name,width,height,nodes}. Component additionally has description/category. Every node: {id,name,type,x,y,width,height,fill?,color?,text?,fontSize?,radius?,opacity?,parentId?,componentId?,tokenBindings?,visible?,layout?,gap?,src?,stroke?,strokeWidth?,rotation?,fontWeight?,textAlign?,lineHeight?,letterSpacing?,gradient?,shadow?,path?,points?,closed?}. Types: frame,text,rectangle,button,image,component,group,ellipse,line,polygon,star,path,section. gradient={type:"linear"|"radial",from:color,to:color,angle:number}; shadow={x,y,blur,spread,color}; points=[{x,y}] use local shape coordinates. path contains SVG path coordinate commands only, never XML markup. All node x/y are absolute coordinates within the page, even children; parentId is optional and must refer to another node in the same page. Avoid deep nesting. Use tokenBindings such as {fill:"primary",color:"text",radius:"radius"}. Bind the exact project theme tokens. Colors are CSS hex/rgb/hsl strings. No executable code, XML markup or remote image URLs. Reuse existing component IDs when meaningful. Accurately reconstruct the approved screenshot with editable typography, shapes, cards and controls. Preserve its hierarchy. The project graph is the source of truth for consistency. Return exactly one page matching the approved screenshot, with as many editable nodes as needed; do not invent additional screens. Use compact JSON and omit unused optional properties instead of null. All numeric fields must be JSON numbers; fontWeight must be a number between 1 and 1000, never a CSS name or a string. Token bindings use node property names: bind fill/color/stroke to color tokens, fontFamily to fontFamily, and radius/gap/padding/paddingX/paddingY to radius or spacing. Never use border as a binding property; the border token is bound through stroke. Token keys: primary,background,surface,text,muted,border,radius,fontFamily,spacing.`,
+      },
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'text',
+            text: `Project: ${projectContext(project)}\nApproved image request: ${project.generation.prompt}\nReconstruct only the approved image. Preserve the full reference image aspect ratio; do not force it into existing page height. ${assetInstructions} Preserve flat node array stacking order from background to foreground. parentId is grouping metadata; all positions remain absolute to the page or component surface. Use type component only for actual reusable instances; do not attach componentId to ordinary buttons.`,
+          },
+          {
+            type: 'image_url',
+            image_url: { url: `data:${mime};base64,${image.toString('base64')}` },
+          },
+        ],
+      },
+    ]),
   );
 }
 

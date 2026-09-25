@@ -207,10 +207,9 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const result = await response.json().catch(
-    /** 处理 request 中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-    () => ({ error: `服务响应异常 (${response.status})` }),
-  );
+  const result = await response
+    .json()
+    .catch(() => ({ error: `服务响应异常 (${response.status})` }));
   if (!response.ok && !result.session)
     throw new Error(result.error ?? `请求失败 (${response.status})`);
   return result as T;
@@ -234,19 +233,11 @@ const summaryOf = ({ messages, ...session }: AgentSession): AgentSessionSummary 
  * @returns 按更新时间降序排列的会话摘要。
  */
 function mergeSummaries(current: AgentSessionSummary[], incoming: AgentSessionSummary[]) {
-  const map = new Map(
-    current.map(
-      /** 转换 mergeSummaries 中的集合条目，供后续处理或展示。 @param session - 本轮操作对应的完整会话。 @returns 当前条目转换后的结果。 */
-      (session) => [session.id, session],
-    ),
-  );
+  const map = new Map(current.map((session) => [session.id, session]));
   for (const session of incoming)
     if (!map.has(session.id) || map.get(session.id)!.revision <= session.revision)
       map.set(session.id, session);
-  return [...map.values()].sort(
-    /** 比较 mergeSummaries 中的两个条目，确定它们的先后顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 负数、零或正数，分别表示前排、相同顺序或后排。 */
-    (a, b) => b.updatedAt.localeCompare(a.updatedAt),
-  );
+  return [...map.values()].sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
 }
 /**
  * 呈现消息行内文本，将展示与交互入口放在同一个组件中维护。
@@ -263,15 +254,9 @@ function InlineText({
 }) {
   return (
     <>
-      {text.split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g).map(
-        /**
-         * 转换消息行内文本中的集合条目，供后续处理或展示。
-         *
-         * @param part - 当前处理的消息内容块。
-         * @param index - 空间查询索引或当前条目的位置。
-         * @returns 当前条目转换后的结果。
-         */
-        (part, index) => {
+      {text
+        .split(/(\*\*[^*]+\*\*|`[^`]+`|\[[^\]]+\]\(https?:\/\/[^\s)]+\))/g)
+        .map((part, index) => {
           if (part.startsWith('**') && part.endsWith('**'))
             return <strong key={index}>{part.slice(2, -2)}</strong>;
           if (part.startsWith('`') && part.endsWith('`'))
@@ -284,8 +269,7 @@ function InlineText({
               </a>
             );
           return part;
-        },
-      )}
+        })}
     </>
   );
 }
@@ -307,56 +291,38 @@ function MessageText({
       {content
         .split(/(```[\s\S]*?```)/g)
         .filter(Boolean)
-        .map(
-          /**
-           * 转换消息正文中的集合条目，供后续处理或展示。
-           *
-           * @param block - 当前处理的文本或代码块。
-           * @param index - 空间查询索引或当前条目的位置。
-           * @returns 当前条目转换后的结果。
-           */
-          (block, index) => {
-            if (block.startsWith('```')) {
-              const match = block.match(/^```([^\n]*)\n?([\s\S]*?)```$/);
-              return (
-                <div className="ac-code-block" key={index}>
-                  {match?.[1] && <span>{match[1]}</span>}
-                  <pre>
-                    <code>{match?.[2] ?? block.slice(3, -3)}</code>
-                  </pre>
-                </div>
-              );
-            }
+        .map((block, index) => {
+          if (block.startsWith('```')) {
+            const match = block.match(/^```([^\n]*)\n?([\s\S]*?)```$/);
             return (
-              <div key={index}>
-                {block.split('\n').map(
-                  /**
-                   * 转换消息正文中的集合条目，供后续处理或展示。
-                   *
-                   * @param line - 当前文本行或线段。
-                   * @param lineIndex - 当前文本行的位置，从 0 开始。
-                   * @returns 当前条目转换后的结果。
-                   */
-                  (line, lineIndex) => {
-                    if (!line.trim()) return <div className="ac-message-spacer" key={lineIndex} />;
-                    if (/^#{1,4}\s/.test(line))
-                      return (
-                        <p className="ac-message-heading" key={lineIndex}>
-                          <InlineText text={line.replace(/^#{1,4}\s+/, '')} />
-                        </p>
-                      );
-                    const list = line.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
-                    return (
-                      <p className={list ? 'ac-message-bullet' : ''} key={lineIndex}>
-                        <InlineText text={list?.[1] ?? line} />
-                      </p>
-                    );
-                  },
-                )}
+              <div className="ac-code-block" key={index}>
+                {match?.[1] && <span>{match[1]}</span>}
+                <pre>
+                  <code>{match?.[2] ?? block.slice(3, -3)}</code>
+                </pre>
               </div>
             );
-          },
-        )}
+          }
+          return (
+            <div key={index}>
+              {block.split('\n').map((line, lineIndex) => {
+                if (!line.trim()) return <div className="ac-message-spacer" key={lineIndex} />;
+                if (/^#{1,4}\s/.test(line))
+                  return (
+                    <p className="ac-message-heading" key={lineIndex}>
+                      <InlineText text={line.replace(/^#{1,4}\s+/, '')} />
+                    </p>
+                  );
+                const list = line.match(/^\s*(?:[-*]|\d+\.)\s+(.*)$/);
+                return (
+                  <p className={list ? 'ac-message-bullet' : ''} key={lineIndex}>
+                    <InlineText text={list?.[1] ?? line} />
+                  </p>
+                );
+              })}
+            </div>
+          );
+        })}
     </div>
   );
 }
@@ -469,23 +435,11 @@ export default function AgentChatPanel({
   const [hasScroll, setHasScroll] = useState(false);
   /** 界面状态：会话历史面板是否打开。通过状态更新驱动界面刷新。 */
   const [historyOpen, setHistoryOpen] = useState(false);
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      if (!pickedPrompt) return;
-      const timer = window.setTimeout(
-        /** 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。 @returns 供 React 保存的新状态。 */
-        () => setPickedPrompt(''),
-        1800,
-      );
-      /** 结束设计助手对话面板当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => window.clearTimeout(timer);
-    },
-    [pickedPrompt],
-  );
+  useEffect(() => {
+    if (!pickedPrompt) return;
+    const timer = window.setTimeout(() => setPickedPrompt(''), 1800);
+    return () => window.clearTimeout(timer);
+  }, [pickedPrompt]);
   const scopesRef = useRef(scopes),
     sessionsRef = useRef(sessions),
     scopeRef = useRef(scope);
@@ -516,108 +470,48 @@ export default function AgentChatPanel({
   const subject = project?.id === subjectId ? project : subjectId ? projects[subjectId] : undefined;
   const messages = session?.messages ?? [];
   const pending =
-    operation?.pending &&
-    !messages.some(
-      /** 检查消息的标识等于 operation 的pending的标识，供集合筛选或定位使用。 @param message - 面向用户或调用方的说明消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (message) => message.id === operation.pending!.id,
-    )
+    operation?.pending && !messages.some((message) => message.id === operation.pending!.id)
       ? operation.pending
       : undefined;
   const renderedMessages = pending ? [...messages, pending] : messages;
-  /**
-   * 只更新指定会话范围，同时同步引用以供异步回调读取最新状态。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param update - 根据旧值计算新值的更新函数。
-   * @returns 无返回值；更新范围状态。
-   */
+  // 同步维护引用，供异步回调读取最新会话状态。
   const mutateScope = (key: string, update: (state: ScopeState) => ScopeState) =>
-    setScopes(
-      /**
-       * 基于最新状态计算 Scopes 的下一份值，避免连续更新时读到旧状态。
-       *
-       * @param states - 按标识索引的状态集合。
-       * @returns 供 React 保存的新状态。
-       */
-      (states) => {
-        const next = { ...states, [key]: update(states[key] ?? emptyScope()) };
-        scopesRef.current = next;
-        return next;
-      },
-    );
-  /**
-   * 仅接纳不早于缓存版本的会话，避免并行请求造成消息回退。
-   *
-   * @param value - 当前字段、模式或控件的取值。
-   * @param key - 要访问或更新的字段名。
-   * @returns 无返回值；更新会话缓存和摘要。
-   */
+    setScopes((states) => {
+      const next = { ...states, [key]: update(states[key] ?? emptyScope()) };
+      scopesRef.current = next;
+      return next;
+    });
+  // 拒绝更旧的会话修订，避免并行请求造成消息回退。
   const cacheSession = (value: AgentSession, key: string) => {
-    setSessions(
-      /**
-       * 基于最新状态计算 Sessions 的下一份值，避免连续更新时读到旧状态。
-       *
-       * @param current - 更新前的当前值。
-       * @returns 供 React 保存的新状态。
-       */
-      (current) => {
-        const existing = current[value.id];
-        if (existing && existing.revision > value.revision) return current;
-        const next = { ...current, [value.id]: value };
-        sessionsRef.current = next;
-        return next;
-      },
-    );
-    mutateScope(
-      key,
-      /** 执行 cacheSession 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-      (state) => ({
-        ...state,
-        sessions: mergeSummaries(state.sessions, [summaryOf(value)]),
-      }),
-    );
+    setSessions((current) => {
+      const existing = current[value.id];
+      if (existing && existing.revision > value.revision) return current;
+      const next = { ...current, [value.id]: value };
+      sessionsRef.current = next;
+      return next;
+    });
+    mutateScope(key, (state) => ({
+      ...state,
+      sessions: mergeSummaries(state.sessions, [summaryOf(value)]),
+    }));
   };
-  /**
-   * 按修订版本更新项目缓存，防止旧动作结果覆盖新设计。
-   *
-   * @param value - 当前字段、模式或控件的取值。
-   * @returns 无返回值；更新项目缓存。
-   */
+  // 旧动作返回的项目不能覆盖缓存中更新的修订。
   const cacheProject = (value: Project) =>
-    setProjects(
-      /** 基于最新状态计算 Projects 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-      (current) =>
-        !current[value.id] || current[value.id].revision <= value.revision
-          ? { ...current, [value.id]: value }
-          : current,
+    setProjects((current) =>
+      !current[value.id] || current[value.id].revision <= value.revision
+        ? { ...current, [value.id]: value }
+        : current,
     );
-  /**
-   * 读取完整会话并更新缓存，供选中对话后展示消息。
-   *
-   * @param id - 唯一标识，用于查找、更新和建立引用。
-   * @param key - 要访问或更新的字段名。
-   * @returns 加载的会话。
-   */
   const loadSession = async (id: string, key: string) => {
     const value = await request<AgentSession>(`/agent/sessions/${id}`);
     cacheSession(value, key);
     return value;
   };
-  /**
-   * 加载指定范围的会话列表，并丢弃被后续请求取代的响应。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param projectId - 动作、会话或记录所属项目的标识。
-   * @returns 无返回值；更新列表、加载状态或错误信息。
-   */
+  // 只接纳当前范围内最后一次加载的响应，避免旧请求覆盖新结果。
   const loadScope = async (key: string, projectId?: string) => {
     const loadId = (loadIds.current[key] ?? 0) + 1;
     loadIds.current[key] = loadId;
-    mutateScope(
-      key,
-      /** 执行 loadScope 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-      (state) => ({ ...state, loading: true, error: '' }),
-    );
+    mutateScope(key, (state) => ({ ...state, loading: true, error: '' }));
     try {
       const response = await request<{
         /** 当前范围内的对话会话集合。 */
@@ -626,142 +520,79 @@ export default function AgentChatPanel({
       if (loadIds.current[key] !== loadId) return;
       const all = mergeSummaries(scopesRef.current[key]?.sessions ?? [], response.sessions);
       const activeId = scopesRef.current[key]?.activeId ?? all[0]?.id;
-      mutateScope(
-        key,
-        /** 执行 loadScope 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-        (state) => ({
-          ...state,
-          sessions: all,
-          activeId,
-          loading: false,
-        }),
-      );
+      mutateScope(key, (state) => ({
+        ...state,
+        sessions: all,
+        activeId,
+        loading: false,
+      }));
       if (activeId) await loadSession(activeId, key);
     } catch (error) {
       if (loadIds.current[key] === loadId)
-        mutateScope(
-          key,
-          /** 执行 loadScope 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-          (state) => ({
-            ...state,
-            loading: false,
-            error: error instanceof Error ? error.message : '会话加载失败',
-          }),
-        );
+        mutateScope(key, (state) => ({
+          ...state,
+          loading: false,
+          error: error instanceof Error ? error.message : '会话加载失败',
+        }));
     }
   };
-  /**
-   * 在指定范围创建会话，可按调用需要立即切换到新会话。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param projectId - 动作、会话或记录所属项目的标识。
-   * @param select - 是否在创建完成后立即选中新对象。
-   * @returns 新建的完整会话。
-   */
   const createSession = async (key: string, projectId?: string, select = true) => {
     const value = await request<AgentSession>('/agent/sessions', {
       ...(projectId ? { projectId } : {}),
     });
     cacheSession(value, key);
     if (select)
-      mutateScope(
-        key,
-        /** 执行 createSession 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-        (state) => ({
-          ...state,
-          activeId: value.id,
-          error: '',
-        }),
-      );
+      mutateScope(key, (state) => ({
+        ...state,
+        activeId: value.id,
+        error: '',
+      }));
     return value;
   };
-  /**
-   * 为当前范围创建新对话，并阻止重复点击造成并发创建。
-   * @returns 无返回值；更新会话与输入框状态。
-   */
+  // 按会话范围拦截重复创建，避免连续点击产生多个会话。
   const newChat = async () => {
     const originScope = scope,
       projectId = project?.id;
     if (requestScopes.current.has(originScope)) return;
     requestScopes.current.add(originScope);
-    setCreatingScopes(
-      /** 基于最新状态计算 CreatingScopes 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-      (current) => new Set(current).add(originScope),
-    );
+    setCreatingScopes((current) => new Set(current).add(originScope));
     try {
       await createSession(originScope, projectId);
-      mutateScope(
-        originScope,
-        /** 执行 newChat 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-        (state) => ({ ...state, draft: '' }),
-      );
+      mutateScope(originScope, (state) => ({ ...state, draft: '' }));
       if (scopeRef.current === originScope) composerRef.current?.focus();
     } catch (error) {
-      mutateScope(
-        originScope,
-        /** 执行 newChat 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-        (state) => ({
-          ...state,
-          error: error instanceof Error ? error.message : '无法新建会话',
-        }),
-      );
+      mutateScope(originScope, (state) => ({
+        ...state,
+        error: error instanceof Error ? error.message : '无法新建会话',
+      }));
     } finally {
       requestScopes.current.delete(originScope);
-      setCreatingScopes(
-        /**
-         * 基于最新状态计算 CreatingScopes 的下一份值，避免连续更新时读到旧状态。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 供 React 保存的新状态。
-         */
-        (current) => {
-          const next = new Set(current);
-          next.delete(originScope);
-          return next;
-        },
-      );
+      setCreatingScopes((current) => {
+        const next = new Set(current);
+        next.delete(originScope);
+        return next;
+      });
     }
   };
-  /**
-   * 切换会话并加载历史消息，同时清理上一个会话的输入状态。
-   *
-   * @param id - 唯一标识，用于查找、更新和建立引用。
-   * @returns 无返回值；更新当前会话。
-   */
   const selectSession = async (id: string) => {
     const key = scope;
-    mutateScope(
-      key,
-      /** 执行 selectSession 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-      (state) => ({
-        ...state,
-        activeId: id,
-        draft: '',
-        error: '',
-      }),
-    );
+    mutateScope(key, (state) => ({
+      ...state,
+      activeId: id,
+      draft: '',
+      error: '',
+    }));
     followBottom.current = true;
     try {
       await loadSession(id, key);
     } catch (error) {
-      mutateScope(
-        key,
-        /** 执行 selectSession 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-        (state) => ({
-          ...state,
-          error: error instanceof Error ? error.message : '会话加载失败',
-        }),
-      );
+      mutateScope(key, (state) => ({
+        ...state,
+        error: error instanceof Error ? error.message : '会话加载失败',
+      }));
     }
   };
-  /**
-   * 记录请求所属会话范围，等待保存后发送消息或确认动作，再按版本更新缓存。
-   *
-   * @param content - 文件、消息或编辑文档的正文。
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @param target - 操作作用的目标。
-   * @returns 完成本轮消息处理的 Promise；界面通过会话、忙碌状态和提示更新。
-   */
+  // 请求始终归属发起时的会话范围，切换界面后也不能写入其他会话。
   const run = async (
     content?: string,
     action?: AgentReviewAction,
@@ -780,10 +611,7 @@ export default function AgentChatPanel({
     const text = content?.trim();
     if (!text && !action) return;
     requestScopes.current.add(originScope);
-    setCreatingScopes(
-      /** 基于最新状态计算 CreatingScopes 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-      (current) => new Set(current).add(originScope),
-    );
+    setCreatingScopes((current) => new Set(current).add(originScope));
     let capturedBusyTarget: string | undefined;
     let acquiredLock = false;
     let sentId = activeId;
@@ -810,13 +638,10 @@ export default function AgentChatPanel({
       acquiredLock = true;
       callbacks.current.onBusyChange?.(targetId, true);
       busySessions.current.add(sentId);
-      setOperations(
-        /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-        (current) => ({
-          ...current,
-          [sentId!]: { label: '正在保存当前设计' },
-        }),
-      );
+      setOperations((current) => ({
+        ...current,
+        [sentId!]: { label: '正在保存当前设计' },
+      }));
       await callbacks.current.flush();
       const optimistic: AgentMessage | undefined = text
         ? {
@@ -827,23 +652,16 @@ export default function AgentChatPanel({
             status: 'pending',
           }
         : undefined;
-      setOperations(
-        /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-        (current) => ({
-          ...current,
-          [sentId!]: { label, pending: optimistic },
-        }),
-      );
+      setOperations((current) => ({
+        ...current,
+        [sentId!]: { label, pending: optimistic },
+      }));
       if (!action)
-        mutateScope(
-          originScope,
-          /** 执行 run 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-          (state) => ({
-            ...state,
-            draft: '',
-            error: '',
-          }),
-        );
+        mutateScope(originScope, (state) => ({
+          ...state,
+          draft: '',
+          error: '',
+        }));
       if (scopeRef.current === originScope) followBottom.current = true;
       let latestProject: Project | undefined;
       if (targetId) {
@@ -872,78 +690,41 @@ export default function AgentChatPanel({
         }
       }
       if (response.error || refreshError)
-        setOperations(
-          /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-          (current) => ({
-            ...current,
-            [sentId!]: { label: '', error: response.error || refreshError },
-          }),
-        );
-      else
-        setOperations(
-          /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-          (current) => ({ ...current, [sentId!]: { label: '' } }),
-        );
+        setOperations((current) => ({
+          ...current,
+          [sentId!]: { label: '', error: response.error || refreshError },
+        }));
+      else setOperations((current) => ({ ...current, [sentId!]: { label: '' } }));
       if (review?.sessionId === sentId && action?.type === 'apply_sync' && !response.error)
         setReview(undefined);
     } catch (error) {
       const message = error instanceof Error ? error.message : '请求未完成，请重试。';
       if (sentId) {
         if (!serverReturned) {
-          await loadSession(sentId, originScope).catch(
-            /** 处理 run 中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-            () => undefined,
-          );
+          await loadSession(sentId, originScope).catch(() => undefined);
         }
-        setOperations(
-          /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-          (current) => ({
-            ...current,
-            [sentId!]: { label: '', error: message },
-          }),
-        );
-      } else
-        mutateScope(
-          originScope,
-          /** 执行 run 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-          (state) => ({ ...state, error: message }),
-        );
+        setOperations((current) => ({
+          ...current,
+          [sentId!]: { label: '', error: message },
+        }));
+      } else mutateScope(originScope, (state) => ({ ...state, error: message }));
       if (text)
-        mutateScope(
-          originScope,
-          /** 执行 run 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-          (state) => ({
-            ...state,
-            draft: state.draft || text,
-          }),
-        );
+        mutateScope(originScope, (state) => ({
+          ...state,
+          draft: state.draft || text,
+        }));
     } finally {
       requestScopes.current.delete(originScope);
       if (sentId) busySessions.current.delete(sentId);
       if (capturedBusyTarget) busyTargets.current.delete(capturedBusyTarget);
       if (acquiredLock) callbacks.current.onBusyChange?.(capturedBusyTarget, false);
-      setCreatingScopes(
-        /**
-         * 基于最新状态计算 CreatingScopes 的下一份值，避免连续更新时读到旧状态。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 供 React 保存的新状态。
-         */
-        (current) => {
-          const next = new Set(current);
-          next.delete(originScope);
-          return next;
-        },
-      );
+      setCreatingScopes((current) => {
+        const next = new Set(current);
+        next.delete(originScope);
+        return next;
+      });
     }
   };
-  /**
-   * 切换到指定项目，并加载该项目对应的工作视图。
-   *
-   * @param id - 唯一标识，用于查找、更新和建立引用。
-   * @param view - 当前视图或画布相机参数。
-   * @returns 项目打开操作的结果。
-   */
   const openProject = async (id: string, view?: View) => {
     try {
       await callbacks.current.flush();
@@ -955,213 +736,95 @@ export default function AgentChatPanel({
       setToast(error instanceof Error ? error.message : '项目加载失败');
     }
   };
-  /**
-   * 更新当前范围的输入草稿并聚焦输入框，方便接着编辑。
-   *
-   * @param text - 需要展示或编辑的文字内容。
-   * @returns 无返回值；更新草稿与焦点。
-   */
   const setPrompt = (text: string) => {
-    mutateScope(
-      scope,
-      /** 执行 setPrompt 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-      (state) => ({ ...state, draft: text }),
-    );
-    requestAnimationFrame(
-      /** 在下一帧刷新setPrompt，让多次界面变化合并到一次绘制。 @returns 当前步骤的处理结果。 */
-      () => composerRef.current?.focus(),
-    );
+    mutateScope(scope, (state) => ({ ...state, draft: text }));
+    requestAnimationFrame(() => composerRef.current?.focus());
   };
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      if (!draftRequest || hidden || busy || appliedDraftRequest.current === draftRequest.id)
-        return;
-      appliedDraftRequest.current = draftRequest.id;
-      setPrompt(draftRequest.text);
-    },
-    [draftRequest?.id, busy, hidden, scope],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      if (!hidden) void loadScope(scope, project?.id);
-    },
-    [scope, hidden],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      setHistoryOpen(false);
-      setImagePreview(undefined);
-      setReview(undefined);
-    },
-    [scope, hidden],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      if (project) cacheProject(project);
-    },
-    [project],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      if (subjectId && !subject)
-        request<Project>(`/projects/${subjectId}`)
-          .then(cacheProject)
-          .catch(
-            /**
-             * 处理设计助手对话面板中的异步失败，按当前流程决定回退或继续抛出。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {},
-          );
-    },
-    [subjectId, subject],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      if (hidden) return;
-      const empty = renderedMessages.length === 0;
-      if (empty) {
-        followBottom.current = true;
-        setHasScroll(false);
-      }
-      if (!empty && !followBottom.current) return;
-      const frame = requestAnimationFrame(
-        /**
-         * 在下一帧刷新设计助手对话面板，让多次界面变化合并到一次绘制。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        () => {
-          if (scrollRef.current)
-            scrollRef.current.scrollTop = empty ? 0 : scrollRef.current.scrollHeight;
-        },
-      );
-      /** 结束设计助手对话面板当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => cancelAnimationFrame(frame);
-    },
-    [scope, current.activeId, renderedMessages.length, operation?.label, session?.revision, hidden],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      if (!toast) return;
-      const timer = setTimeout(
-        /** 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。 @returns 供 React 保存的新状态。 */
-        () => setToast(''),
-        3000,
-      );
-      /** 结束设计助手对话面板当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => clearTimeout(timer);
-    },
-    [toast],
-  );
-  useEffect(
-    /**
-     * 在设计助手对话面板的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      const input = composerRef.current;
-      if (input) {
-        input.style.height = 'auto';
-        input.style.height = `${Math.min(160, Math.max(54, input.scrollHeight))}px`;
-      }
-    },
-    [current.draft],
-  );
+  useEffect(() => {
+    if (!draftRequest || hidden || busy || appliedDraftRequest.current === draftRequest.id) return;
+    appliedDraftRequest.current = draftRequest.id;
+    setPrompt(draftRequest.text);
+  }, [draftRequest?.id, busy, hidden, scope]);
+  useEffect(() => {
+    if (!hidden) void loadScope(scope, project?.id);
+  }, [scope, hidden]);
+  useEffect(() => {
+    setHistoryOpen(false);
+    setImagePreview(undefined);
+    setReview(undefined);
+  }, [scope, hidden]);
+  useEffect(() => {
+    if (project) cacheProject(project);
+  }, [project]);
+  useEffect(() => {
+    if (subjectId && !subject)
+      request<Project>(`/projects/${subjectId}`)
+        .then(cacheProject)
+        .catch(() => {});
+  }, [subjectId, subject]);
+  useEffect(() => {
+    if (hidden) return;
+    const empty = renderedMessages.length === 0;
+    if (empty) {
+      followBottom.current = true;
+      setHasScroll(false);
+    }
+    if (!empty && !followBottom.current) return;
+    const frame = requestAnimationFrame(() => {
+      if (scrollRef.current)
+        scrollRef.current.scrollTop = empty ? 0 : scrollRef.current.scrollHeight;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [
+    scope,
+    current.activeId,
+    renderedMessages.length,
+    operation?.label,
+    session?.revision,
+    hidden,
+  ]);
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(''), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+  useEffect(() => {
+    const input = composerRef.current;
+    if (input) {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(160, Math.max(54, input.scrollHeight))}px`;
+    }
+  }, [current.draft]);
 
   const imageActions = messages
-    .flatMap(
-      /** 转换设计助手对话面板中的集合条目并展开结果，供后续处理或展示。 @param message - 面向用户或调用方的说明消息。 @returns 当前条目展开后的结果。 */
-      (message) => message.actions ?? [],
-    )
+    .flatMap((message) => message.actions ?? [])
     .filter(
-      /** 检查包含 action 的类型且 action 的状态不等于“failed”，供集合筛选或定位使用。 @param action - 当前要执行的操作或操作结果分类。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
       (action) =>
         ['generate_image', 'approve_image', 'reconstruct_design'].includes(action.type) &&
         action.status !== 'failed',
     );
-  /**
-   * 识别同一项目的最新图片动作，避免用户确认已被替换的参考图。
-   *
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @returns 该动作是否为项目最新图片动作。
-   */
+  // 同一项目只允许确认最新图片动作，避免使用已被替换的参考图。
   const latestImageAction = (action: AgentActionResult) =>
-    [...imageActions].reverse().find(
-      /** 检查条目的项目标识等于 action 的项目标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.projectId === action.projectId,
-    )?.id === action.id;
+    [...imageActions].reverse().find((item) => item.projectId === action.projectId)?.id ===
+    action.id;
   const appliedPreviewIds = new Set(
     messages
-      .flatMap(
-        /** 转换设计助手对话面板中的集合条目并展开结果，供后续处理或展示。 @param message - 面向用户或调用方的说明消息。 @returns 当前条目展开后的结果。 */
-        (message) => message.actions ?? [],
-      )
-      .filter(
-        /** 检查 action 的类型等于“apply_sync”且 action 的状态等于“completed”，供集合筛选或定位使用。 @param action - 当前要执行的操作或操作结果分类。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (action) => action.type === 'apply_sync' && action.status === 'completed',
-      )
-      .map(
-        /** 提取 action 的previewId，供后续计算或展示使用。 @param action - 当前要执行的操作或操作结果分类。 @returns action的previewId。 */
-        (action) => action.previewId,
-      )
+      .flatMap((message) => message.actions ?? [])
+      .filter((action) => action.type === 'apply_sync' && action.status === 'completed')
+      .map((action) => action.previewId)
       .filter(Boolean),
   );
-  /**
-   * 取得动作所属项目，用其当前版本判断动作是否仍可执行。
-   *
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @returns 对应的项目；尚未加载时返回 undefined。
-   */
   const actionProject = (action: AgentActionResult) =>
     project?.id === action.projectId
       ? project
       : action.projectId
         ? projects[action.projectId]
         : undefined;
-  /**
-   * 比较动作产生时与当前项目的版本，防止继续应用过期操作。
-   *
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @returns 动作是否已过期。
-   */
+  // 项目修订变化后，旧版本上生成的动作不能继续应用。
   const isStale = (action: AgentActionResult) => {
     const value = actionProject(action);
     return !!value && action.revision !== undefined && value.revision !== action.revision;
   };
-  /**
-   * 根据动作结果和当前项目状态显示确认、还原或同步入口。
-   *
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @returns 动作结果卡片。
-   */
   const renderAction = (action: AgentActionResult) => {
     const stale = isStale(action),
       latest = latestImageAction(action),
@@ -1175,7 +838,6 @@ export default function AgentChatPanel({
     const imageApproved =
       action.type === 'generate_image' &&
       imageActions.some(
-        /** 检查条目的类型等于“approve_image”且条目的项目标识等于 action 的项目标识且条目的图片地址等于 action 的图片地址，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
         (item) =>
           item.type === 'approve_image' &&
           item.projectId === action.projectId &&
@@ -1233,10 +895,7 @@ export default function AgentChatPanel({
           <button
             className="ac-generated-image"
             aria-label="查看完整设计图"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到renderAction。 @returns 当前步骤的处理结果。 */
-              () => setImagePreview({ url: action.imageUrl!, title: action.title })
-            }
+            onClick={() => setImagePreview({ url: action.imageUrl!, title: action.title })}
           >
             <img src={action.imageUrl} alt="Agent 生成的 UI 设计图" />
             <span>
@@ -1259,18 +918,13 @@ export default function AgentChatPanel({
               </p>
               <Button
                 disabled={busy || stale || (canReconstruct && !settings.configured)}
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到renderAction。
-                   * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                   */
-                  () =>
-                    run(undefined, {
-                      type: canApprove ? 'approve_image' : 'reconstruct_design',
-                      projectId: action.projectId!,
-                      revision: action.revision!,
-                      imageUrl: action.imageUrl!,
-                    })
+                onClick={() =>
+                  run(undefined, {
+                    type: canApprove ? 'approve_image' : 'reconstruct_design',
+                    projectId: action.projectId!,
+                    revision: action.revision!,
+                    imageUrl: action.imageUrl!,
+                  })
                 }
               >
                 {canApprove ? <Check size={13} /> : <Layers3 size={13} />}
@@ -1279,10 +933,7 @@ export default function AgentChatPanel({
               {stale && (
                 <Button
                   variant="ghost"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到renderAction。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => setPrompt('请根据项目当前主题和组件，重新生成刚才的 UI 设计图。')
-                  }
+                  onClick={() => setPrompt('请根据项目当前主题和组件，重新生成刚才的 UI 设计图。')}
                 >
                   重新描述需求
                   <ArrowRight size={12} />
@@ -1294,40 +945,21 @@ export default function AgentChatPanel({
           <div className="ac-sync-summary">
             <div>
               <FileCode2 size={14} />
-              <span>
-                {
-                  sync.files.filter(
-                    /** 检查 file 的状态不等于“unchanged”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                    (file) => file.status !== 'unchanged',
-                  ).length
-                }{' '}
-                个变更
-              </span>
+              <span>{sync.files.filter((file) => file.status !== 'unchanged').length} 个变更</span>
               <code>v{sync.revision}</code>
             </div>
             <div className="ac-file-previews">
               {sync.files
-                .filter(
-                  /** 检查 file 的状态不等于“unchanged”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                  (file) => file.status !== 'unchanged',
-                )
+                .filter((file) => file.status !== 'unchanged')
                 .slice(0, 3)
-                .map(
-                  /**
-                   * 转换 renderAction 中的集合条目，供后续处理或展示。
-                   *
-                   * @param file - 需要读取、写入或导入的文件。
-                   * @returns 当前条目转换后的结果。
-                   */
-                  (file) => (
-                    <div key={file.path}>
-                      <span className={`ac-file-status ${file.status}`}>
-                        {file.status === 'added' ? 'A' : file.status === 'conflict' ? '!' : 'M'}
-                      </span>
-                      <span>{file.path}</span>
-                    </div>
-                  ),
-                )}
+                .map((file) => (
+                  <div key={file.path}>
+                    <span className={`ac-file-status ${file.status}`}>
+                      {file.status === 'added' ? 'A' : file.status === 'conflict' ? '!' : 'M'}
+                    </span>
+                    <span>{file.path}</span>
+                  </div>
+                ))}
             </div>
             {sync.conflicts.length > 0 && (
               <p className="ac-action-error">{sync.conflicts.length} 个冲突需要先处理。</p>
@@ -1335,19 +967,14 @@ export default function AgentChatPanel({
             <Button
               variant="outline"
               disabled={busy}
-              onClick={
-                /**
-                 * 响应 onClick 交互，将用户操作应用到renderAction。
-                 * @returns 当前步骤的处理结果。
-                 */
-                () =>
-                  setReview({
-                    action,
-                    sessionId: session!.id,
-                    scope,
-                    file: sync.files[0]?.path ?? '',
-                    checked: false,
-                  })
+              onClick={() =>
+                setReview({
+                  action,
+                  sessionId: session!.id,
+                  scope,
+                  file: sync.files[0]?.path ?? '',
+                  checked: false,
+                })
               }
             >
               检查生成文件
@@ -1368,24 +995,19 @@ export default function AgentChatPanel({
             <Button
               variant="ghost"
               className="ac-result-link"
-              onClick={
-                /**
-                 * 响应 onClick 交互，将用户操作应用到renderAction。
-                 * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                 */
-                () =>
-                  openProject(
-                    action.projectId!,
-                    action.type === 'reconstruct_design'
-                      ? 'editor'
-                      : action.type === 'create_component'
-                        ? 'components'
-                        : ['update_tokens', 'create_variables'].includes(action.type)
-                          ? 'tokens'
-                          : action.type === 'apply_sync'
-                            ? 'sync'
-                            : undefined,
-                  )
+              onClick={() =>
+                openProject(
+                  action.projectId!,
+                  action.type === 'reconstruct_design'
+                    ? 'editor'
+                    : action.type === 'create_component'
+                      ? 'components'
+                      : ['update_tokens', 'create_variables'].includes(action.type)
+                        ? 'tokens'
+                        : action.type === 'apply_sync'
+                          ? 'sync'
+                          : undefined,
+                )
               }
             >
               {action.type === 'create_project'
@@ -1469,39 +1091,21 @@ export default function AgentChatPanel({
       ];
   const reviewedPreview = review?.action.syncPreview,
     reviewedFile =
-      reviewedPreview?.files.find(
-        /** 检查 file 的路径等于 review 的file，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (file) => file.path === review?.file,
-      ) ?? reviewedPreview?.files[0];
+      reviewedPreview?.files.find((file) => file.path === review?.file) ??
+      reviewedPreview?.files[0];
   const reviewBusy = review ? !!operations[review.sessionId]?.label : false;
   const reviewApplied =
     !!reviewedPreview &&
     !!review &&
-    (sessions[review.sessionId]?.messages ?? []).some(
-      /**
-       * 判断设计助手对话面板中的条目是否符合检查条件。
-       *
-       * @param message - 面向用户或调用方的说明消息。
-       * @returns 该条目是否符合条件。
-       */
-      (message) =>
-        message.actions?.some(
-          /** 判断设计助手对话面板中的条目是否符合检查条件。 @param action - 当前要执行的操作或操作结果分类。 @returns 该条目是否符合条件。 */
-          (action) =>
-            action.type === 'apply_sync' &&
-            action.status === 'completed' &&
-            action.previewId === reviewedPreview.previewId,
-        ),
+    (sessions[review.sessionId]?.messages ?? []).some((message) =>
+      message.actions?.some(
+        (action) =>
+          action.type === 'apply_sync' &&
+          action.status === 'completed' &&
+          action.previewId === reviewedPreview.previewId,
+      ),
     );
   const otherBusy = Object.entries(operations).filter(
-    /**
-     * 检查取值的label且标识不等于当前值的activeId，供集合筛选或定位使用。
-     *
-     * @param options - 按顺序解构的当前条目。
-     * @param options.id - 唯一标识，用于查找、更新和建立引用。
-     * @param options.value - 当前字段、模式或控件的取值。
-     * @returns 用于判断条件的值；真值表示该条目符合条件。
-     */
     ([id, value]) => value.label && id !== current.activeId,
   ).length;
   return (
@@ -1512,10 +1116,7 @@ export default function AgentChatPanel({
       transition={uiTransition}
       hidden={hidden}
       aria-label="AI Agent 对话侧栏"
-      onKeyDown={
-        /** 响应 onKeyDown 交互，将用户操作应用到设计助手对话面板。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-        (event) => event.stopPropagation()
-      }
+      onKeyDown={(event) => event.stopPropagation()}
     >
       <header className="ac-header">
         <div className="ac-agent-brand">
@@ -1528,21 +1129,12 @@ export default function AgentChatPanel({
           </div>
         </div>
         <div>
-          <IconButton
-            label="历史对话"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-              () => setHistoryOpen(true)
-            }
-          >
+          <IconButton label="历史对话" onClick={() => setHistoryOpen(true)}>
             <History size={15} />
           </IconButton>
           <IconButton
             label="新建对话"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-              () => void newChat()
-            }
+            onClick={() => void newChat()}
             disabled={creatingScopes.has(scope)}
           >
             <Plus size={17} />
@@ -1565,47 +1157,28 @@ export default function AgentChatPanel({
             <DropdownMenuLabel>
               {project ? `${project.name}的对话` : '工作空间对话'}
             </DropdownMenuLabel>
-            <DropdownMenuItem
-              onSelect={
-                /** 响应 onSelect 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-                () => void newChat()
-              }
-            >
+            <DropdownMenuItem onSelect={() => void newChat()}>
               <Plus size={14} />
               新建对话
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <div className="ac-session-list">
-              {current.sessions.map(
-                /**
-                 * 转换设计助手对话面板中的集合条目，供后续处理或展示。
-                 *
-                 * @param item - 当前遍历的条目。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (item) => (
-                  <DropdownMenuItem
-                    key={item.id}
-                    onSelect={
-                      /** 响应 onSelect 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-                      () => void selectSession(item.id)
-                    }
-                  >
-                    <MessageSquare size={13} />
-                    <span>
-                      <strong>{item.title}</strong>
-                      <small>
-                        {new Date(item.updatedAt).toLocaleDateString('zh-CN', {
-                          month: 'numeric',
-                          day: 'numeric',
-                        })}{' '}
-                        · {item.messageCount} 条消息
-                      </small>
-                    </span>
-                    {item.id === current.activeId && <Check size={13} />}
-                  </DropdownMenuItem>
-                ),
-              )}
+              {current.sessions.map((item) => (
+                <DropdownMenuItem key={item.id} onSelect={() => void selectSession(item.id)}>
+                  <MessageSquare size={13} />
+                  <span>
+                    <strong>{item.title}</strong>
+                    <small>
+                      {new Date(item.updatedAt).toLocaleDateString('zh-CN', {
+                        month: 'numeric',
+                        day: 'numeric',
+                      })}{' '}
+                      · {item.messageCount} 条消息
+                    </small>
+                  </span>
+                  {item.id === current.activeId && <Check size={13} />}
+                </DropdownMenuItem>
+              ))}
               {!current.sessions.length && <p>还没有历史对话</p>}
             </div>
           </DropdownMenuContent>
@@ -1613,13 +1186,7 @@ export default function AgentChatPanel({
         <span className="ac-scope-label">{project ? '项目对话' : '工作空间'}</span>
       </div>
       {subject && (
-        <button
-          className="ac-project-context"
-          onClick={
-            /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-            () => void openProject(subject.id)
-          }
-        >
+        <button className="ac-project-context" onClick={() => void openProject(subject.id)}>
           <span className="ac-project-dot" style={{ background: subject.tokens.primary }} />
           <span>{subject.name}</span>
           <span className="ac-context-count">
@@ -1632,25 +1199,19 @@ export default function AgentChatPanel({
       <div
         className="ac-scroll"
         ref={scrollRef}
-        onScroll={
-          /**
-           * 响应 onScroll 交互，将用户操作应用到设计助手对话面板。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          () => {
-            const element = scrollRef.current;
-            if (element) {
-              if (!renderedMessages.length) {
-                followBottom.current = true;
-                setHasScroll(false);
-                return;
-              }
-              followBottom.current =
-                element.scrollHeight - element.scrollTop - element.clientHeight < 80;
-              setHasScroll(!followBottom.current);
+        onScroll={() => {
+          const element = scrollRef.current;
+          if (element) {
+            if (!renderedMessages.length) {
+              followBottom.current = true;
+              setHasScroll(false);
+              return;
             }
+            followBottom.current =
+              element.scrollHeight - element.scrollTop - element.clientHeight < 80;
+            setHasScroll(!followBottom.current);
           }
-        }
+        }}
       >
         {current.loading && !session && (
           <div className="ac-loading" role="status">
@@ -1679,59 +1240,44 @@ export default function AgentChatPanel({
               </p>
             </div>
             <div className="ac-quick-prompts">
-              {quickPrompts.map(
-                /**
-                 * 转换设计助手对话面板中的集合条目，供后续处理或展示。
-                 *
-                 * @param item - 当前遍历的条目。
-                 * @param index - 空间查询索引或当前条目的位置。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (item, index) => (
-                  <motion.button
-                    key={item.title}
-                    className={pickedPrompt === item.title ? 'is-picked' : undefined}
-                    onClick={
-                      /**
-                       * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      () => {
-                        setPrompt(item.prompt);
-                        setPickedPrompt(item.title);
-                      }
-                    }
-                    initial={reducedMotion ? false : { opacity: 0, y: expressive ? 10 : 2 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{
-                      ...uiTransition,
-                      delay: reducedMotion ? 0 : index * (expressive ? 0.045 : 0.02),
-                    }}
-                    whileHover={reducedMotion ? undefined : { y: expressive ? -3 : -1 }}
-                    whileTap={reducedMotion ? undefined : { scale: 0.97 }}
-                  >
-                    <AnimatePresence>
-                      {pickedPrompt === item.title && (
-                        <motion.span
-                          className="ac-task-pick"
-                          initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0 }}
-                          transition={uiTransition}
-                        >
-                          <Check size={10} />
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    <span className="ac-task-icon">
-                      <RinIcon kind={item.kind} size={24} />
-                    </span>
-                    <strong>{item.title}</strong>
-                    <span className="ac-task-description">{item.description}</span>
-                    <ArrowRight size={13} />
-                  </motion.button>
-                ),
-              )}
+              {quickPrompts.map((item, index) => (
+                <motion.button
+                  key={item.title}
+                  className={pickedPrompt === item.title ? 'is-picked' : undefined}
+                  onClick={() => {
+                    setPrompt(item.prompt);
+                    setPickedPrompt(item.title);
+                  }}
+                  initial={reducedMotion ? false : { opacity: 0, y: expressive ? 10 : 2 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    ...uiTransition,
+                    delay: reducedMotion ? 0 : index * (expressive ? 0.045 : 0.02),
+                  }}
+                  whileHover={reducedMotion ? undefined : { y: expressive ? -3 : -1 }}
+                  whileTap={reducedMotion ? undefined : { scale: 0.97 }}
+                >
+                  <AnimatePresence>
+                    {pickedPrompt === item.title && (
+                      <motion.span
+                        className="ac-task-pick"
+                        initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={uiTransition}
+                      >
+                        <Check size={10} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  <span className="ac-task-icon">
+                    <RinIcon kind={item.kind} size={24} />
+                  </span>
+                  <strong>{item.title}</strong>
+                  <span className="ac-task-description">{item.description}</span>
+                  <ArrowRight size={13} />
+                </motion.button>
+              ))}
             </div>
             <div className="ac-workflow-note">
               <ImageIcon size={12} />
@@ -1744,77 +1290,56 @@ export default function AgentChatPanel({
           </motion.div>
         )}
         <div className="ac-messages" aria-live="polite">
-          {renderedMessages.map(
-            /**
-             * 转换设计助手对话面板中的集合条目，供后续处理或展示。
-             *
-             * @param message - 面向用户或调用方的说明消息。
-             * @returns 当前条目转换后的结果。
-             */
-            (message) => (
-              <motion.article
-                key={message.id}
-                className={`ac-message ac-message-${message.role} ${message.status === 'failed' ? 'is-failed' : ''}`}
-                initial={{
-                  opacity: reducedMotion ? 1 : 0,
-                  y: reducedMotion ? 0 : expressive ? 10 : 2,
-                }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={uiTransition}
-              >
-                <div className="ac-message-author">
-                  {message.role === 'assistant' ? (
-                    <RinAvatar size={24} className="ac-assistant-mark" />
-                  ) : (
-                    <span className="ac-user-mark">我</span>
-                  )}
-                  <strong>{message.role === 'assistant' ? '凛' : '你'}</strong>
-                  <time>
-                    {new Date(message.createdAt).toLocaleTimeString('zh-CN', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </time>
-                  {message.status === 'pending' && (
-                    <span className="ac-message-pending">发送中</span>
-                  )}
+          {renderedMessages.map((message) => (
+            <motion.article
+              key={message.id}
+              className={`ac-message ac-message-${message.role} ${message.status === 'failed' ? 'is-failed' : ''}`}
+              initial={{
+                opacity: reducedMotion ? 1 : 0,
+                y: reducedMotion ? 0 : expressive ? 10 : 2,
+              }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={uiTransition}
+            >
+              <div className="ac-message-author">
+                {message.role === 'assistant' ? (
+                  <RinAvatar size={24} className="ac-assistant-mark" />
+                ) : (
+                  <span className="ac-user-mark">我</span>
+                )}
+                <strong>{message.role === 'assistant' ? '凛' : '你'}</strong>
+                <time>
+                  {new Date(message.createdAt).toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </time>
+                {message.status === 'pending' && <span className="ac-message-pending">发送中</span>}
+              </div>
+              {message.content && <MessageText content={message.content} />}
+              {!!message.actions?.length && (
+                <div className="ac-action-timeline" aria-label="执行记录">
+                  {message.actions.map(renderAction)}
                 </div>
-                {message.content && <MessageText content={message.content} />}
-                {!!message.actions?.length && (
-                  <div className="ac-action-timeline" aria-label="执行记录">
-                    {message.actions.map(renderAction)}
-                  </div>
-                )}
-                {message.role === 'assistant' && message.content && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="ac-message-copy"
-                    aria-label="复制回答"
-                    onClick={
-                      /**
-                       * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-                       * @returns 当前步骤的处理结果。
-                       */
-                      () =>
-                        navigator.clipboard
-                          .writeText(message.content)
-                          .then(
-                            /** 在设计助手对话面板的异步步骤结束后处理结果。 @returns 当前步骤的处理结果。 */
-                            () => setToast('回答已复制'),
-                          )
-                          .catch(
-                            /** 处理设计助手对话面板中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-                            () => setToast('无法访问剪贴板'),
-                          )
-                    }
-                  >
-                    <Copy size={12} />
-                  </Button>
-                )}
-              </motion.article>
-            ),
-          )}
+              )}
+              {message.role === 'assistant' && message.content && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="ac-message-copy"
+                  aria-label="复制回答"
+                  onClick={() =>
+                    navigator.clipboard
+                      .writeText(message.content)
+                      .then(() => setToast('回答已复制'))
+                      .catch(() => setToast('无法访问剪贴板'))
+                  }
+                >
+                  <Copy size={12} />
+                </Button>
+              )}
+            </motion.article>
+          ))}
         </div>
         <AnimatePresence initial={false}>
           {busy && (
@@ -1846,46 +1371,24 @@ export default function AgentChatPanel({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-                   * @returns 无返回值；通过副作用完成当前操作。
-                   */
-                  () => {
-                    if (current.activeId)
-                      void loadSession(current.activeId, scope)
-                        .then(
-                          /**
-                           * 在设计助手对话面板的异步步骤结束后处理结果。
-                           * @returns 无返回值；通过副作用完成当前操作。
-                           */
-                          () => {
-                            const id = current.activeId!;
-                            setOperations(
-                              /** 基于最新状态计算 Operations 的下一份值，避免连续更新时读到旧状态。 @param states - 按标识索引的状态集合。 @returns 供 React 保存的新状态。 */
-                              (states) => ({
-                                ...states,
-                                [id]: { label: '' },
-                              }),
-                            );
-                            mutateScope(
-                              scope,
-                              /** 执行设计助手对话面板传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-                              (state) => ({
-                                ...state,
-                                error: '',
-                              }),
-                            );
-                            setToast('会话已刷新');
-                          },
-                        )
-                        .catch(
-                          /** 处理设计助手对话面板中的异步失败，按当前流程决定回退或继续抛出。 @param error - 当前操作的失败信息，供界面反馈或重试判断。 @returns 当前步骤的处理结果。 */
-                          (error) => setToast(error.message),
-                        );
-                    else void loadScope(scope, project?.id);
-                  }
-                }
+                onClick={() => {
+                  if (current.activeId)
+                    void loadSession(current.activeId, scope)
+                      .then(() => {
+                        const id = current.activeId!;
+                        setOperations((states) => ({
+                          ...states,
+                          [id]: { label: '' },
+                        }));
+                        mutateScope(scope, (state) => ({
+                          ...state,
+                          error: '',
+                        }));
+                        setToast('会话已刷新');
+                      })
+                      .catch((error) => setToast(error.message));
+                  else void loadScope(scope, project?.id);
+                }}
               >
                 刷新会话
                 <RefreshCw size={12} />
@@ -1913,19 +1416,13 @@ export default function AgentChatPanel({
           size="icon"
           className="ac-scroll-bottom"
           aria-label="回到最新消息"
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              followBottom.current = true;
-              scrollRef.current?.scrollTo({
-                top: scrollRef.current.scrollHeight,
-                behavior: reducedMotion ? 'instant' : 'smooth',
-              });
-            }
-          }
+          onClick={() => {
+            followBottom.current = true;
+            scrollRef.current?.scrollTo({
+              top: scrollRef.current.scrollHeight,
+              behavior: reducedMotion ? 'instant' : 'smooth',
+            });
+          }}
         >
           <ArrowDown size={14} />
         </Button>
@@ -1947,38 +1444,19 @@ export default function AgentChatPanel({
             aria-label="发送给凛的消息"
             placeholder={project ? '描述需要修改的内容…' : '描述你的任务…'}
             value={current.draft}
-            onChange={
-              /**
-               * 响应 onChange 交互，将用户操作应用到设计助手对话面板。
-               *
-               * @param event - 当前事件及其触发位置。
-               * @returns 当前步骤的处理结果。
-               */
-              (event) =>
-                mutateScope(
-                  scope,
-                  /** 执行设计助手对话面板传入的局部处理步骤，使调用处能够控制结果如何更新。 @param state - 当前操作所依赖的完整状态。 @returns 当前步骤的处理结果。 */
-                  (state) => ({
-                    ...state,
-                    draft: event.target.value,
-                  }),
-                )
+            onChange={(event) =>
+              mutateScope(scope, (state) => ({
+                ...state,
+                draft: event.target.value,
+              }))
             }
-            onKeyDown={
-              /**
-               * 响应 onKeyDown 交互，将用户操作应用到设计助手对话面板。
-               *
-               * @param event - 当前事件及其触发位置。
-               * @returns 无返回值；通过副作用完成当前操作。
-               */
-              (event) => {
-                event.stopPropagation();
-                if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-                  event.preventDefault();
-                  if (!busy && settings.configured && current.draft.trim()) void run(current.draft);
-                }
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
+                event.preventDefault();
+                if (!busy && settings.configured && current.draft.trim()) void run(current.draft);
               }
-            }
+            }}
           />
           <div className="ac-composer-toolbar">
             <Popover>
@@ -2004,11 +1482,7 @@ export default function AgentChatPanel({
                       <dt>页面 / 图层</dt>
                       <dd>
                         {subject.pages.length} /{' '}
-                        {subject.pages.reduce(
-                          /** 累积设计助手对话面板中的条目结果，供后续计算使用。 @param sum - 累加到当前项之前的结果。 @param p - 当前坐标点或内容片段。 @returns 纳入当前条目后的累计结果。 */
-                          (sum, p) => sum + p.nodes.length,
-                          0,
-                        )}
+                        {subject.pages.reduce((sum, p) => sum + p.nodes.length, 0)}
                       </dd>
                       <dt>工作空间</dt>
                       <dd>
@@ -2035,10 +1509,7 @@ export default function AgentChatPanel({
                 size="icon"
                 aria-label="发送消息"
                 disabled={!settings.configured || busy || !current.draft.trim()}
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-                  () => void run(current.draft)
-                }
+                onClick={() => void run(current.draft)}
               >
                 {busy ? <LoaderCircle size={15} className="animate-spin" /> : <ArrowUp size={16} />}
               </Button>
@@ -2047,10 +1518,7 @@ export default function AgentChatPanel({
         </motion.div>
         <div className="ac-footer-meta">
           <button
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-              () => setSwitchingModel(true)
-            }
+            onClick={() => setSwitchingModel(true)}
             disabled={busy}
             title={settings.textModel || '选择模型'}
           >
@@ -2068,20 +1536,11 @@ export default function AgentChatPanel({
         <ModelSwitcher
           settings={settings}
           onSettings={onProviderSettings}
-          onClose={
-            /** 响应 onClose 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-            () => setSwitchingModel(false)
-          }
-          onManage={
-            /**
-             * 响应 onManage 交互，将用户操作应用到设计助手对话面板。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              setSwitchingModel(false);
-              onSettings();
-            }
-          }
+          onClose={() => setSwitchingModel(false)}
+          onManage={() => {
+            setSwitchingModel(false);
+            onSettings();
+          }}
         />
       )}
       <AnimatePresence>
@@ -2099,20 +1558,8 @@ export default function AgentChatPanel({
           </motion.div>
         )}
       </AnimatePresence>
-      <ReferenceImagePreview
-        image={imagePreview}
-        onClose={
-          /** 响应 onClose 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-          () => setImagePreview(undefined)
-        }
-      />
-      <Dialog
-        open={!!review}
-        onOpenChange={
-          /** 响应 onOpenChange 交互，将用户操作应用到设计助手对话面板。 @param open - 弹层或面板当前是否打开。 @returns 当前步骤的处理结果。 */
-          (open) => !open && !reviewBusy && setReview(undefined)
-        }
-      >
+      <ReferenceImagePreview image={imagePreview} onClose={() => setImagePreview(undefined)} />
+      <Dialog open={!!review} onOpenChange={(open) => !open && !reviewBusy && setReview(undefined)}>
         <DialogContent className="ac-review-dialog">
           <DialogHeader>
             <DialogTitle>检查代码同步</DialogTitle>
@@ -2124,45 +1571,31 @@ export default function AgentChatPanel({
             <>
               <div className="ac-review-layout">
                 <nav>
-                  {reviewedPreview.files.map(
-                    /**
-                     * 转换设计助手对话面板中的集合条目，供后续处理或展示。
-                     *
-                     * @param file - 需要读取、写入或导入的文件。
-                     * @returns 当前条目转换后的结果。
-                     */
-                    (file) => (
-                      <button
-                        key={file.path}
-                        className={reviewedFile?.path === file.path ? 'selected' : ''}
-                        onClick={
-                          /**
-                           * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-                           * @returns 当前步骤的处理结果。
-                           */
-                          () =>
-                            setReview(
-                              /** 基于最新状态计算 Review 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-                              (current) => (current ? { ...current, file: file.path } : current),
-                            )
+                  {reviewedPreview.files.map((file) => (
+                    <button
+                      key={file.path}
+                      className={reviewedFile?.path === file.path ? 'selected' : ''}
+                      onClick={() =>
+                        setReview((current) =>
+                          current ? { ...current, file: file.path } : current,
+                        )
+                      }
+                    >
+                      <span className={`ac-file-status ${file.status}`}>
+                        {
+                          (
+                            {
+                              added: 'A',
+                              modified: 'M',
+                              unchanged: '–',
+                              conflict: '!',
+                            } as const
+                          )[file.status]
                         }
-                      >
-                        <span className={`ac-file-status ${file.status}`}>
-                          {
-                            (
-                              {
-                                added: 'A',
-                                modified: 'M',
-                                unchanged: '–',
-                                conflict: '!',
-                              } as const
-                            )[file.status]
-                          }
-                        </span>
-                        <span>{file.path}</span>
-                      </button>
-                    ),
-                  )}
+                      </span>
+                      <span>{file.path}</span>
+                    </button>
+                  ))}
                 </nav>
                 <div className="ac-review-code">
                   <header>
@@ -2193,19 +1626,10 @@ export default function AgentChatPanel({
                 <label className="ac-review-check">
                   <Checkbox
                     checked={!!review?.checked}
-                    onCheckedChange={
-                      /**
-                       * 响应 onCheckedChange 交互，将用户操作应用到设计助手对话面板。
-                       *
-                       * @param checked - 复选控件当前是否选中。
-                       * @returns 当前步骤的处理结果。
-                       */
-                      (checked) =>
-                        setReview(
-                          /** 基于最新状态计算 Review 的下一份值，避免连续更新时读到旧状态。 @param current - 更新前的当前值。 @returns 供 React 保存的新状态。 */
-                          (current) =>
-                            current ? { ...current, checked: checked === true } : current,
-                        )
+                    onCheckedChange={(checked) =>
+                      setReview((current) =>
+                        current ? { ...current, checked: checked === true } : current,
+                      )
                     }
                   />
                   <span>我已检查 v{reviewedPreview.revision} 的生成文件，同意同步这些更改。</span>
@@ -2215,10 +1639,7 @@ export default function AgentChatPanel({
                 <Button
                   variant="outline"
                   disabled={reviewBusy}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到设计助手对话面板。 @returns 当前步骤的处理结果。 */
-                    () => setReview(undefined)
-                  }
+                  onClick={() => setReview(undefined)}
                 >
                   取消
                 </Button>
@@ -2230,30 +1651,21 @@ export default function AgentChatPanel({
                     reviewedPreview.conflicts.length > 0 ||
                     !review ||
                     isStale(review.action) ||
-                    reviewedPreview.files.every(
-                      /** 检查 file 的状态等于“unchanged”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                      (file) => file.status === 'unchanged',
-                    )
+                    reviewedPreview.files.every((file) => file.status === 'unchanged')
                   }
-                  onClick={
-                    /**
-                     * 响应 onClick 交互，将用户操作应用到设计助手对话面板。
-                     * @returns 无返回值；通过副作用完成当前操作。
-                     */
-                    () => {
-                      if (review?.action.projectId)
-                        void run(
-                          undefined,
-                          {
-                            type: 'apply_sync',
-                            projectId: review.action.projectId,
-                            revision: reviewedPreview.revision,
-                            previewId: reviewedPreview.previewId,
-                          },
-                          { sessionId: review.sessionId, scope: review.scope },
-                        );
-                    }
-                  }
+                  onClick={() => {
+                    if (review?.action.projectId)
+                      void run(
+                        undefined,
+                        {
+                          type: 'apply_sync',
+                          projectId: review.action.projectId,
+                          revision: reviewedPreview.revision,
+                          previewId: reviewedPreview.previewId,
+                        },
+                        { sessionId: review.sessionId, scope: review.scope },
+                      );
+                  }}
                 >
                   {reviewBusy ? (
                     <LoaderCircle size={14} className="animate-spin" />

@@ -98,30 +98,14 @@ function ready(provider: PrivateProvider | undefined, model: string, channel: 't
  * @returns 可返回给浏览器的供应商设置。
  */
 function publicSettings(settings: StoredSettings): ProviderSettings {
-  const text = settings.providers.find(
-    /** 检查当前项的标识等于 settings 的文字内容的供应商标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (p) => p.id === settings.text.providerId,
-  );
-  const image = settings.providers.find(
-    /** 检查当前项的标识等于 settings 的image的供应商标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (p) => p.id === settings.image.providerId,
-  );
+  const text = settings.providers.find((p) => p.id === settings.text.providerId);
+  const image = settings.providers.find((p) => p.id === settings.image.providerId);
   return {
-    providers: settings.providers.map(
-      /**
-       * 转换 publicSettings 中的集合条目，供后续处理或展示。
-       *
-       * @param options - 按字段解构的输入，字段用途见对应类型定义。
-       * @param options.apiKey - 服务端保存的供应商密钥，禁止作为公开配置返回。
-       * @param options.headers - 发给供应商的额外请求头，可能包含私密认证值。
-       * @returns 当前条目转换后的结果。
-       */
-      ({ apiKey, headers, ...provider }) => ({
-        ...provider,
-        hasApiKey: Boolean(apiKey),
-        headerNames: Object.keys(headers),
-      }),
-    ),
+    providers: settings.providers.map(({ apiKey, headers, ...provider }) => ({
+      ...provider,
+      hasApiKey: Boolean(apiKey),
+      headerNames: Object.keys(headers),
+    })),
     text: settings.text,
     image: settings.image,
     configured: ready(text, settings.text.model, 'text'),
@@ -288,10 +272,7 @@ function binding(
     requireValue(!model, '请先选择供应商。');
     return emptyBinding();
   }
-  const provider = providers.find(
-    /** 检查当前项的标识等于取值的供应商标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (p) => p.id === value.providerId,
-  );
+  const provider = providers.find((p) => p.id === value.providerId);
   requireValue(provider, '选择的供应商不存在。');
   requireValue(
     provider[channel === 'text' ? 'textProtocol' : 'imageProtocol'] !== 'none',
@@ -307,20 +288,14 @@ function binding(
  * @returns 更新后的公开设置。
  */
 export function saveModelBindings(input: Record<string, unknown>) {
-  return transact(
-    /**
-     * 在串行事务内完成 saveModelBindings 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const settings = await readSettings();
-      for (const channel of ['text', 'image'] as const)
-        if (input[channel] !== undefined)
-          settings[channel] = binding(input[channel], settings.providers, channel);
-      await writeJson(settingsPath, settings);
-      return publicSettings(settings);
-    },
-  );
+  return transact(async () => {
+    const settings = await readSettings();
+    for (const channel of ['text', 'image'] as const)
+      if (input[channel] !== undefined)
+        settings[channel] = binding(input[channel], settings.providers, channel);
+    await writeJson(settingsPath, settings);
+    return publicSettings(settings);
+  });
 }
 /**
  * 新增或更新供应商连接，并保留未主动替换的私密配置。
@@ -330,38 +305,24 @@ export function saveModelBindings(input: Record<string, unknown>) {
  * @returns 更新后的公开设置。
  */
 export function saveProvider(input: Record<string, unknown>, id?: string) {
-  return transact(
-    /**
-     * 在串行事务内完成 saveProvider 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const settings = await readSettings();
-      const current = id
-        ? settings.providers.find(
-            /** 检查当前项的标识等于标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (p) => p.id === id,
-          )
-        : undefined;
-      if (id) requireValue(current, '供应商不存在。', 404);
-      const next = validateProvider(input, current);
-      settings.providers = current
-        ? settings.providers.map(
-            /** 转换 saveProvider 中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-            (p) => (p.id === id ? next : p),
-          )
-        : [...settings.providers, next];
-      for (const channel of ['text', 'image'] as const) {
-        if (
-          settings[channel].providerId === next.id &&
-          next[channel === 'text' ? 'textProtocol' : 'imageProtocol'] === 'none'
-        )
-          settings[channel] = emptyBinding();
-      }
-      await writeJson(settingsPath, settings);
-      return publicSettings(settings);
-    },
-  );
+  return transact(async () => {
+    const settings = await readSettings();
+    const current = id ? settings.providers.find((p) => p.id === id) : undefined;
+    if (id) requireValue(current, '供应商不存在。', 404);
+    const next = validateProvider(input, current);
+    settings.providers = current
+      ? settings.providers.map((p) => (p.id === id ? next : p))
+      : [...settings.providers, next];
+    for (const channel of ['text', 'image'] as const) {
+      if (
+        settings[channel].providerId === next.id &&
+        next[channel === 'text' ? 'textProtocol' : 'imageProtocol'] === 'none'
+      )
+        settings[channel] = emptyBinding();
+    }
+    await writeJson(settingsPath, settings);
+    return publicSettings(settings);
+  });
 }
 /**
  * 移除供应商并清理相关绑定，避免继续引用已删除的连接。
@@ -370,31 +331,19 @@ export function saveProvider(input: Record<string, unknown>, id?: string) {
  * @returns 删除后的公开设置。
  */
 export function deleteProvider(id: string) {
-  return transact(
-    /**
-     * 在串行事务内完成 deleteProvider 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const settings = await readSettings();
-      requireValue(
-        settings.providers.some(
-          /** 检查当前项的标识等于标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (p) => p.id === id,
-        ),
-        '供应商不存在。',
-        404,
-      );
-      settings.providers = settings.providers.filter(
-        /** 检查当前项的标识不等于标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (p) => p.id !== id,
-      );
-      for (const channel of ['text', 'image'] as const)
-        if (settings[channel].providerId === id) settings[channel] = emptyBinding();
-      await writeJson(settingsPath, settings);
-      return publicSettings(settings);
-    },
-  );
+  return transact(async () => {
+    const settings = await readSettings();
+    requireValue(
+      settings.providers.some((p) => p.id === id),
+      '供应商不存在。',
+      404,
+    );
+    settings.providers = settings.providers.filter((p) => p.id !== id);
+    for (const channel of ['text', 'image'] as const)
+      if (settings[channel].providerId === id) settings[channel] = emptyBinding();
+    await writeJson(settingsPath, settings);
+    return publicSettings(settings);
+  });
 }
 /**
  * 在服务端获取含认证信息的连接，供实际发送上游请求使用。
@@ -404,10 +353,7 @@ export function deleteProvider(id: string) {
  */
 export async function getPrivateProvider(id: string) {
   const settings = await readSettings();
-  const provider = settings.providers.find(
-    /** 检查当前项的标识等于标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (p) => p.id === id,
-  );
+  const provider = settings.providers.find((p) => p.id === id);
   requireValue(provider, '供应商不存在。', 404);
   return provider;
 }
@@ -420,10 +366,7 @@ export async function getPrivateProvider(id: string) {
 export async function resolveModel(channel: 'text' | 'image') {
   const settings = await readSettings();
   const selected = settings[channel];
-  const provider = settings.providers.find(
-    /** 检查当前项的标识等于 selected 的供应商标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (p) => p.id === selected.providerId,
-  );
+  const provider = settings.providers.find((p) => p.id === selected.providerId);
   requireValue(
     ready(provider, selected.model, channel),
     `请先配置${channel === 'text' ? '文本 / 视觉' : '图片生成'}供应商和模型，并设置 API Key（本地服务可选择无需密钥）。`,
@@ -440,41 +383,29 @@ export async function resolveModel(channel: 'text' | 'image') {
  */
 export function saveProviderSettings(input: Record<string, unknown>) {
   if ('text' in input || 'image' in input) return saveModelBindings(input);
-  return transact(
-    /**
-     * 在串行事务内完成 saveProviderSettings 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const settings = await readSettings();
-      const current =
-        settings.providers.find(
-          /** 检查当前项的标识等于 settings 的文字内容的供应商标识，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (p) => p.id === settings.text.providerId,
-        ) || settings.providers[0];
-      const next = validateProvider(input, current);
-      settings.providers = current
-        ? settings.providers.map(
-            /** 转换 saveProviderSettings 中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-            (p) => (p.id === current.id ? next : p),
-          )
-        : [next];
-      for (const channel of ['text', 'image'] as const) {
-        const key = channel === 'text' ? 'textModel' : 'imageModel';
-        if (input[key] !== undefined) {
-          requireValue(
-            typeof input[key] === 'string' && input[key].trim().length > 0,
-            `${key} 不能为空。`,
-          );
-          settings[channel] = binding(
-            { providerId: next.id, model: input[key] },
-            settings.providers,
-            channel,
-          );
-        }
+  return transact(async () => {
+    const settings = await readSettings();
+    const current =
+      settings.providers.find((p) => p.id === settings.text.providerId) || settings.providers[0];
+    const next = validateProvider(input, current);
+    settings.providers = current
+      ? settings.providers.map((p) => (p.id === current.id ? next : p))
+      : [next];
+    for (const channel of ['text', 'image'] as const) {
+      const key = channel === 'text' ? 'textModel' : 'imageModel';
+      if (input[key] !== undefined) {
+        requireValue(
+          typeof input[key] === 'string' && input[key].trim().length > 0,
+          `${key} 不能为空。`,
+        );
+        settings[channel] = binding(
+          { providerId: next.id, model: input[key] },
+          settings.providers,
+          channel,
+        );
       }
-      await writeJson(settingsPath, settings);
-      return publicSettings(settings);
-    },
-  );
+    }
+    await writeJson(settingsPath, settings);
+    return publicSettings(settings);
+  });
 }

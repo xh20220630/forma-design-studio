@@ -48,13 +48,7 @@ export async function writeJson(file: string, value: unknown): Promise<void> {
  */
 export function transact<T>(operation: () => Promise<T>): Promise<T> {
   const next = queue.then(operation, operation);
-  queue = next.catch(
-    /**
-     * 处理 transact 中的异步失败，按当前流程决定回退或继续抛出。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {},
-  );
+  queue = next.catch(() => {});
   return next;
 }
 
@@ -75,10 +69,7 @@ export async function getState() {
  * @returns 目标项目。
  */
 export async function findProject(id: string): Promise<Project> {
-  const project = (await getState()).projects.find(
-    /** 检查条目的标识是否与目标标识一致，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.id === id,
-  );
+  const project = (await getState()).projects.find((item) => item.id === id);
   if (!project) throw new ApiError(404, '项目不存在。');
   return project;
 }
@@ -135,32 +126,23 @@ export function mutateProject(
   update: ProjectUpdate<Project> | ProjectUpdate<Project | undefined>,
   { create = false } = {},
 ): Promise<Project> {
-  return transact(
-    /**
-     * 在串行事务内完成 mutateProject 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const state = await getState();
-      const index = state.projects.findIndex(
-        /** 检查项目的标识等于标识，供集合筛选或定位使用。 @param project - 当前设计项目或工作空间项目元信息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (project) => project.id === id,
-      );
-      if (index < 0 && !create) throw new ApiError(404, '项目不存在。');
-      const current = index < 0 ? undefined : state.projects[index];
-      // The create overload explicitly allows an absent project; ordinary updates reject it above.
-      const next = current
-        ? await update(current)
-        : await (update as ProjectUpdate<undefined>)(undefined);
-      next.id = id;
-      next.revision = (current?.revision || 0) + 1;
-      next.updatedAt = new Date().toISOString();
-      if (index < 0) state.projects.unshift(next);
-      else state.projects[index] = next;
-      await writeJson(path.join(dataRoot, 'projects.json'), state);
-      return next;
-    },
-  );
+  return transact(async () => {
+    const state = await getState();
+    const index = state.projects.findIndex((project) => project.id === id);
+    if (index < 0 && !create) throw new ApiError(404, '项目不存在。');
+    const current = index < 0 ? undefined : state.projects[index];
+    // The create overload explicitly allows an absent project; ordinary updates reject it above.
+    const next = current
+      ? await update(current)
+      : await (update as ProjectUpdate<undefined>)(undefined);
+    next.id = id;
+    next.revision = (current?.revision || 0) + 1;
+    next.updatedAt = new Date().toISOString();
+    if (index < 0) state.projects.unshift(next);
+    else state.projects[index] = next;
+    await writeJson(path.join(dataRoot, 'projects.json'), state);
+    return next;
+  });
 }
 
 /**
@@ -170,18 +152,9 @@ export function mutateProject(
  * @returns 无返回值；删除完成后结束。
  */
 export function removeProject(id: string) {
-  return transact(
-    /**
-     * 在串行事务内完成 removeProject 的状态修改，避免并发写入覆盖彼此。
-     * @returns 完成当前异步操作的 Promise，不携带业务数据。
-     */
-    async () => {
-      const state = await getState();
-      state.projects = state.projects.filter(
-        /** 检查项目的标识不等于标识，供集合筛选或定位使用。 @param project - 当前设计项目或工作空间项目元信息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (project) => project.id !== id,
-      );
-      await writeJson(path.join(dataRoot, 'projects.json'), state);
-    },
-  );
+  return transact(async () => {
+    const state = await getState();
+    state.projects = state.projects.filter((project) => project.id !== id);
+    await writeJson(path.join(dataRoot, 'projects.json'), state);
+  });
 }

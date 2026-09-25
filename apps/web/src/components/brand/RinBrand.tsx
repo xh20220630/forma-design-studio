@@ -71,24 +71,12 @@ function fallback(event: SyntheticEvent<HTMLImageElement>) {
 function usePageVisible() {
   /** 界面状态：是否显示；节点缺省时按可见处理，还会受到祖先可见性的约束。通过状态更新驱动界面刷新。 */
   const [visible, setVisible] = useState(true);
-  useEffect(
-    /**
-     * 在 usePageVisible 的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      /**
-       * 同步当前数据变化，让依赖该数据的界面及时更新。
-       * @returns 当前步骤的处理结果。
-       */
-      const update = () => setVisible(document.visibilityState !== 'hidden');
-      update();
-      document.addEventListener('visibilitychange', update);
-      /** 结束usePageVisible当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => document.removeEventListener('visibilitychange', update);
-    },
-    [],
-  );
+  useEffect(() => {
+    const update = () => setVisible(document.visibilityState !== 'hidden');
+    update();
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
   return visible;
 }
 
@@ -189,35 +177,27 @@ export function RinIllustration({
       />
       {state === 'thinking' && (
         <span className="rin-illustration__signal" aria-hidden="true">
-          {[0, 1, 2].map(
-            /**
-             * 转换Rin 场景插画中的集合条目，供后续处理或展示。
-             *
-             * @param index - 空间查询索引或当前条目的位置。
-             * @returns 当前条目转换后的结果。
-             */
-            (index) => (
-              <motion.i
-                key={index}
-                initial={false}
-                animate={
-                  active
-                    ? { opacity: [0.2, 1, 0.2], scaleY: [0.5, 1, 0.5] }
-                    : { opacity: 0.6, scaleY: 1 }
-                }
-                transition={
-                  active
-                    ? {
-                        duration: 1.4,
-                        delay: index * 0.15,
-                        repeat: Infinity,
-                        ease: 'easeInOut',
-                      }
-                    : { duration: 0 }
-                }
-              />
-            ),
-          )}
+          {[0, 1, 2].map((index) => (
+            <motion.i
+              key={index}
+              initial={false}
+              animate={
+                active
+                  ? { opacity: [0.2, 1, 0.2], scaleY: [0.5, 1, 0.5] }
+                  : { opacity: 0.6, scaleY: 1 }
+              }
+              transition={
+                active
+                  ? {
+                      duration: 1.4,
+                      delay: index * 0.15,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }
+                  : { duration: 0 }
+              }
+            />
+          ))}
         </span>
       )}
       {(state === 'success' || state === 'error') && (
@@ -453,40 +433,23 @@ function StudioVideo({
   const ref = useRef<HTMLVideoElement>(null);
   const inView = useInView(ref, { amount: 0.2 });
   const pageVisible = usePageVisible();
-  useEffect(
-    /**
-     * 在受播放条件控制的视频的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      const video = ref.current;
-      if (!video) return;
-      let cancelled = false;
-      if (active && !reduced && inView && pageVisible) {
-        void video.play().catch(
-          /**
-           * 处理受播放条件控制的视频中的异步失败，按当前流程决定回退或继续抛出。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          () => {
-            if (!cancelled) onPlayback?.(false);
-          },
-        );
-      } else {
-        video.pause();
-        if (!active || reduced) video.load();
-      }
-      /**
-       * 结束受播放条件控制的视频当前建立的监听或临时操作，避免后续重复执行。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      return () => {
-        cancelled = true;
-        video.pause();
-      };
-    },
-    [active, reduced, inView, pageVisible, onPlayback],
-  );
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+    let cancelled = false;
+    if (active && !reduced && inView && pageVisible) {
+      void video.play().catch(() => {
+        if (!cancelled) onPlayback?.(false);
+      });
+    } else {
+      video.pause();
+      if (!active || reduced) video.load();
+    }
+    return () => {
+      cancelled = true;
+      video.pause();
+    };
+  }, [active, reduced, inView, pageVisible, onPlayback]);
   return (
     <video
       ref={ref}
@@ -499,14 +462,8 @@ function StudioVideo({
       preload="none"
       poster="/brand/rin/rin-studio-poster.png"
       aria-label="Rin 工作室，设计变量、组件与界面归位演示"
-      onPlay={
-        /** 响应 onPlay 交互，将用户操作应用到受播放条件控制的视频。 @returns 无返回值；通过副作用完成当前操作。 */
-        () => onPlayback?.(true)
-      }
-      onPause={
-        /** 响应 onPause 交互，将用户操作应用到受播放条件控制的视频。 @returns 无返回值；通过副作用完成当前操作。 */
-        () => onPlayback?.(false)
-      }
+      onPlay={() => onPlayback?.(true)}
+      onPause={() => onPlayback?.(false)}
     >
       <source src="/brand/rin/rin-studio-loop.webm" type="video/webm" />
     </video>
@@ -572,17 +529,7 @@ export function RinStudioScene({
           className="rin-studio-scene__control"
           disabled={Boolean(reduced)}
           aria-pressed={requested && !reduced}
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到Rin 工作室场景。
-             * @returns 当前步骤的处理结果。
-             */
-            () =>
-              setRequested(
-                /** 基于最新状态计算 Requested 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                (value) => !value,
-              )
-          }
+          onClick={() => setRequested((value) => !value)}
           aria-label={
             reduced ? '已遵循减少动态效果设置' : requested ? '停止工作室演示' : '播放工作室演示'
           }

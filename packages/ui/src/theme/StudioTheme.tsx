@@ -118,15 +118,7 @@ export function normalizeStudioAccent(value: unknown): string | undefined {
   const color = value.trim().toLowerCase();
   if (/^#[\da-f]{6}$/.test(color)) return color;
   if (/^#[\da-f]{3}$/.test(color))
-    return (
-      '#' +
-      [...color.slice(1)]
-        .map(
-          /** 转换 normalizeStudioAccent 中的集合条目，供后续处理或展示。 @param character - 当前文本字符。 @returns 当前条目转换后的结果。 */
-          (character) => character.repeat(2),
-        )
-        .join('')
-    );
+    return '#' + [...color.slice(1)].map((character) => character.repeat(2)).join('');
 }
 
 /**
@@ -144,13 +136,6 @@ export function sanitizeStudioSettings(
     value && typeof value === 'object' && !Array.isArray(value)
       ? (value as Record<string, unknown>)
       : {};
-  /**
-   * 选择当前目标，更新后续编辑所使用的上下文。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param options - 本次操作的配置选项。
-   * @returns 当前步骤的处理结果。
-   */
   const select = <K extends keyof StudioThemeSettings>(
     key: K,
     options: readonly StudioThemeSettings[K][],
@@ -207,7 +192,6 @@ function loadSettings() {
       motion: 'expressive',
     };
     const isLegacyDefault = (Object.keys(legacyDefault) as (keyof StudioThemeSettings)[]).every(
-      /** 检查stored中指定项等于legacyDefault中指定项，供集合筛选或定位使用。 @param key - 要访问或更新的字段名。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
       (key) => stored[key] === legacyDefault[key],
     );
     return isLegacyDefault ? { ...defaultStudioSettings } : stored;
@@ -223,10 +207,7 @@ function loadSettings() {
  * @returns 红、绿、蓝通道值。
  */
 function rgb(hex: string) {
-  return [1, 3, 5].map(
-    /** 转换 rgb 中的集合条目，供后续处理或展示。 @param offset - 相对起点的偏移量。 @returns 当前条目转换后的结果。 */
-    (offset) => Number.parseInt(hex.slice(offset, offset + 2), 16),
-  );
+  return [1, 3, 5].map((offset) => Number.parseInt(hex.slice(offset, offset + 2), 16));
 }
 /**
  * 按比例混合两种颜色，生成同一强调色下的背景与边框层次。
@@ -241,12 +222,10 @@ function mix(a: string, b: string, amount: number) {
   return (
     '#' +
     rgb(a)
-      .map(
-        /** 转换 mix 中的集合条目，供后续处理或展示。 @param channel - 文字或图片任务通道。 @param index - 空间查询索引或当前条目的位置。 @returns 当前条目转换后的结果。 */
-        (channel, index) =>
-          Math.round(channel * (1 - amount) + second[index] * amount)
-            .toString(16)
-            .padStart(2, '0'),
+      .map((channel, index) =>
+        Math.round(channel * (1 - amount) + second[index] * amount)
+          .toString(16)
+          .padStart(2, '0'),
       )
       .join('')
   );
@@ -259,26 +238,9 @@ function mix(a: string, b: string, amount: number) {
  */
 function luminance(color: string) {
   return rgb(color)
-    .map(
-      /** 提取channel除以255，供后续计算或展示使用。 @param channel - 文字或图片任务通道。 @returns channel除以255。 */
-      (channel) => channel / 255,
-    )
-    .map(
-      /** 转换 luminance 中的集合条目，供后续处理或展示。 @param channel - 文字或图片任务通道。 @returns 当前条目转换后的结果。 */
-      (channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4),
-    )
-    .reduce(
-      /**
-       * 累积 luminance 中的条目结果，供后续计算使用。
-       *
-       * @param sum - 累加到当前项之前的结果。
-       * @param value - 当前字段、模式或控件的取值。
-       * @param index - 空间查询索引或当前条目的位置。
-       * @returns 纳入当前条目后的累计结果。
-       */
-      (sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index],
-      0,
-    );
+    .map((channel) => channel / 255)
+    .map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4))
+    .reduce((sum, value, index) => sum + value * [0.2126, 0.7152, 0.0722][index], 0);
 }
 /**
  * 比较前景和背景的亮度差，帮助选择可读的文字颜色。
@@ -288,10 +250,7 @@ function luminance(color: string) {
  * @returns 两种颜色的对比度。
  */
 function contrast(a: string, b: string) {
-  const values = [luminance(a), luminance(b)].sort(
-    /** 比较right减去左侧坐标，确定条目顺序。 @param left - 比较或计算时的左侧对象。 @param right - 比较或计算时的右侧对象。 @returns 排序用的差值。 */
-    (left, right) => right - left,
-  );
+  const values = [luminance(a), luminance(b)].sort((left, right) => right - left);
   return (values[0] + 0.05) / (values[1] + 0.05);
 }
 
@@ -302,10 +261,7 @@ function contrast(a: string, b: string) {
  * @returns 工作室主题的 CSS 变量集合。
  */
 export function createStudioTokens(settings: StudioThemeSettings): Record<string, string> {
-  const palette = studioThemePresets.find(
-    /** 检查 preset 的标识等于 settings 的preset，供集合筛选或定位使用。 @param preset - 工作室基础配色预设。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (preset) => preset.id === settings.preset,
-  )!.colors;
+  const palette = studioThemePresets.find((preset) => preset.id === settings.preset)!.colors;
   const dark = settings.preset === 'midnight';
   const accentSoft = mix(palette.surface, settings.accent, dark ? 0.18 : 0.1);
   let accentInk = settings.accent;
@@ -453,113 +409,71 @@ export function StudioThemeProvider({
   /** 界面状态：当前生效的设置。通过状态更新驱动界面刷新。 */
   const [settings, setSettings] = useState<StudioThemeSettings>(loadSettings);
   const settingsRef = useRef(settings);
-  const commit = useCallback(
-    /**
-     * 校验并保存工作室主题，同时更新引用与存储，避免多窗口同步时重复写入。
-     *
-     * @param next - 后续值或中间件入口。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    (next: StudioThemeSettings) => {
-      settingsRef.current = next;
-      setSettings(next);
-      try {
-        window.localStorage.setItem(
-          studioThemeStorageKey,
-          JSON.stringify({ version: 1, settings: next }),
-        );
-      } catch {
-        /* The theme remains usable when browser persistence is unavailable. */
-      }
-    },
-    [],
-  );
+  const commit = useCallback((next: StudioThemeSettings) => {
+    settingsRef.current = next;
+    setSettings(next);
+    try {
+      window.localStorage.setItem(
+        studioThemeStorageKey,
+        JSON.stringify({ version: 1, settings: next }),
+      );
+    } catch {
+      /* The theme remains usable when browser persistence is unavailable. */
+    }
+  }, []);
   const updateSettings = useCallback(
-    /** 封装共享主题上下文的交互操作，使函数引用随依赖更新。 @param patch - 仅包含本次要修改字段的局部更新。 @returns 当前步骤的处理结果。 */
     (patch: Partial<StudioThemeSettings>) =>
       commit(sanitizeStudioSettings({ ...settingsRef.current, ...patch }, settingsRef.current)),
     [commit],
   );
-  const resetSettings = useCallback(
-    /** 封装共享主题上下文的交互操作，使函数引用随依赖更新。 @returns 当前步骤的处理结果。 */
-    () => commit({ ...defaultStudioSettings }),
-    [commit],
-  );
+  const resetSettings = useCallback(() => commit({ ...defaultStudioSettings }), [commit]);
 
-  useEffect(
-    /**
-     * 在共享主题上下文的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      /**
-       * 处理其他浏览器窗口的主题变更，让多窗口偏好保持一致。
-       *
-       * @param event - 当前事件及其触发位置。
-       * @returns 无返回值；更新当前窗口主题。
-       */
-      const receive = (event: StorageEvent) => {
-        if (event.key !== studioThemeStorageKey && event.key !== null) return;
-        try {
-          if (event.storageArea && event.storageArea !== window.localStorage) return;
-        } catch {
-          return;
-        }
-        const next = parseStoredStudioSettings(event.key === null ? null : event.newValue);
-        settingsRef.current = next;
-        setSettings(next);
-      };
-      window.addEventListener('storage', receive);
-      /** 结束共享主题上下文当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => window.removeEventListener('storage', receive);
-    },
-    [],
-  );
+  useEffect(() => {
+    // 接收其他窗口的主题变更时只更新本地状态，避免再次写入存储。
+    const receive = (event: StorageEvent) => {
+      if (event.key !== studioThemeStorageKey && event.key !== null) return;
+      try {
+        if (event.storageArea && event.storageArea !== window.localStorage) return;
+      } catch {
+        return;
+      }
+      const next = parseStoredStudioSettings(event.key === null ? null : event.newValue);
+      settingsRef.current = next;
+      setSettings(next);
+    };
+    window.addEventListener('storage', receive);
+    return () => window.removeEventListener('storage', receive);
+  }, []);
 
-  useLayoutEffect(
-    /**
-     * 在共享主题上下文的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      const root = document.documentElement;
-      const tokens = createStudioTokens(settings);
-      const attributes = {
-        'data-studio-theme': settings.preset,
-        'data-card-style': settings.cardStyle,
-        'data-density': settings.density,
-        'data-personality': settings.personality,
-        'data-motion': settings.motion,
-      };
-      const previousVariables = Object.keys(tokens).map(
-        /** 转换共享主题上下文中的集合条目，供后续处理或展示。 @param key - 要访问或更新的字段名。 @returns 当前条目转换后的结果。 */
-        (key) => [key, root.style.getPropertyValue(key)],
-      );
-      const previousAttributes = Object.keys(attributes).map(
-        /** 转换共享主题上下文中的集合条目，供后续处理或展示。 @param key - 要访问或更新的字段名。 @returns 当前条目转换后的结果。 */
-        (key) => [key, root.getAttribute(key)],
-      );
-      const wasDark = root.classList.contains('dark');
-      for (const [name, value] of Object.entries(tokens)) root.style.setProperty(name, value);
-      for (const [name, value] of Object.entries(attributes)) root.setAttribute(name, value);
-      root.classList.toggle('dark', settings.preset === 'midnight');
-      /**
-       * 结束共享主题上下文当前建立的监听或临时操作，避免后续重复执行。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      return () => {
-        for (const [name, value] of previousVariables)
-          value ? root.style.setProperty(name, value) : root.style.removeProperty(name);
-        for (const [name, value] of previousAttributes)
-          value === null ? root.removeAttribute(name!) : root.setAttribute(name!, value!);
-        root.classList.toggle('dark', wasDark);
-      };
-    },
-    [settings],
-  );
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const tokens = createStudioTokens(settings);
+    const attributes = {
+      'data-studio-theme': settings.preset,
+      'data-card-style': settings.cardStyle,
+      'data-density': settings.density,
+      'data-personality': settings.personality,
+      'data-motion': settings.motion,
+    };
+    const previousVariables = Object.keys(tokens).map((key) => [
+      key,
+      root.style.getPropertyValue(key),
+    ]);
+    const previousAttributes = Object.keys(attributes).map((key) => [key, root.getAttribute(key)]);
+    const wasDark = root.classList.contains('dark');
+    for (const [name, value] of Object.entries(tokens)) root.style.setProperty(name, value);
+    for (const [name, value] of Object.entries(attributes)) root.setAttribute(name, value);
+    root.classList.toggle('dark', settings.preset === 'midnight');
+    return () => {
+      for (const [name, value] of previousVariables)
+        value ? root.style.setProperty(name, value) : root.style.removeProperty(name);
+      for (const [name, value] of previousAttributes)
+        value === null ? root.removeAttribute(name!) : root.setAttribute(name!, value!);
+      root.classList.toggle('dark', wasDark);
+    };
+  }, [settings]);
 
   const value = useMemo(
-    /** 计算共享主题上下文的派生数据，并在依赖未变化时复用结果。 @returns 当前步骤的处理结果。 */
     () => ({
       settings,
       presets: studioThemePresets,

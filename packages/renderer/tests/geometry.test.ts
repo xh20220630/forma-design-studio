@@ -9,10 +9,6 @@ import {
   transformedBounds,
 } from '../src/canvas/geometry.ts';
 
-/**
- * 验证nested rotations and flips round-trip between screen and local coordinates。
- * @returns 完成当前检查或生命周期操作。
- */
 test('nested rotations and flips round-trip between screen and local coordinates', () => {
   const parent = nodeMatrix({ x: 100, y: 200, width: 300, height: 200, rotation: 35, flipX: true });
   const child = nodeMatrix({ x: 130, y: 230, width: 40, height: 60, rotation: -15, flipY: true });
@@ -24,10 +20,6 @@ test('nested rotations and flips round-trip between screen and local coordinates
   assert.equal(inverse([0, 0, 0, 0, 0, 0]), undefined);
 });
 
-/**
- * 验证rotated bounds include corners outside the unrotated rectangle。
- * @returns 完成当前检查或生命周期操作。
- */
 test('rotated bounds include corners outside the unrotated rectangle', () => {
   const matrix = nodeMatrix({ x: 0, y: 0, width: 100, height: 100, rotation: 45 });
   const bounds = transformedBounds(matrix, { x: 0, y: 0, width: 100, height: 100 });
@@ -35,10 +27,6 @@ test('rotated bounds include corners outside the unrotated rectangle', () => {
   assert.ok(bounds.width > 141 && bounds.height > 141);
 });
 
-/**
- * 验证spatial queries deduplicate spanning shapes and include large, negative and zero-height geometry。
- * @returns 完成当前检查或生命周期操作。
- */
 test('spatial queries deduplicate spanning shapes and include large, negative and zero-height geometry', () => {
   const index = new SpatialIndex<{
     /** 唯一标识，用于查找、更新和建立引用。 */
@@ -59,21 +47,12 @@ test('spatial queries deduplicate spanning shapes and include large, negative an
   index.insert({ id: 'line', bounds: { x: -100, y: 0, width: 1000, height: 0 } });
   index.insert({ id: 'offscreen', bounds: { x: 10000, y: 10000, width: 20, height: 20 } });
   assert.deepEqual(
-    new Set(
-      index.query({ x: -50, y: -10, width: 600, height: 20 }).map(
-        /** 提取条目的标识，供后续计算或展示使用。 @param item - 当前遍历的条目。 @returns 条目的标识。 */
-        (item) => item.id,
-      ),
-    ),
+    new Set(index.query({ x: -50, y: -10, width: 600, height: 20 }).map((item) => item.id)),
     new Set(['page', 'line']),
   );
   assert.equal(index.query({ x: -1e6, y: -1e6, width: 2e6, height: 2e6 }).length, 3);
 });
 
-/**
- * 验证ten thousand nodes return only the local visible candidates。
- * @returns 完成当前检查或生命周期操作。
- */
 test('ten thousand nodes return only the local visible candidates', () => {
   const index = new SpatialIndex<{
     /** 用于布局、查询或素材定位的矩形范围。 */

@@ -176,32 +176,21 @@ function Choices<K extends keyof StudioThemeSettings>({
         }[name]
       }
     >
-      {choices.map(
-        /**
-         * 转换设置选项组中的集合条目，供后续处理或展示。
-         *
-         * @param choice - 当前处理的候选选项。
-         * @returns 当前条目转换后的结果。
-         */
-        (choice) => (
-          <label
-            key={choice.value}
-            className={`theme-choice ${value === choice.value ? 'is-selected' : ''}`}
-          >
-            <input
-              type="radio"
-              name={`studio-${name}`}
-              value={choice.value}
-              checked={value === choice.value}
-              onChange={
-                /** 响应 onChange 交互，将用户操作应用到设置选项组。 @returns 无返回值；通过副作用完成当前操作。 */
-                () => onChange(choice.value)
-              }
-            />
-            <span>{choice.label}</span>
-          </label>
-        ),
-      )}
+      {choices.map((choice) => (
+        <label
+          key={choice.value}
+          className={`theme-choice ${value === choice.value ? 'is-selected' : ''}`}
+        >
+          <input
+            type="radio"
+            name={`studio-${name}`}
+            value={choice.value}
+            checked={value === choice.value}
+            onChange={() => onChange(choice.value)}
+          />
+          <span>{choice.label}</span>
+        </label>
+      ))}
     </div>
   );
 }
@@ -222,27 +211,13 @@ export function ThemeStudio() {
   /** 界面状态：连接操作的即时反馈。通过状态更新驱动界面刷新。 */
   const [feedback, setFeedback] = useState('');
   const motionOff = Boolean(reduced) || settings.motion === 'off';
-  const currentPreset = presets.find(
-    /** 检查 preset 的标识等于 settings 的preset，供集合筛选或定位使用。 @param preset - 工作室基础配色预设。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (preset) => preset.id === settings.preset,
-  )!;
+  const currentPreset = presets.find((preset) => preset.id === settings.preset)!;
 
-  useEffect(
-    /**
-     * 在工作室主题设置的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      setColorDraft(settings.accent);
-      setColorError(false);
-    },
-    [settings.accent],
-  );
+  useEffect(() => {
+    setColorDraft(settings.accent);
+    setColorError(false);
+  }, [settings.accent]);
 
-  /**
-   * 提交已经规范化的强调色，避免输入过程中的不完整颜色破坏主题。
-   * @returns 无返回值；更新主题偏好。
-   */
   const commitAccent = () => {
     const normalized = normalizeStudioAccent(colorDraft);
     if (!normalized) {
@@ -266,16 +241,10 @@ export function ThemeStudio() {
         <Button
           variant="outline"
           className="theme-reset"
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到工作室主题设置。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              resetSettings();
-              setFeedback('已恢复默认外观');
-            }
-          }
+          onClick={() => {
+            resetSettings();
+            setFeedback('已恢复默认外观');
+          }}
         >
           <RotateCcw size={14} />
           恢复默认
@@ -305,35 +274,24 @@ export function ThemeStudio() {
               <span>选择工作台的基础配色</span>
             </div>
             <div className="theme-preset-grid">
-              {presets.map(
-                /**
-                 * 转换工作室主题设置中的集合条目，供后续处理或展示。
-                 *
-                 * @param preset - 工作室基础配色预设。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (preset) => (
-                  <button
-                    type="button"
-                    key={preset.id}
-                    data-preset={preset.id}
-                    className={`theme-preset ${settings.preset === preset.id ? 'is-selected' : ''}`}
-                    aria-pressed={settings.preset === preset.id}
-                    onClick={
-                      /** 响应 onClick 交互，将用户操作应用到工作室主题设置。 @returns 当前步骤的处理结果。 */
-                      () => updateSettings({ preset: preset.id })
-                    }
-                  >
-                    <PresetPreview preset={preset} accent={settings.accent} />
-                    <span className="theme-preset__description">
-                      <strong>{preset.name.split(' / ').pop()}</strong>
-                      <span className="theme-preset__check" aria-hidden="true">
-                        {settings.preset === preset.id && <Check size={12} />}
-                      </span>
+              {presets.map((preset) => (
+                <button
+                  type="button"
+                  key={preset.id}
+                  data-preset={preset.id}
+                  className={`theme-preset ${settings.preset === preset.id ? 'is-selected' : ''}`}
+                  aria-pressed={settings.preset === preset.id}
+                  onClick={() => updateSettings({ preset: preset.id })}
+                >
+                  <PresetPreview preset={preset} accent={settings.accent} />
+                  <span className="theme-preset__description">
+                    <strong>{preset.name.split(' / ').pop()}</strong>
+                    <span className="theme-preset__check" aria-hidden="true">
+                      {settings.preset === preset.id && <Check size={12} />}
                     </span>
-                  </button>
-                ),
-              )}
+                  </span>
+                </button>
+              ))}
             </div>
             <div className="theme-accent-section">
               <div className="theme-setting-row__label">
@@ -342,30 +300,19 @@ export function ThemeStudio() {
               </div>
               <div className="theme-accent-editor">
                 <div className="theme-accent-swatches">
-                  {accentSwatches.map(
-                    /**
-                     * 转换工作室主题设置中的集合条目，供后续处理或展示。
-                     *
-                     * @param color - 文字或视觉元素的颜色。
-                     * @returns 当前条目转换后的结果。
-                     */
-                    (color) => (
-                      <button
-                        type="button"
-                        key={color}
-                        className="theme-accent-swatch"
-                        style={{ background: color }}
-                        aria-label={`使用强调色 ${color}`}
-                        aria-pressed={settings.accent === color}
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到工作室主题设置。 @returns 当前步骤的处理结果。 */
-                          () => updateSettings({ accent: color })
-                        }
-                      >
-                        {settings.accent === color && <Check size={14} />}
-                      </button>
-                    ),
-                  )}
+                  {accentSwatches.map((color) => (
+                    <button
+                      type="button"
+                      key={color}
+                      className="theme-accent-swatch"
+                      style={{ background: color }}
+                      aria-label={`使用强调色 ${color}`}
+                      aria-pressed={settings.accent === color}
+                      onClick={() => updateSettings({ accent: color })}
+                    >
+                      {settings.accent === color && <Check size={14} />}
+                    </button>
+                  ))}
                 </div>
                 <div className="theme-accent-custom">
                   <label className="theme-color-picker">
@@ -373,10 +320,7 @@ export function ThemeStudio() {
                       type="color"
                       value={settings.accent}
                       aria-label="选择自定义强调色"
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-                        (event) => updateSettings({ accent: event.target.value })
-                      }
+                      onChange={(event) => updateSettings({ accent: event.target.value })}
                     />
                     <span style={{ background: settings.accent }} />
                   </label>
@@ -387,33 +331,17 @@ export function ThemeStudio() {
                     value={colorDraft}
                     maxLength={7}
                     spellCheck={false}
-                    onChange={
-                      /**
-                       * 响应 onChange 交互，将用户操作应用到工作室主题设置。
-                       *
-                       * @param event - 当前事件及其触发位置。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (event) => {
-                        setColorDraft(event.target.value);
-                        setColorError(false);
-                      }
-                    }
+                    onChange={(event) => {
+                      setColorDraft(event.target.value);
+                      setColorError(false);
+                    }}
                     onBlur={commitAccent}
-                    onKeyDown={
-                      /**
-                       * 响应 onKeyDown 交互，将用户操作应用到工作室主题设置。
-                       *
-                       * @param event - 当前事件及其触发位置。
-                       * @returns 无返回值；通过副作用完成当前操作。
-                       */
-                      (event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault();
-                          commitAccent();
-                        }
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        commitAccent();
                       }
-                    }
+                    }}
                   />
                   <Button
                     variant="ghost"
@@ -442,10 +370,7 @@ export function ThemeStudio() {
               <Choices
                 name="density"
                 value={settings.density}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param density - 控件间距与信息密度偏好。 @returns 当前步骤的处理结果。 */
-                  (density) => updateSettings({ density })
-                }
+                onChange={(density) => updateSettings({ density })}
                 choices={[
                   { value: 'comfortable', label: '标准' },
                   { value: 'compact', label: '紧凑' },
@@ -456,10 +381,7 @@ export function ThemeStudio() {
               <Choices
                 name="radius"
                 value={settings.radius}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param radius - 圆角大小。 @returns 当前步骤的处理结果。 */
-                  (radius) => updateSettings({ radius })
-                }
+                onChange={(radius) => updateSettings({ radius })}
                 choices={[
                   { value: 'compact', label: '小' },
                   { value: 'balanced', label: '中' },
@@ -471,10 +393,7 @@ export function ThemeStudio() {
               <Choices
                 name="cardStyle"
                 value={settings.cardStyle}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param cardStyle - 卡片表面风格。 @returns 当前步骤的处理结果。 */
-                  (cardStyle) => updateSettings({ cardStyle })
-                }
+                onChange={(cardStyle) => updateSettings({ cardStyle })}
                 choices={[
                   { value: 'outline', label: '描边' },
                   { value: 'soft', label: '阴影' },
@@ -494,10 +413,7 @@ export function ThemeStudio() {
               <Choices
                 name="motion"
                 value={settings.motion}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param motion - 动画强度偏好或动效 Token 分组。 @returns 当前步骤的处理结果。 */
-                  (motion) => updateSettings({ motion })
-                }
+                onChange={(motion) => updateSettings({ motion })}
                 choices={[
                   { value: 'off', label: '关闭' },
                   { value: 'gentle', label: '简洁' },
@@ -509,10 +425,7 @@ export function ThemeStudio() {
               <Choices
                 name="personality"
                 value={settings.personality}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到工作室主题设置。 @param personality - 品牌视觉出现的强度。 @returns 当前步骤的处理结果。 */
-                  (personality) => updateSettings({ personality })
-                }
+                onChange={(personality) => updateSettings({ personality })}
                 choices={[
                   { value: 'subtle', label: '简洁' },
                   { value: 'signature', label: '适中' },
@@ -564,17 +477,7 @@ export function ThemeStudio() {
                   type="button"
                   className={`theme-preview-card ${previewSelected ? 'is-selected' : ''}`}
                   aria-pressed={previewSelected}
-                  onClick={
-                    /**
-                     * 响应 onClick 交互，将用户操作应用到工作室主题设置。
-                     * @returns 当前步骤的处理结果。
-                     */
-                    () =>
-                      setPreviewSelected(
-                        /** 基于最新状态计算 PreviewSelected 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                        (value) => !value,
-                      )
-                  }
+                  onClick={() => setPreviewSelected((value) => !value)}
                   initial={false}
                   animate={{ scale: !motionOff && previewSelected ? 0.985 : 1 }}
                   transition={{
@@ -610,19 +513,10 @@ export function ThemeStudio() {
                 <button
                   type="button"
                   className="theme-preview-primary"
-                  onClick={
-                    /**
-                     * 响应 onClick 交互，将用户操作应用到工作室主题设置。
-                     * @returns 无返回值；通过副作用完成当前操作。
-                     */
-                    () => {
-                      setPreviewSelected(
-                        /** 基于最新状态计算 PreviewSelected 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                        (value) => !value,
-                      );
-                      setFeedback('已切换预览选中状态');
-                    }
-                  }
+                  onClick={() => {
+                    setPreviewSelected((value) => !value);
+                    setFeedback('已切换预览选中状态');
+                  }}
                 >
                   {previewSelected ? '已选择项目' : '选择项目'}
                   {previewSelected ? <Check size={12} /> : <Plus size={12} />}

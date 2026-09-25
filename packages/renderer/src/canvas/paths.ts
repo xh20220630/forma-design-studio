@@ -40,27 +40,16 @@ export function shapePath(node: DesignNode, inset = 0): Path2D {
     const count = node.type === 'star' ? sides * 2 : sides;
     const points = node.points?.length
       ? node.points
-      : Array.from(
-          { length: count },
-          /**
-           * 执行 shapePath 传入的局部处理步骤，使调用处能够控制结果如何更新。
-           *
-           * @param _ - 当前步骤不使用的占位参数。
-           * @param index - 空间查询索引或当前条目的位置。
-           * @returns 当前步骤的处理结果。
-           */
-          (_, index) => {
-            const angle = (index * Math.PI * 2) / count - Math.PI / 2;
-            const ratio = node.type === 'star' && index % 2 ? (node.starRatio ?? 0.45) : 1;
-            return {
-              x: width / 2 + ((Math.cos(angle) * width) / 2) * ratio,
-              y: height / 2 + ((Math.sin(angle) * height) / 2) * ratio,
-            };
-          },
-        );
-    points.forEach(
-      /** 逐项处理 shapePath 中的内容，把结果写入外层维护的集合或绘制上下文。 @param point - 当前处理的坐标点。 @param index - 空间查询索引或当前条目的位置。 @returns 无返回值；当前项的处理通过副作用完成。 */
-      (point, index) => (index ? path.lineTo(point.x, point.y) : path.moveTo(point.x, point.y)),
+      : Array.from({ length: count }, (_, index) => {
+          const angle = (index * Math.PI * 2) / count - Math.PI / 2;
+          const ratio = node.type === 'star' && index % 2 ? (node.starRatio ?? 0.45) : 1;
+          return {
+            x: width / 2 + ((Math.cos(angle) * width) / 2) * ratio,
+            y: height / 2 + ((Math.sin(angle) * height) / 2) * ratio,
+          };
+        });
+    points.forEach((point, index) =>
+      index ? path.lineTo(point.x, point.y) : path.moveTo(point.x, point.y),
     );
     if (node.type !== 'path' || node.closed) path.closePath();
   } else {

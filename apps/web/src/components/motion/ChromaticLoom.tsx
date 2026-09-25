@@ -64,12 +64,7 @@ const loomEase = [0.22, 1, 0.36, 1] as const;
 function safeAccent(value: string) {
   if (/^#[\da-f]{6}$/i.test(value)) return value;
   if (/^#[\da-f]{3}$/i.test(value))
-    return `#${[...value.slice(1)]
-      .map(
-        /** 转换 safeAccent 中的集合条目，供后续处理或展示。 @param part - 当前处理的消息内容块。 @returns 当前条目转换后的结果。 */
-        (part) => part.repeat(2),
-      )
-      .join('')}`;
+    return `#${[...value.slice(1)].map((part) => part.repeat(2)).join('')}`;
   return '#38bdf8';
 }
 
@@ -96,7 +91,6 @@ export function ChromaticLoom({
   const hasEntered = useRef(false);
   /** 界面状态：当前页面是否处于前台可见状态。通过状态更新驱动界面刷新。 */
   const [pageVisible, setPageVisible] = useState(
-    /** 在强调色编织动效首次挂载时建立初始状态，避免每次渲染重复初始化。 @returns 初始状态值。 */
     () => typeof document === 'undefined' || document.visibilityState !== 'hidden',
   );
   const palette = palettes[preset];
@@ -109,75 +103,37 @@ export function ChromaticLoom({
   /** 界面状态：最近已完成的动画轮次。通过状态更新驱动界面刷新。 */
   const [completedCycle, setCompletedCycle] = useState(0);
   const colors = useMemo(
-    /** 计算强调色编织动效的派生数据，并在依赖未变化时复用结果。 @returns 当前步骤的处理结果。 */
     () => [palette.surface, color, palette.pearl, palette.ink, palette.metal],
     [palette, color],
   );
   const staticFrame = reduced || !inView || !pageVisible;
   const resting = staticFrame || completedCycle === cycle;
 
-  useEffect(
-    /**
-     * 在强调色编织动效的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      /**
-       * 同步页面可见状态，让离开前台的动效暂停更新。
-       * @returns 无返回值；更新可见状态。
-       */
-      const updateVisibility = () => setPageVisible(document.visibilityState !== 'hidden');
-      document.addEventListener('visibilitychange', updateVisibility);
-      /** 结束强调色编织动效当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => document.removeEventListener('visibilitychange', updateVisibility);
-    },
-    [],
-  );
+  useEffect(() => {
+    const updateVisibility = () => setPageVisible(document.visibilityState !== 'hidden');
+    document.addEventListener('visibilitychange', updateVisibility);
+    return () => document.removeEventListener('visibilitychange', updateVisibility);
+  }, []);
 
-  useEffect(
-    /**
-     * 在强调色编织动效的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      setCycle(
-        /** 基于最新状态计算 Cycle 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-        (value) => value + 1,
-      );
-    },
-    [preset, color],
-  );
+  useEffect(() => {
+    setCycle((value) => value + 1);
+  }, [preset, color]);
 
-  useEffect(
-    /**
-     * 在强调色编织动效的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      if (inView) hasEntered.current = true;
-      if (staticFrame || cycle === 0) {
-        setPlaying(false);
-        if (hasEntered.current || reduced) setCompletedCycle(cycle);
-        return;
-      }
-      if (completedCycle === cycle) return;
-      setPlaying(true);
-      const timeout = window.setTimeout(
-        /**
-         * 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。
-         * @returns 供 React 保存的新状态。
-         */
-        () => {
-          setPlaying(false);
-          setCompletedCycle(cycle);
-        },
-        2950,
-      );
-      /** 结束强调色编织动效当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => window.clearTimeout(timeout);
-    },
-    [cycle, staticFrame, completedCycle, inView, reduced],
-  );
+  useEffect(() => {
+    if (inView) hasEntered.current = true;
+    if (staticFrame || cycle === 0) {
+      setPlaying(false);
+      if (hasEntered.current || reduced) setCompletedCycle(cycle);
+      return;
+    }
+    if (completedCycle === cycle) return;
+    setPlaying(true);
+    const timeout = window.setTimeout(() => {
+      setPlaying(false);
+      setCompletedCycle(cycle);
+    }, 2950);
+    return () => window.clearTimeout(timeout);
+  }, [cycle, staticFrame, completedCycle, inView, reduced]);
 
   const rootStyle = {
     '--loom-accent': color,
@@ -213,114 +169,96 @@ export function ChromaticLoom({
           <div className="chromatic-loom__track chromatic-loom__track--horizontal" />
           <div className="chromatic-loom__track chromatic-loom__track--vertical" />
           <div className="chromatic-loom__well" />
-          {leaves.map(
-            /**
-             * 转换强调色编织动效中的集合条目，供后续处理或展示。
-             *
-             * @param leaf - 当前处理的末级数据项。
-             * @param index - 空间查询索引或当前条目的位置。
-             * @returns 当前条目转换后的结果。
-             */
-            (leaf, index) => (
-              <div
-                className="chromatic-loom__hinge"
-                key={index}
-                style={{
-                  transform: `translate3d(${leaf.x}px, ${leaf.y}px, 9px) rotateZ(${leaf.angle}deg)`,
+          {leaves.map((leaf, index) => (
+            <div
+              className="chromatic-loom__hinge"
+              key={index}
+              style={{
+                transform: `translate3d(${leaf.x}px, ${leaf.y}px, 9px) rotateZ(${leaf.angle}deg)`,
+              }}
+            >
+              <span className="chromatic-loom__pin" />
+              <motion.div
+                key={`${cycle}-${index}`}
+                className="chromatic-loom__leaf"
+                initial={false}
+                animate={{ rotateX: resting ? 0 : [0, -108, -166, -166, -62, 0] }}
+                transition={{
+                  duration: resting ? 0 : 2.48,
+                  delay: resting ? 0 : index * 0.035,
+                  times: [0, 0.21, 0.4, 0.64, 0.82, 1],
+                  ease: loomEase,
                 }}
               >
-                <span className="chromatic-loom__pin" />
-                <motion.div
-                  key={`${cycle}-${index}`}
-                  className="chromatic-loom__leaf"
-                  initial={false}
-                  animate={{ rotateX: resting ? 0 : [0, -108, -166, -166, -62, 0] }}
-                  transition={{
-                    duration: resting ? 0 : 2.48,
-                    delay: resting ? 0 : index * 0.035,
-                    times: [0, 0.21, 0.4, 0.64, 0.82, 1],
-                    ease: loomEase,
-                  }}
+                <span
+                  className="chromatic-loom__leaf-face chromatic-loom__leaf-face--front"
+                  style={{ backgroundColor: index % 3 === 0 ? color : palette.surface }}
                 >
-                  <span
-                    className="chromatic-loom__leaf-face chromatic-loom__leaf-face--front"
-                    style={{ backgroundColor: index % 3 === 0 ? color : palette.surface }}
-                  >
-                    <i />
-                    <b>{String(index + 1).padStart(2, '0')}</b>
-                  </span>
-                  <span
-                    className="chromatic-loom__leaf-face chromatic-loom__leaf-face--back"
-                    style={{ backgroundColor: colors[(index + 2) % colors.length] }}
-                  >
-                    <i />
-                  </span>
-                  <span className="chromatic-loom__leaf-edge" />
-                </motion.div>
-              </div>
-            ),
-          )}
-          {fragments.map(
-            /**
-             * 转换强调色编织动效中的集合条目，供后续处理或展示。
-             *
-             * @param fragment - 当前解析的文本片段。
-             * @param index - 空间查询索引或当前条目的位置。
-             * @returns 当前条目转换后的结果。
-             */
-            (fragment, index) => {
-              const shifted =
-                preset === 'glacier'
+                  <i />
+                  <b>{String(index + 1).padStart(2, '0')}</b>
+                </span>
+                <span
+                  className="chromatic-loom__leaf-face chromatic-loom__leaf-face--back"
+                  style={{ backgroundColor: colors[(index + 2) % colors.length] }}
+                >
+                  <i />
+                </span>
+                <span className="chromatic-loom__leaf-edge" />
+              </motion.div>
+            </div>
+          ))}
+          {fragments.map((fragment, index) => {
+            const shifted =
+              preset === 'glacier'
+                ? index % 2 === 0
+                  ? 6
+                  : -6
+                : preset === 'midnight'
                   ? index % 2 === 0
-                    ? 6
-                    : -6
-                  : preset === 'midnight'
-                    ? index % 2 === 0
-                      ? -5
-                      : 5
-                    : 0;
-              const destinationX = fragment.x + shifted;
-              return (
-                <motion.div
-                  key={`fragment-${cycle}-${index}`}
-                  className={`chromatic-loom__fragment chromatic-loom__fragment--${index}`}
-                  initial={false}
-                  style={
-                    {
-                      width: fragment.width,
-                      height: fragment.height,
-                      borderRadius: fragment.radius,
-                      '--fragment-color': colors[index],
-                    } as CSSProperties
-                  }
-                  animate={{
-                    x: resting
-                      ? destinationX
-                      : [fragment.x, fragment.x, -fragment.x * 0.65, destinationX, destinationX],
-                    y: resting
-                      ? fragment.y
-                      : [fragment.y, fragment.y, -fragment.y, fragment.y, fragment.y],
-                    z: resting ? 15 : [15, 15, 70 + index * 7, 15, 15],
-                    rotateZ: resting ? 0 : [0, 0, index % 2 === 0 ? 90 : -90, 0, 0],
-                    rotateY: resting ? 0 : [0, 0, index % 2 === 0 ? 24 : -24, 0, 0],
-                  }}
-                  transition={{
-                    duration: resting ? 0 : 2.55,
-                    delay: resting ? 0 : index * 0.06,
-                    times: [0, 0.23, 0.5, 0.83, 1],
-                    ease: loomEase,
-                  }}
-                >
-                  <span className="chromatic-loom__fragment-side" />
-                  <span className="chromatic-loom__fragment-face">
-                    <i />
-                    {index === 0 && <b>Aa</b>}
-                    {index === 2 && <b>↗</b>}
-                  </span>
-                </motion.div>
-              );
-            },
-          )}
+                    ? -5
+                    : 5
+                  : 0;
+            const destinationX = fragment.x + shifted;
+            return (
+              <motion.div
+                key={`fragment-${cycle}-${index}`}
+                className={`chromatic-loom__fragment chromatic-loom__fragment--${index}`}
+                initial={false}
+                style={
+                  {
+                    width: fragment.width,
+                    height: fragment.height,
+                    borderRadius: fragment.radius,
+                    '--fragment-color': colors[index],
+                  } as CSSProperties
+                }
+                animate={{
+                  x: resting
+                    ? destinationX
+                    : [fragment.x, fragment.x, -fragment.x * 0.65, destinationX, destinationX],
+                  y: resting
+                    ? fragment.y
+                    : [fragment.y, fragment.y, -fragment.y, fragment.y, fragment.y],
+                  z: resting ? 15 : [15, 15, 70 + index * 7, 15, 15],
+                  rotateZ: resting ? 0 : [0, 0, index % 2 === 0 ? 90 : -90, 0, 0],
+                  rotateY: resting ? 0 : [0, 0, index % 2 === 0 ? 24 : -24, 0, 0],
+                }}
+                transition={{
+                  duration: resting ? 0 : 2.55,
+                  delay: resting ? 0 : index * 0.06,
+                  times: [0, 0.23, 0.5, 0.83, 1],
+                  ease: loomEase,
+                }}
+              >
+                <span className="chromatic-loom__fragment-side" />
+                <span className="chromatic-loom__fragment-face">
+                  <i />
+                  {index === 0 && <b>Aa</b>}
+                  {index === 2 && <b>↗</b>}
+                </span>
+              </motion.div>
+            );
+          })}
           <motion.div
             key={`shuttle-${cycle}`}
             className="chromatic-loom__shuttle"

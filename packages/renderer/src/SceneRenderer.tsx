@@ -14,24 +14,10 @@ const vectorTypes = new Set(['ellipse', 'line', 'polygon', 'star', 'path']);
  */
 export function getThemeStyle(project: Project): CSSProperties {
   return Object.fromEntries(
-    Object.entries(getProjectTokens(project)).map(
-      /**
-       * 转换 getThemeStyle 中的集合条目，供后续处理或展示。
-       *
-       * @param options - 按顺序解构的当前条目。
-       * @param options.key - 要访问或更新的字段名。
-       * @param options.value - 当前字段、模式或控件的取值。
-       * @returns 当前条目转换后的结果。
-       */
-      ([key, value]) => [
-        `--forma-${key.replace(
-          /[A-Z]/g,
-          /** 执行 getThemeStyle 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param letter - 当前处理的字符。 @returns 计算得到的文本。 */
-          (letter) => `-${letter.toLowerCase()}`,
-        )}`,
-        typeof value === 'number' ? `${value}px` : value,
-      ],
-    ),
+    Object.entries(getProjectTokens(project)).map(([key, value]) => [
+      `--forma-${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`,
+      typeof value === 'number' ? `${value}px` : value,
+    ]),
   ) as CSSProperties;
 }
 
@@ -72,10 +58,7 @@ export function getNodeStyle(
   let clipped = false;
   while (parentId && !visited.has(parentId)) {
     visited.add(parentId);
-    const parentInput = nodes.find(
-      /** 检查条目的标识等于父节点标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === parentId,
-    );
+    const parentInput = nodes.find((item) => item.id === parentId);
     if (!parentInput) break;
     const parent = resolveNode(parentInput, project ?? tokens);
     visible = visible && parent.visible !== false;
@@ -374,26 +357,15 @@ export function NodeContent({
       />
     );
   if (node.type === 'component' && depth < 16) {
-    const component = project.components.find(
-      /** 检查条目的标识等于节点的组件引用，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === node.componentId,
-    );
+    const component = project.components.find((item) => item.id === node.componentId);
     if (!component) return null;
-    const nodes = component.nodes.map(
-      /**
-       * 转换节点实际内容中的集合条目，供后续处理或展示。
-       *
-       * @param child - 当前处理的子节点。
-       * @returns 当前条目转换后的结果。
-       */
-      (child) => ({
-        ...resolveNode(child, project),
-        ...node.overrides?.[child.id],
-        ...(node.overrides?.[child.id]?.fill !== undefined ? { gradient: undefined } : {}),
-        tokenBindings: undefined,
-        variableBindings: undefined,
-      }),
-    );
+    const nodes = component.nodes.map((child) => ({
+      ...resolveNode(child, project),
+      ...node.overrides?.[child.id],
+      ...(node.overrides?.[child.id]?.fill !== undefined ? { gradient: undefined } : {}),
+      tokenBindings: undefined,
+      variableBindings: undefined,
+    }));
     return (
       <div
         style={{
@@ -404,24 +376,16 @@ export function NodeContent({
           transform: `scale(${node.width / component.width},${node.height / component.height})`,
         }}
       >
-        {nodes.map(
-          /**
-           * 转换节点实际内容中的集合条目，供后续处理或展示。
-           *
-           * @param child - 当前处理的子节点。
-           * @returns 当前条目转换后的结果。
-           */
-          (child) => (
-            <NodeView
-              key={child.id}
-              node={child}
-              project={project}
-              nodes={nodes}
-              depth={depth + 1}
-              onClick={onAction}
-            />
-          ),
-        )}
+        {nodes.map((child) => (
+          <NodeView
+            key={child.id}
+            node={child}
+            project={project}
+            nodes={nodes}
+            depth={depth + 1}
+            onClick={onAction}
+          />
+        ))}
       </div>
     );
   }
@@ -500,29 +464,16 @@ export function NodeView({
   const visited = new Set([node.id]);
   while (!actionTarget.prototype && parentId && !visited.has(parentId)) {
     visited.add(parentId);
-    const parent = nodes.find(
-      /** 检查条目的标识等于父节点标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === parentId,
-    );
+    const parent = nodes.find((item) => item.id === parentId);
     if (!parent) break;
     if (parent.prototype) actionTarget = parent;
     parentId = parent.parentId;
   }
   const interactive = Boolean(onClick && (actionTarget.prototype || node.type === 'button'));
-  /**
-   * 响应节点激活事件，将原型动作通知外层。
-   * @returns 无返回值；通过副作用完成当前操作。
-   */
   const activate = () => onClick?.(actionTarget);
   const click =
     interactive && actionTarget.prototype?.trigger !== 'hover'
-      ? /**
-         * 执行设计节点 DOM 容器传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param event - 当前事件及其触发位置。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (event: React.MouseEvent) => {
+      ? (event: React.MouseEvent) => {
           event.stopPropagation();
           activate();
         }
@@ -541,8 +492,7 @@ export function NodeView({
       depth={depth}
       onAction={
         onClick
-          ? /** 执行设计节点 DOM 容器传入的局部处理步骤，使调用处能够控制结果如何更新。 @param child - 当前处理的子节点。 @returns 无返回值；通过副作用完成当前操作。 */
-            (child) =>
+          ? (child) =>
               onClick(child.prototype ? child : actionTarget.prototype ? actionTarget : child)
           : undefined
       }
@@ -561,13 +511,7 @@ export function NodeView({
       tabIndex={interactive ? 0 : undefined}
       onKeyDown={
         interactive
-          ? /**
-             * 执行设计节点 DOM 容器传入的局部处理步骤，使调用处能够控制结果如何更新。
-             *
-             * @param event - 当前事件及其触发位置。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            (event) => {
+          ? (event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
                 activate();

@@ -3,8 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { WorkspaceOperation } from '@forma/schema/workbench';
-import { openDesignWorkspace, WorkspaceConflictError, WorkspaceInputError } from '../src/index.ts';
-import { createV1Workspace } from './fixture.ts';
+import {
+  openDesignWorkspace,
+  WorkspaceConflictError,
+  WorkspaceInputError,
+} from '@forma/design-workspace-sdk';
+import { createV1Workspace } from '../helpers/fixture.ts';
 
 /**
  * 创建隔离的样例数据与运行环境，让行为检查不依赖用户工作空间。
@@ -61,37 +65,18 @@ async function fixture() {
     root,
     workspace,
     sourcePath,
-    /**
-     * 关闭临时服务或删除临时数据，避免一个场景影响后续场景。
-     * @returns 清理完成后的结果。
-     */
     cleanup: () => rm(path.dirname(root), { recursive: true, force: true }),
   };
 }
 
-/**
- * 验证persists Markdown and annotations in one revision and notifies live readers。
- * @returns 完成当前检查或生命周期操作。
- */
 test('persists Markdown and annotations in one revision and notifies live readers', async () => {
   const { root, workspace, sourcePath, cleanup } = await fixture();
   const reader = await openDesignWorkspace({ root });
   let notify!: (revision: number) => void;
-  const event = new Promise<number>(
-    /**
-     * 把content-editing.test中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-     *
-     * @param resolve - 异步操作成功时调用的完成函数。
-     * @returns 无返回值；通过 resolve 或 reject 结束等待。
-     */
-    (resolve) => {
-      notify = resolve;
-    },
-  );
-  const watcher = await reader.watch(
-    /** 执行content-editing.test传入的局部处理步骤，使调用处能够控制结果如何更新。 @param update - 根据旧值计算新值的更新函数。 @returns 无返回值；通过副作用完成当前操作。 */
-    (update) => notify(update.revision),
-  );
+  const event = new Promise<number>((resolve) => {
+    notify = resolve;
+  });
+  const watcher = await reader.watch((update) => notify(update.revision));
   try {
     const initial = await workspace.read();
     assert.deepEqual(initial.flows[0].brief, {
@@ -144,11 +129,7 @@ test('persists Markdown and annotations in one revision and notifies live reader
     assert.equal(result.document.flows[0].nodes[0].annotations[0].text, '新说明');
     assert.equal(result.document.designSystem.components[0].specContent, content);
     assert.ok(result.changedFiles.includes(sourcePath));
-    const timeout = setTimeout(
-      /** 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。 @returns 供 React 保存的新状态。 */
-      () => notify(-1),
-      3000,
-    );
+    const timeout = setTimeout(() => notify(-1), 3000);
     try {
       assert.equal(await event, 1);
     } finally {
@@ -161,10 +142,6 @@ test('persists Markdown and annotations in one revision and notifies live reader
   }
 });
 
-/**
- * 验证rejects stale content and annotations even when external edits did not increment revision。
- * @returns 完成当前检查或生命周期操作。
- */
 test('rejects stale content and annotations even when external edits did not increment revision', async () => {
   const { root, workspace, sourcePath, cleanup } = await fixture();
   try {
@@ -211,10 +188,6 @@ test('rejects stale content and annotations even when external edits did not inc
   }
 });
 
-/**
- * 验证rejects invalid annotation targets and coordinates without partially saving Markdown。
- * @returns 完成当前检查或生命周期操作。
- */
 test('rejects invalid annotation targets and coordinates without partially saving Markdown', async () => {
   const { root, workspace, cleanup } = await fixture();
   try {
@@ -259,10 +232,6 @@ test('rejects invalid annotation targets and coordinates without partially savin
   }
 });
 
-/**
- * 验证does not edit unregistered Markdown or follow documentation symlinks outside design。
- * @returns 完成当前检查或生命周期操作。
- */
 test('does not edit unregistered Markdown or follow documentation symlinks outside design', async () => {
   const { root, workspace, cleanup } = await fixture();
   try {

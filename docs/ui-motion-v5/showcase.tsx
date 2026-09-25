@@ -78,30 +78,18 @@ function Showcase() {
         </p>
       </div>
       <nav className="ms-navigation" aria-label="动效场景">
-        {scenes.map(
-          /**
-           * 转换动效展示页中的集合条目，供后续处理或展示。
-           *
-           * @param item - 当前遍历的条目。
-           * @param index - 空间查询索引或当前条目的位置。
-           * @returns 当前条目转换后的结果。
-           */
-          (item, index) => (
-            <button
-              key={item.number}
-              aria-pressed={selected === index}
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到动效展示页。 @returns 当前步骤的处理结果。 */
-                () => setSelected(index)
-              }
-            >
-              <span>{item.number}</span>
-              <strong>{item.title}</strong>
-              <small>{item.english}</small>
-              <MoveUpRight size={17} />
-            </button>
-          ),
-        )}
+        {scenes.map((item, index) => (
+          <button
+            key={item.number}
+            aria-pressed={selected === index}
+            onClick={() => setSelected(index)}
+          >
+            <span>{item.number}</span>
+            <strong>{item.title}</strong>
+            <small>{item.english}</small>
+            <MoveUpRight size={17} />
+          </button>
+        ))}
       </nav>
       <section className="ms-screen">
         <div className="ms-stage-header">
@@ -110,36 +98,10 @@ function Showcase() {
             {scene.english}
           </span>
           <div>
-            <button
-              aria-pressed={dark}
-              onClick={
-                /**
-                 * 响应 onClick 交互，将用户操作应用到动效展示页。
-                 * @returns 当前步骤的处理结果。
-                 */
-                () =>
-                  setDark(
-                    /** 基于最新状态计算 Dark 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                    (value) => !value,
-                  )
-              }
-            >
+            <button aria-pressed={dark} onClick={() => setDark((value) => !value)}>
               {dark ? '浅色背景' : '深色背景'}
             </button>
-            <button
-              aria-pressed={staticMode}
-              onClick={
-                /**
-                 * 响应 onClick 交互，将用户操作应用到动效展示页。
-                 * @returns 当前步骤的处理结果。
-                 */
-                () =>
-                  setStaticMode(
-                    /** 基于最新状态计算 StaticMode 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                    (value) => !value,
-                  )
-              }
-            >
+            <button aria-pressed={staticMode} onClick={() => setStaticMode((value) => !value)}>
               {staticMode ? <Play size={12} /> : <Pause size={12} />}
               {staticMode ? '开启动效' : '静态模式'}
             </button>
@@ -165,51 +127,23 @@ function Showcase() {
                         ['glacier', '冰川'],
                         ['midnight', '夜航'],
                       ] as const
-                    ).map(
-                      /**
-                       * 转换动效展示页中的集合条目，供后续处理或展示。
-                       *
-                       * @param options - 按顺序解构的当前条目。
-                       * @param options.id - 唯一标识，用于查找、更新和建立引用。
-                       * @param options.name - 面向用户展示的名称。
-                       * @returns 当前条目转换后的结果。
-                       */
-                      ([id, name]) => (
-                        <button
-                          key={id}
-                          aria-pressed={preset === id}
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到动效展示页。 @returns 当前步骤的处理结果。 */
-                            () => setPreset(id)
-                          }
-                        >
-                          {name}
-                        </button>
-                      ),
-                    )}
+                    ).map(([id, name]) => (
+                      <button key={id} aria-pressed={preset === id} onClick={() => setPreset(id)}>
+                        {name}
+                      </button>
+                    ))}
                   </div>
                   <div aria-label="雕塑强调色">
-                    {['#38bdf8', '#7959ef', '#dd5895', '#2aad85'].map(
-                      /**
-                       * 转换动效展示页中的集合条目，供后续处理或展示。
-                       *
-                       * @param color - 文字或视觉元素的颜色。
-                       * @returns 当前条目转换后的结果。
-                       */
-                      (color) => (
-                        <button
-                          key={color}
-                          className="ms-color"
-                          aria-label={`雕塑色彩 ${color}`}
-                          aria-pressed={accent === color}
-                          style={{ background: color }}
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到动效展示页。 @returns 当前步骤的处理结果。 */
-                            () => setAccent(color)
-                          }
-                        />
-                      ),
-                    )}
+                    {['#38bdf8', '#7959ef', '#dd5895', '#2aad85'].map((color) => (
+                      <button
+                        key={color}
+                        className="ms-color"
+                        aria-label={`雕塑色彩 ${color}`}
+                        aria-pressed={accent === color}
+                        style={{ background: color }}
+                        onClick={() => setAccent(color)}
+                      />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -220,12 +154,9 @@ function Showcase() {
             <h2>{scene.title}</h2>
             <p>{scene.description}</p>
             <ol>
-              {scene.beats.map(
-                /** 转换动效展示页中的集合条目，供后续处理或展示。 @param beat - 当前展示的动画节拍或阶段。 @returns 当前条目转换后的结果。 */
-                (beat) => (
-                  <li key={beat}>{beat}</li>
-                ),
-              )}
+              {scene.beats.map((beat) => (
+                <li key={beat}>{beat}</li>
+              ))}
             </ol>
             <a href={scene.href}>
               在工作台中体验 <ArrowUpRight size={14} />

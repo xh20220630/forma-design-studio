@@ -83,10 +83,7 @@ const fixture = (id) => ({
   cover: 'blank',
 });
 const server = createApp().listen(0, '127.0.0.1');
-await new Promise(
-  /** 把 backend.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-  (resolve) => server.once('listening', resolve),
-);
+await new Promise((resolve) => server.once('listening', resolve));
 const base = `http://127.0.0.1:${server.address().port}`;
 /**
  * 统一请求 API 并转换失败响应，使调用方只处理业务数据。
@@ -105,27 +102,14 @@ async function api(route, method = 'GET', body, headers = {}) {
   });
   return { status: response.status, body: await response.json() };
 }
-after(
-  /**
-   * 组织当前场景的准备或清理步骤。
-   * @returns 完成当前检查或生命周期操作。
-   */
-  async () => {
-    await new Promise(
-      /** 把 backend.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-      (resolve) => server.close(resolve),
-    );
-    const resolved = path.resolve(testRoot);
-    assert.equal(path.dirname(resolved), path.resolve(os.tmpdir()));
-    assert.ok(path.basename(resolved).startsWith('forma-test-'));
-    await rm(resolved, { recursive: true, force: true });
-  },
-);
+after(async () => {
+  await new Promise((resolve) => server.close(resolve));
+  const resolved = path.resolve(testRoot);
+  assert.equal(path.dirname(resolved), path.resolve(os.tmpdir()));
+  assert.ok(path.basename(resolved).startsWith('forma-test-'));
+  await rm(resolved, { recursive: true, force: true });
+});
 
-/**
- * 验证export synchronization detects manual changes without overwriting user code。
- * @returns 完成当前检查或生命周期操作。
- */
 test('export synchronization detects manual changes without overwriting user code', async () => {
   const workspace = path.join(testRoot, 'workspace');
   await mkdir(workspace);
@@ -136,37 +120,20 @@ test('export synchronization detects manual changes without overwriting user cod
     revision: 3,
   };
   assert.deepEqual(generateFiles(project), generateFiles(project));
-  assert.ok(
-    (await previewSync(project)).files.every(
-      /** 检查 file 的状态等于“added”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.status === 'added',
-    ),
-  );
+  assert.ok((await previewSync(project)).files.every((file) => file.status === 'added'));
   await applySync(project);
-  assert.ok(
-    (await previewSync(project)).files.every(
-      /** 检查 file 的状态等于“unchanged”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.status === 'unchanged',
-    ),
-  );
+  assert.ok((await previewSync(project)).files.every((file) => file.status === 'unchanged'));
   project.tokens.primary = '#123456';
   project.revision = 4;
   assert.equal(
-    (await previewSync(project)).files.find(
-      /** 判断 backend.test 中的条目是否符合查找条件。 @param file - 需要读取、写入或导入的文件。 @returns 该条目是否符合条件。 */
-      (file) => file.path.endsWith('tokens.css'),
-    ).status,
+    (await previewSync(project)).files.find((file) => file.path.endsWith('tokens.css')).status,
     'modified',
   );
   await applySync(project);
   await writeFile(path.join(workspace, 'forma-generated', 'tokens.css'), 'manual custom styles');
   project.tokens.primary = '#abcdef';
   assert.deepEqual((await previewSync(project)).conflicts, ['forma-generated/tokens.css']);
-  await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => applySync(project),
-    /本地修改/,
-  );
+  await assert.rejects(() => applySync(project), /本地修改/);
   assert.equal(
     await readFile(path.join(workspace, 'forma-generated', 'tokens.css'), 'utf8'),
     'manual custom styles',
@@ -174,23 +141,10 @@ test('export synchronization detects manual changes without overwriting user cod
   assert.equal(await readFile(path.join(workspace, 'application.tsx'), 'utf8'), 'business logic');
 });
 
-/**
- * 验证workspace and export paths reject relative paths, foreign files and symlink escapes。
- * @returns 完成当前检查或生命周期操作。
- */
 test('workspace and export paths reject relative paths, foreign files and symlink escapes', async () => {
+  await assert.rejects(() => validateWorkspacePath('../outside'), /绝对/);
+  await assert.rejects(() => validateWorkspacePath(path.join(testRoot, 'missing')), /不存在/);
   await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => validateWorkspacePath('../outside'),
-    /绝对/,
-  );
-  await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => validateWorkspacePath(path.join(testRoot, 'missing')),
-    /不存在/,
-  );
-  await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
     () =>
       bindWorkspace(fixture('clone'), { kind: 'github', repo: 'https://github.com/x/y;whoami' }),
     /URL/,
@@ -200,11 +154,7 @@ test('workspace and export paths reject relative paths, foreign files and symlin
   await writeFile(path.join(workspace, 'forma-generated', 'index.tsx'), 'unmanaged implementation');
   const project = { ...fixture('foreign'), workspace: { kind: 'local', path: workspace } };
   assert.deepEqual((await previewSync(project)).conflicts, ['forma-generated/index.tsx']);
-  await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => applySync(project),
-    /本地修改/,
-  );
+  await assert.rejects(() => applySync(project), /本地修改/);
   const linked = path.join(testRoot, 'linked');
   const outside = path.join(testRoot, 'outside');
   await mkdir(linked);
@@ -215,37 +165,20 @@ test('workspace and export paths reject relative paths, foreign files and symlin
     process.platform === 'win32' ? 'junction' : 'dir',
   );
   await assert.rejects(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
     () => previewSync({ ...project, workspace: { kind: 'local', path: linked } }),
     /符号链接/,
   );
 });
 
-/**
- * 验证graph validation rejects cycles and invalid token references。
- * @returns 完成当前检查或生命周期操作。
- */
 test('graph validation rejects cycles and invalid token references', () => {
   const project = fixture('graph');
   project.pages[0].nodes[0].parentId = 'title';
-  assert.throws(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => validateProject(project),
-    /循环/,
-  );
+  assert.throws(() => validateProject(project), /循环/);
   delete project.pages[0].nodes[0].parentId;
   project.pages[0].nodes[0].tokenBindings.fill = 'unknown';
-  assert.throws(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => validateProject(project),
-    /绑定/,
-  );
+  assert.throws(() => validateProject(project), /绑定/);
 });
 
-/**
- * 验证extended scene fields persist with validation for shapes, modes, comments and snapshots。
- * @returns 完成当前检查或生命周期操作。
- */
 test('extended scene fields persist with validation for shapes, modes, comments and snapshots', async () => {
   const project = fixture('extended-scene');
   project.pages[0].nodes.push({
@@ -342,28 +275,17 @@ test('extended scene fields persist with validation for shapes, modes, comments 
   ]) {
     const invalid = structuredClone(project);
     invalid.pages[0].nodes[0][property] = value;
-    assert.throws(
-      /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => validateProject(invalid),
-    );
+    assert.throws(() => validateProject(invalid));
   }
   const invalid = structuredClone(project);
   invalid.pages[0].nodes[0].variableBindings.fill.variableId = 'missing';
-  assert.throws(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-    () => validateProject(invalid),
-    /变量绑定/,
-  );
+  assert.throws(() => validateProject(invalid), /变量绑定/);
   const legacy = structuredClone(project);
   for (const key of ['themeModes', 'activeMode', 'variableCollections', 'activeVariableModes'])
     delete legacy.snapshots[0][key];
   assert.equal(validateProject(legacy), legacy);
 });
 
-/**
- * 验证safe SVG resources are portable and executable SVG is rejected。
- * @returns 完成当前检查或生命周期操作。
- */
 test('safe SVG resources are portable and executable SVG is rejected', async () => {
   const project = fixture('svg');
   const svg =
@@ -382,10 +304,7 @@ test('safe SVG resources are portable and executable SVG is rejected', async () 
   assert.equal(validateProject(project).pages[0].nodes.at(-1).src, src);
   assert.equal(
     JSON.parse(
-      generateFiles(project).find(
-        /** 检查 file 的路径等于“design.json”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (file) => file.path === 'design.json',
-      ).content,
+      generateFiles(project).find((file) => file.path === 'design.json').content,
     ).pages[0].nodes.at(-1).src,
     src,
   );
@@ -397,18 +316,10 @@ test('safe SVG resources are portable and executable SVG is rejected', async () 
   ]) {
     project.pages[0].nodes.at(-1).src =
       `data:image/svg+xml;base64,${Buffer.from(payload).toString('base64')}`;
-    assert.throws(
-      /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => validateProject(project),
-      /SVG/,
-    );
+    assert.throws(() => validateProject(project), /SVG/);
   }
 });
 
-/**
- * 验证shared renderer exports vector visuals, theme modes, variable bindings and instance overrides。
- * @returns 完成当前检查或生命周期操作。
- */
 test('shared renderer exports vector visuals, theme modes, variable bindings and instance overrides', async () => {
   const project = fixture('extended-render');
   project.themeModes = { dark: { ...tokens, background: '#101010', text: '#eeeeee' } };
@@ -495,29 +406,18 @@ test('shared renderer exports vector visuals, theme modes, variable bindings and
   const files = generateFiles(project);
   const require = createRequire(import.meta.url);
   assert.match(
-    files.find(
-      /** 检查 file 的路径等于“tokens.css”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.path === 'tokens.css',
-    ).content,
+    files.find((file) => file.path === 'tokens.css').content,
     /--forma-background: #101010/,
   );
   const source = files
-    .find(
-      /** 检查 file 的路径等于“index.tsx”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.path === 'index.tsx',
-    )
+    .find((file) => file.path === 'index.tsx')
     .content.replace(
       "import React from 'react';",
       `import React from ${JSON.stringify(pathToFileURL(require.resolve('react')).href)};`,
     )
     .replace(
       "import design from './design.json';",
-      `const design = ${
-        files.find(
-          /** 检查 file 的路径等于“design.json”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (file) => file.path === 'design.json',
-        ).content
-      };`,
+      `const design = ${files.find((file) => file.path === 'design.json').content};`,
     )
     .replace("import './tokens.css';", '');
   const compiled = ts.transpileModule(source, {
@@ -623,21 +523,11 @@ test('shared renderer exports vector visuals, theme modes, variable bindings and
     node: child,
     project,
     nodes: [prototypeParent, child],
-    /**
-     * 响应点击事件，将控件操作传回所属界面。
-     *
-     * @param node - 当前处理的设计节点。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
     onClick: (node) => {
       activated = node.id;
     },
   });
   childView.props.onClick({
-    /**
-     * 在模拟事件中提供停止冒泡入口，使场景可按真实交互调用。
-     * @returns 无返回值。
-     */
     stopPropagation() {},
   });
   assert.equal(activated, prototypeParent.id);
@@ -647,30 +537,16 @@ test('shared renderer exports vector visuals, theme modes, variable bindings and
       node: ownAction,
       project,
       nodes: [prototypeParent, ownAction],
-      /**
-       * 响应点击事件，将控件操作传回所属界面。
-       *
-       * @param node - 当前处理的设计节点。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
       onClick: (node) => {
         activated = node.id;
       },
     })
     .props.onClick({
-      /**
-       * 在模拟事件中提供停止冒泡入口，使场景可按真实交互调用。
-       * @returns 无返回值。
-       */
       stopPropagation() {},
     });
   assert.equal(activated, ownAction.id);
 });
 
-/**
- * 验证exported React entry point typechecks as a standalone consuming project。
- * @returns 完成当前检查或生命周期操作。
- */
 test('exported React entry point typechecks as a standalone consuming project', async () => {
   const directory = path.join(testRoot, 'consumer');
   await mkdir(directory);
@@ -694,18 +570,11 @@ test('exported React entry point typechecks as a standalone consuming project', 
   });
   const diagnostics = ts.getPreEmitDiagnostics(program);
   assert.deepEqual(
-    diagnostics.map(
-      /** 转换 backend.test 中的集合条目，供后续处理或展示。 @param item - 当前遍历的条目。 @returns 当前条目转换后的结果。 */
-      (item) => ts.flattenDiagnosticMessageText(item.messageText, '\n'),
-    ),
+    diagnostics.map((item) => ts.flattenDiagnosticMessageText(item.messageText, '\n')),
     [],
   );
 });
 
-/**
- * 验证export renderer preserves absolute stacking, ancestor state and actual component instances。
- * @returns 完成当前检查或生命周期操作。
- */
 test('export renderer preserves absolute stacking, ancestor state and actual component instances', async () => {
   const project = fixture('render');
   project.pages[0].nodes[0].opacity = 0.5;
@@ -775,22 +644,14 @@ test('export renderer preserves absolute stacking, ancestor state and actual com
   const files = generateFiles(project);
   const require = createRequire(import.meta.url);
   const source = files
-    .find(
-      /** 检查 file 的路径等于“index.tsx”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.path === 'index.tsx',
-    )
+    .find((file) => file.path === 'index.tsx')
     .content.replace(
       "import React from 'react';",
       `import React from ${JSON.stringify(pathToFileURL(require.resolve('react')).href)};`,
     )
     .replace(
       "import design from './design.json';",
-      `const design = ${
-        files.find(
-          /** 检查 file 的路径等于“design.json”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (file) => file.path === 'design.json',
-        ).content
-      };`,
+      `const design = ${files.find((file) => file.path === 'design.json').content};`,
     )
     .replace("import './tokens.css';", '');
   const compiled = ts.transpileModule(source, {
@@ -814,10 +675,6 @@ test('export renderer preserves absolute stacking, ancestor state and actual com
   assert.ok(html.includes('&lt;script&gt;'));
 });
 
-/**
- * 验证local bitmap export embeds portable assets and rejects missing or traversal paths。
- * @returns 完成当前检查或生命周期操作。
- */
 test('local bitmap export embeds portable assets and rejects missing or traversal paths', async () => {
   const assetDirectory = path.join(testRoot, 'data', 'assets');
   await mkdir(assetDirectory, { recursive: true });
@@ -842,10 +699,7 @@ test('local bitmap export embeds portable assets and rejects missing or traversa
     { id: 'photo', name: 'Photo', width: 100, height: 100, nodes: [{ ...image }] },
   ];
   const exported = JSON.parse(
-    generateFiles(project).find(
-      /** 检查 file 的路径等于“design.json”，供集合筛选或定位使用。 @param file - 需要读取、写入或导入的文件。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (file) => file.path === 'design.json',
-    ).content,
+    generateFiles(project).find((file) => file.path === 'design.json').content,
   );
   const expected = `data:image/png;base64,${bytes.toString('base64')}`;
   assert.equal(exported.pages[0].nodes.at(-1).src, expected);
@@ -853,9 +707,7 @@ test('local bitmap export embeds portable assets and rejects missing or traversa
   assert.equal(project.pages[0].nodes.at(-1).src, '/api/assets/portable.png');
   image.src = '/api/assets/missing.png';
   assert.throws(
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
     () => generateFiles(project),
-    /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param error - 当前操作的失败信息，供界面反馈或重试判断。 @returns 条件是否成立的布尔值。 */
     (error) => error.status === 409 && /不存在/.test(error.message),
   );
   for (const source of [
@@ -867,23 +719,11 @@ test('local bitmap export embeds portable assets and rejects missing or traversa
     '/api/assets/..\\secret.png',
   ]) {
     image.src = source;
-    assert.throws(
-      /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => validateProject(project),
-      /本地图片地址/,
-    );
-    assert.throws(
-      /** 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => generateFiles(project),
-      /本地图片地址/,
-    );
+    assert.throws(() => validateProject(project), /本地图片地址/);
+    assert.throws(() => generateFiles(project), /本地图片地址/);
   }
 });
 
-/**
- * 验证API persistence, revision concurrency, approval gate and origin protection。
- * @returns 完成当前检查或生命周期操作。
- */
 test('API persistence, revision concurrency, approval gate and origin protection', async () => {
   const created = await api('/projects/api-project', 'PUT', fixture('api-project'));
   assert.equal(created.status, 200);
@@ -909,15 +749,7 @@ test('API persistence, revision concurrency, approval gate and origin protection
     api('/projects/api-project', 'PUT', { ...forged.body, name: 'Change A' }),
     api('/projects/api-project', 'PUT', { ...forged.body, name: 'Change B' }),
   ]);
-  assert.deepEqual(
-    concurrent
-      .map(
-        /** 提取当前结果的状态，供后续计算或展示使用。 @param result - 上一步操作得到的结果。 @returns 当前结果的状态。 */
-        (result) => result.status,
-      )
-      .sort(),
-    [200, 409],
-  );
+  assert.deepEqual(concurrent.map((result) => result.status).sort(), [200, 409]);
   const invalidBody = await fetch(`${base}/api/settings`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -926,49 +758,33 @@ test('API persistence, revision concurrency, approval gate and origin protection
   assert.equal(invalidBody.status, 400);
 });
 
-/**
- * 验证provider image approval to vision graph and safe automatic synchronization。
- * @returns 完成当前检查或生命周期操作。
- */
 test('provider image approval to vision graph and safe automatic synchronization', async () => {
   const calls = [];
   const provider = http
-    .createServer(
-      /**
-       * 执行 backend.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       *
-       * @param req - 当前 HTTP 请求。
-       * @param res - 当前 HTTP 响应对象。
-       * @returns 当前步骤的处理结果。
-       */
-      async (req, res) => {
-        let body = '';
-        for await (const chunk of req) body += chunk;
-        const input = JSON.parse(body);
-        calls.push({ route: req.url, input });
-        res.setHeader('Content-Type', 'application/json');
-        if (req.url === '/v1/images/generations')
-          return res.end(
-            JSON.stringify({
-              data: [
-                {
-                  b64_json:
-                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-                },
-              ],
-            }),
-          );
-        const output = Array.isArray(input.messages[1].content)
-          ? { pages: fixture('provider').pages, components: [], assets: [] }
-          : { name: 'Violet', description: 'Test theme', tokens };
-        res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
-      },
-    )
+    .createServer(async (req, res) => {
+      let body = '';
+      for await (const chunk of req) body += chunk;
+      const input = JSON.parse(body);
+      calls.push({ route: req.url, input });
+      res.setHeader('Content-Type', 'application/json');
+      if (req.url === '/v1/images/generations')
+        return res.end(
+          JSON.stringify({
+            data: [
+              {
+                b64_json:
+                  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+              },
+            ],
+          }),
+        );
+      const output = Array.isArray(input.messages[1].content)
+        ? { pages: fixture('provider').pages, components: [], assets: [] }
+        : { name: 'Violet', description: 'Test theme', tokens };
+      res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
+    })
     .listen(0, '127.0.0.1');
-  await new Promise(
-    /** 把 backend.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-    (resolve) => provider.once('listening', resolve),
-  );
+  await new Promise((resolve) => provider.once('listening', resolve));
   try {
     const settings = await api('/settings', 'POST', {
       apiKey: 'test-secret-never-returned',
@@ -1028,10 +844,7 @@ test('provider image approval to vision graph and safe automatic synchronization
     assert.ok(calls[0].input.prompt.includes('#8b5cf6'));
     assert.ok(
       calls
-        .find(
-          /** 检查 call 的route等于“/v1/chat/completions”，供集合筛选或定位使用。 @param call - 等待执行的操作函数。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (call) => call.route === '/v1/chat/completions',
-        )
+        .find((call) => call.route === '/v1/chat/completions')
         .input.messages[1].content[1].image_url.url.startsWith('data:image/png;base64,'),
     );
     assert.equal(
@@ -1077,9 +890,6 @@ test('provider image approval to vision graph and safe automatic synchronization
     const exported = await api(`/projects/${project.id}/export`);
     assert.equal(exported.body.files.length, 5);
   } finally {
-    await new Promise(
-      /** 把 backend.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-      (resolve) => provider.close(resolve),
-    );
+    await new Promise((resolve) => provider.close(resolve));
   }
 });

@@ -122,16 +122,7 @@ export default function ProjectOverview({
   const [deleteId, setDeleteId] = useState<string>();
   const tokens = getProjectTokens(project);
   const modeCount = Object.keys(project.themeModes ?? {}).length || 1;
-  const selectedForDelete = project.pages.find(
-    /** 检查页面的标识等于deleteId，供集合筛选或定位使用。 @param page - 当前正在展示或编辑的页面。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (page) => page.id === deleteId,
-  );
-  /**
-   * 保存项目概览中的可编辑信息，成功后结束当前编辑状态。
-   *
-   * @param changes - 本次合并的局部变更。
-   * @returns 保存操作的结果。
-   */
+  const selectedForDelete = project.pages.find((page) => page.id === deleteId);
   const saveChanges = (changes: Partial<Project>) =>
     onChange({
       ...project,
@@ -140,27 +131,18 @@ export default function ProjectOverview({
       updatedAt: new Date().toISOString(),
       status: 'in-progress',
     });
-  /**
-   * 根据表单创建页面并关联到项目，供后续进入画布编辑。
-   * @returns 创建操作的结果。
-   */
   const createPage = () =>
     setForm({
       name: `页面 ${project.pages.length + 1}`,
       width: 1440,
       height: 1000,
     });
-  /**
-   * 把页面表单中的名称或尺寸保存回项目。
-   * @returns 保存操作的结果。
-   */
   const savePage = () => {
     if (!form?.name.trim()) return;
     if (form.id) {
       saveChanges({
-        pages: project.pages.map(
-          /** 转换 savePage 中的集合条目，供后续处理或展示。 @param page - 当前正在展示或编辑的页面。 @returns 当前条目转换后的结果。 */
-          (page) => (page.id === form.id ? { ...page, name: form.name.trim() } : page),
+        pages: project.pages.map((page) =>
+          page.id === form.id ? { ...page, name: form.name.trim() } : page,
         ),
       });
       setForm(undefined);
@@ -178,94 +160,51 @@ export default function ProjectOverview({
     setForm(undefined);
     onOpenPage(page.id);
   };
-  /**
-   * 复制页面及图层并重建标识，防止副本和原页面发生引用冲突。
-   *
-   * @param page - 当前正在展示或编辑的页面。
-   * @returns 复制页面操作的结果。
-   */
+  // 复制页面时同时重建图层 ID 和父节点引用，避免关联到原页面。
   const duplicatePage = (page: DesignPage) => {
     const id = `page-${crypto.randomUUID()}`;
-    const nodeIds = new Map(
-      page.nodes.map(
-        /** 转换 duplicatePage 中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-        (node) => [node.id, `node-${crypto.randomUUID()}`],
-      ),
-    );
+    const nodeIds = new Map(page.nodes.map((node) => [node.id, `node-${crypto.randomUUID()}`]));
     const copy: DesignPage = {
       ...structuredClone(page),
       id,
       name: `${page.name} 副本`,
       prototypeStart: false,
-      nodes: page.nodes.map(
-        /**
-         * 转换 duplicatePage 中的集合条目，供后续处理或展示。
-         *
-         * @param node - 当前处理的设计节点。
-         * @returns 当前条目转换后的结果。
-         */
-        (node) => ({
-          ...structuredClone(node),
-          id: nodeIds.get(node.id)!,
-          parentId: node.parentId ? nodeIds.get(node.parentId) : undefined,
-          prototype:
-            node.prototype?.target === page.id &&
-            ['navigate', 'overlay'].includes(node.prototype.action)
-              ? { ...node.prototype, target: id }
-              : node.prototype,
-        }),
-      ),
+      nodes: page.nodes.map((node) => ({
+        ...structuredClone(node),
+        id: nodeIds.get(node.id)!,
+        parentId: node.parentId ? nodeIds.get(node.parentId) : undefined,
+        prototype:
+          node.prototype?.target === page.id &&
+          ['navigate', 'overlay'].includes(node.prototype.action)
+            ? { ...node.prototype, target: id }
+            : node.prototype,
+      })),
     };
-    const index = project.pages.findIndex(
-      /** 检查条目的标识等于页面的标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === page.id,
-    );
+    const index = project.pages.findIndex((item) => item.id === page.id);
     const pages = [...project.pages];
     pages.splice(index + 1, 0, copy);
     saveChanges({ pages });
   };
-  /**
-   * 移除目标页面并调整当前页，确保编辑器仍有可用页面。
-   * @returns 删除页面操作的结果。
-   */
   const deletePage = () => {
     if (!deleteId || project.pages.length < 2) return;
-    /**
-     * 清除页面上的既有链接关系，使页面不再沿用旧跳转配置。
-     *
-     * @param node - 当前处理的设计节点。
-     * @returns 操作结果。
-     */
     const clearLink = (node: DesignNode): DesignNode =>
       node.prototype?.target === deleteId && ['navigate', 'overlay'].includes(node.prototype.action)
         ? { ...node, prototype: undefined }
         : node;
     const pages = project.pages
-      .filter(
-        /** 检查页面的标识不等于deleteId，供集合筛选或定位使用。 @param page - 当前正在展示或编辑的页面。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (page) => page.id !== deleteId,
-      )
-      .map(
-        /** 转换 deletePage 中的集合条目，供后续处理或展示。 @param page - 当前正在展示或编辑的页面。 @param index - 空间查询索引或当前条目的位置。 @returns 当前条目转换后的结果。 */
-        (page, index) => ({
-          ...page,
-          nodes: page.nodes.map(clearLink),
-          ...(selectedForDelete?.prototypeStart && index === 0 ? { prototypeStart: true } : {}),
-        }),
-      );
+      .filter((page) => page.id !== deleteId)
+      .map((page, index) => ({
+        ...page,
+        nodes: page.nodes.map(clearLink),
+        ...(selectedForDelete?.prototypeStart && index === 0 ? { prototypeStart: true } : {}),
+      }));
     saveChanges({
       pages,
-      components: project.components.map(
-        /** 转换 deletePage 中的集合条目，供后续处理或展示。 @param component - 当前组件母版或组件规范。 @returns 当前条目转换后的结果。 */
-        (component) => ({
-          ...component,
-          nodes: component.nodes.map(clearLink),
-        }),
-      ),
-      comments: project.comments?.filter(
-        /** 检查 comment 的页面标识不等于deleteId，供集合筛选或定位使用。 @param comment - 当前页面评论。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (comment) => comment.pageId !== deleteId,
-      ),
+      components: project.components.map((component) => ({
+        ...component,
+        nodes: component.nodes.map(clearLink),
+      })),
+      comments: project.comments?.filter((comment) => comment.pageId !== deleteId),
     });
     setDeleteId(undefined);
   };
@@ -300,20 +239,12 @@ export default function ProjectOverview({
             variant="outline"
             className="project-rin-button"
             aria-label="与凛 Rin 讨论当前项目"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-              () => onAgent('请分析当前项目的页面、组件和主题，给出下一步设计建议。')
-            }
+            onClick={() => onAgent('请分析当前项目的页面、组件和主题，给出下一步设计建议。')}
           >
             <RinAvatar size={24} />
             与凛对话
           </Button>
-          <Button
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-              () => onOpenPage()
-            }
-          >
+          <Button onClick={() => onOpenPage()}>
             打开画布
             <ArrowUpRight size={15} />
           </Button>
@@ -334,149 +265,98 @@ export default function ProjectOverview({
             <div
               className={`project-pages-grid ${project.pages.length === 1 ? 'single-page' : ''}`}
             >
-              {project.pages.map(
-                /**
-                 * 转换项目概览中的集合条目，供后续处理或展示。
-                 *
-                 * @param page - 当前正在展示或编辑的页面。
-                 * @param index - 空间查询索引或当前条目的位置。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (page, index) => (
-                  <motion.article
-                    className="project-page-card"
-                    key={page.id}
-                    layout={!reduced}
-                    initial={reduced ? false : { opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={transition}
+              {project.pages.map((page, index) => (
+                <motion.article
+                  className="project-page-card"
+                  key={page.id}
+                  layout={!reduced}
+                  initial={reduced ? false : { opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={transition}
+                >
+                  <div
+                    className="project-page-preview"
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`打开页面 ${page.name}`}
+                    onClick={() => onOpenPage(page.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        onOpenPage(page.id);
+                      }
+                    }}
                   >
-                    <div
-                      className="project-page-preview"
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`打开页面 ${page.name}`}
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => onOpenPage(page.id)
-                      }
-                      onKeyDown={
-                        /**
-                         * 响应 onKeyDown 交互，将用户操作应用到项目概览。
-                         *
-                         * @param event - 当前事件及其触发位置。
-                         * @returns 无返回值；通过副作用完成当前操作。
-                         */
-                        (event) => {
-                          if (event.key === 'Enter' || event.key === ' ') {
-                            event.preventDefault();
-                            onOpenPage(page.id);
-                          }
-                        }
-                      }
-                    >
-                      <div inert className="project-preview-noninteractive">
-                        <ProjectPreview project={{ ...project, pages: [page] }} />
-                      </div>
-                      <span className="project-page-open">
-                        打开页面
-                        <ArrowUpRight size={13} />
-                      </span>
-                      {page.nodes.length === 0 && (
-                        <div className="project-page-blank">
-                          <RinIllustration state="empty" size={88} />
-                          <span>空白页面</span>
-                        </div>
-                      )}
+                    <div inert className="project-preview-noninteractive">
+                      <ProjectPreview project={{ ...project, pages: [page] }} />
                     </div>
-                    <div className="project-page-info">
-                      <span className="project-page-icon">
-                        <RinIcon kind="canvas" size={16} />
-                      </span>
-                      <div>
-                        <button
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => onOpenPage(page.id)
+                    <span className="project-page-open">
+                      打开页面
+                      <ArrowUpRight size={13} />
+                    </span>
+                    {page.nodes.length === 0 && (
+                      <div className="project-page-blank">
+                        <RinIllustration state="empty" size={88} />
+                        <span>空白页面</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="project-page-info">
+                    <span className="project-page-icon">
+                      <RinIcon kind="canvas" size={16} />
+                    </span>
+                    <div>
+                      <button onClick={() => onOpenPage(page.id)}>{page.name}</button>
+                      <small>
+                        {page.width} × {page.height} · {page.nodes.length} 个图层
+                      </small>
+                    </div>
+                    {(page.prototypeStart ||
+                      (index === 0 && !project.pages.some((item) => item.prototypeStart))) && (
+                      <Badge variant="secondary">首页</Badge>
+                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button size="icon-sm" variant="ghost" aria-label={`${page.name} 页面操作`}>
+                          <Ellipsis size={17} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onOpenPage(page.id)}>
+                          <RinIcon kind="canvas" size={14} />
+                          打开页面
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() =>
+                            setForm({
+                              id: page.id,
+                              name: page.name,
+                              width: page.width,
+                              height: page.height,
+                            })
                           }
                         >
-                          {page.name}
-                        </button>
-                        <small>
-                          {page.width} × {page.height} · {page.nodes.length} 个图层
-                        </small>
-                      </div>
-                      {(page.prototypeStart ||
-                        (index === 0 &&
-                          !project.pages.some(
-                            /** 检查条目的prototypeStart，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                            (item) => item.prototypeStart,
-                          ))) && <Badge variant="secondary">首页</Badge>}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            size="icon-sm"
-                            variant="ghost"
-                            aria-label={`${page.name} 页面操作`}
-                          >
-                            <Ellipsis size={17} />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={
-                              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                              () => onOpenPage(page.id)
-                            }
-                          >
-                            <RinIcon kind="canvas" size={14} />
-                            打开页面
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={
-                              /**
-                               * 响应 onClick 交互，将用户操作应用到项目概览。
-                               * @returns 当前步骤的处理结果。
-                               */
-                              () =>
-                                setForm({
-                                  id: page.id,
-                                  name: page.name,
-                                  width: page.width,
-                                  height: page.height,
-                                })
-                            }
-                          >
-                            <Pencil size={14} />
-                            重命名
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={
-                              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                              () => duplicatePage(page)
-                            }
-                          >
-                            <Copy size={14} />
-                            复制页面
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            variant="destructive"
-                            disabled={project.pages.length < 2}
-                            onClick={
-                              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 当前步骤的处理结果。 */
-                              () => setDeleteId(page.id)
-                            }
-                          >
-                            <Trash2 size={14} />
-                            {project.pages.length < 2 ? '至少保留一个页面' : '删除页面'}
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </motion.article>
-                ),
-              )}
+                          <Pencil size={14} />
+                          重命名
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => duplicatePage(page)}>
+                          <Copy size={14} />
+                          复制页面
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          disabled={project.pages.length < 2}
+                          onClick={() => setDeleteId(page.id)}
+                        >
+                          <Trash2 size={14} />
+                          {project.pages.length < 2 ? '至少保留一个页面' : '删除页面'}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </motion.article>
+              ))}
               <button className="project-new-page-card" onClick={createPage}>
                 <Plus size={17} />
                 <strong>新建页面</strong>
@@ -489,29 +369,16 @@ export default function ProjectOverview({
           <section className="project-design-system">
             <header>
               <h2>设计系统</h2>
-              <button
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                  () => onNavigate('tokens')
-                }
-                aria-label="查看项目设计系统"
-              >
+              <button onClick={() => onNavigate('tokens')} aria-label="查看项目设计系统">
                 <ArrowUpRight size={16} />
               </button>
             </header>
-            <button
-              className="project-theme-foundation"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                () => onNavigate('tokens')
-              }
-            >
+            <button className="project-theme-foundation" onClick={() => onNavigate('tokens')}>
               <span className="project-card-label">
                 主题色彩 <small>{modeCount} 个模式</small>
               </span>
               <span className="project-token-palette">
                 {[tokens.primary, tokens.background, tokens.surface, tokens.text].map(
-                  /** 转换项目概览中的集合条目，供后续处理或展示。 @param color - 文字或视觉元素的颜色。 @param index - 空间查询索引或当前条目的位置。 @returns 当前条目转换后的结果。 */
                   (color, index) => (
                     <i key={index} style={{ background: color }} title={color} />
                   ),
@@ -531,45 +398,26 @@ export default function ProjectOverview({
             <div className="project-component-directory">
               <span className="project-card-label">
                 组件{' '}
-                <button
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => onNavigate('components')
-                  }
-                >
+                <button onClick={() => onNavigate('components')}>
                   查看全部 <ArrowRight size={12} />
                 </button>
               </span>
               {project.components.length ? (
-                project.components.slice(0, 3).map(
-                  /**
-                   * 转换项目概览中的集合条目，供后续处理或展示。
-                   *
-                   * @param component - 当前组件母版或组件规范。
-                   * @returns 当前条目转换后的结果。
-                   */
-                  (component) => (
-                    <button
-                      key={component.id}
-                      className="project-component-entry"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => onNavigate('components')
-                      }
-                    >
-                      <RinIcon kind="components" size={17} />
-                      <span>{component.name}</span>
-                      <ArrowUpRight size={13} />
-                    </button>
-                  ),
-                )
+                project.components.slice(0, 3).map((component) => (
+                  <button
+                    key={component.id}
+                    className="project-component-entry"
+                    onClick={() => onNavigate('components')}
+                  >
+                    <RinIcon kind="components" size={17} />
+                    <span>{component.name}</span>
+                    <ArrowUpRight size={13} />
+                  </button>
+                ))
               ) : (
                 <button
                   className="project-component-entry"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => onNavigate('components')
-                  }
+                  onClick={() => onNavigate('components')}
                 >
                   <Plus size={15} />
                   创建第一个组件
@@ -581,10 +429,8 @@ export default function ProjectOverview({
 
           <button
             className="project-rin-note"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-              () =>
-                onAgent('请检查当前项目的视觉一致性，分析颜色、排版和组件使用，并提出改进建议。')
+            onClick={() =>
+              onAgent('请检查当前项目的视觉一致性，分析颜色、排版和组件使用，并提出改进建议。')
             }
           >
             <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛 Rin" decoding="async" />
@@ -641,10 +487,7 @@ export default function ProjectOverview({
                 <Button
                   variant="ghost"
                   className="project-full-button"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => onNavigate('sync')
-                  }
+                  onClick={() => onNavigate('sync')}
                 >
                   查看同步变更
                   <ArrowRight size={14} />
@@ -671,17 +514,9 @@ export default function ProjectOverview({
       </div>
       <Dialog
         open={!!form}
-        onOpenChange={
-          /**
-           * 响应 onOpenChange 交互，将用户操作应用到项目概览。
-           *
-           * @param open - 弹层或面板当前是否打开。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          (open) => {
-            if (!open) setForm(undefined);
-          }
-        }
+        onOpenChange={(open) => {
+          if (!open) setForm(undefined);
+        }}
       >
         <DialogContent className="project-page-dialog">
           <DialogHeader>
@@ -691,18 +526,10 @@ export default function ProjectOverview({
           {form && (
             <form
               className="project-page-form"
-              onSubmit={
-                /**
-                 * 响应 onSubmit 交互，将用户操作应用到项目概览。
-                 *
-                 * @param event - 当前事件及其触发位置。
-                 * @returns 无返回值；通过副作用完成当前操作。
-                 */
-                (event) => {
-                  event.preventDefault();
-                  savePage();
-                }
-              }
+              onSubmit={(event) => {
+                event.preventDefault();
+                savePage();
+              }}
             >
               <label>
                 页面名称
@@ -710,10 +537,7 @@ export default function ProjectOverview({
                   value={form.name}
                   maxLength={200}
                   autoFocus
-                  onChange={
-                    /** 响应 onChange 交互，将用户操作应用到项目概览。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-                    (event) => setForm({ ...form, name: event.target.value })
-                  }
+                  onChange={(event) => setForm({ ...form, name: event.target.value })}
                   required
                 />
               </label>
@@ -726,13 +550,11 @@ export default function ProjectOverview({
                       min={1}
                       max={10000}
                       value={form.width}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到项目概览。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-                        (event) =>
-                          setForm({
-                            ...form,
-                            width: Math.min(10000, Math.max(1, Number(event.target.value) || 1)),
-                          })
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          width: Math.min(10000, Math.max(1, Number(event.target.value) || 1)),
+                        })
                       }
                     />
                   </label>
@@ -743,27 +565,18 @@ export default function ProjectOverview({
                       min={1}
                       max={10000}
                       value={form.height}
-                      onChange={
-                        /** 响应 onChange 交互，将用户操作应用到项目概览。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-                        (event) =>
-                          setForm({
-                            ...form,
-                            height: Math.min(10000, Math.max(1, Number(event.target.value) || 1)),
-                          })
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          height: Math.min(10000, Math.max(1, Number(event.target.value) || 1)),
+                        })
                       }
                     />
                   </label>
                 </div>
               )}
               <DialogFooter>
-                <Button
-                  variant="outline"
-                  type="button"
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 当前步骤的处理结果。 */
-                    () => setForm(undefined)
-                  }
-                >
+                <Button variant="outline" type="button" onClick={() => setForm(undefined)}>
                   取消
                 </Button>
                 <Button type="submit" disabled={!form.name.trim()}>
@@ -777,17 +590,9 @@ export default function ProjectOverview({
       </Dialog>
       <Dialog
         open={!!deleteId}
-        onOpenChange={
-          /**
-           * 响应 onOpenChange 交互，将用户操作应用到项目概览。
-           *
-           * @param open - 弹层或面板当前是否打开。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          (open) => {
-            if (!open) setDeleteId(undefined);
-          }
-        }
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(undefined);
+        }}
       >
         <DialogContent className="project-page-dialog">
           <DialogHeader>
@@ -797,13 +602,7 @@ export default function ProjectOverview({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到项目概览。 @returns 当前步骤的处理结果。 */
-                () => setDeleteId(undefined)
-              }
-            >
+            <Button variant="outline" onClick={() => setDeleteId(undefined)}>
               取消
             </Button>
             <Button variant="destructive" disabled={project.pages.length < 2} onClick={deletePage}>

@@ -54,17 +54,9 @@ export default function Modal({
   return (
     <Dialog
       open
-      onOpenChange={
-        /**
-         * 响应 onOpenChange 交互，将用户操作应用到通用弹层。
-         *
-         * @param open - 弹层或面板当前是否打开。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (open) => {
-          if (!open) onClose();
-        }
-      }
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
       <DialogContent
         className={`modal ${wide ? 'modal-wide' : ''} ${destructive ? 'modal-destructive' : ''}`}

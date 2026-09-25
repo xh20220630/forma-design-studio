@@ -39,10 +39,7 @@ export function RinMotionScene({
   /** 界面状态：是否显示；节点缺省时按可见处理，还会受到祖先可见性的约束。通过状态更新驱动界面刷新。 */
   const [visible, setVisible] = useState(false);
   /** 界面状态：主要前景色，通常用于正文与图标。通过状态更新驱动界面刷新。 */
-  const [foreground, setForeground] = useState(
-    /** 在Rin 品牌动效场景首次挂载时建立初始状态，避免每次渲染重复初始化。 @returns 初始状态值。 */
-    () => document.visibilityState === 'visible',
-  );
+  const [foreground, setForeground] = useState(() => document.visibilityState === 'visible');
   /** 界面状态：用户是否主动允许播放。通过状态更新驱动界面刷新。 */
   const [manualPlaying, setManualPlaying] = useState(false);
   /** 界面状态：媒体资源是否已加载。通过状态更新驱动界面刷新。 */
@@ -54,97 +51,51 @@ export function RinMotionScene({
   const requested = active ?? manualPlaying;
   const canPlay = requested && visible && foreground && !reduced && !failed;
 
-  useEffect(
-    /**
-     * 在Rin 品牌动效场景的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      const element = container.current;
-      if (!element) return;
-      const observer = new IntersectionObserver(
-        /** 执行Rin 品牌动效场景传入的局部处理步骤，使调用处能够控制结果如何更新。 @param options - 按顺序解构的当前条目。 @param options.entry - 缓存的已编译场景条目。 @returns 当前步骤的处理结果。 */
-        ([entry]) => setVisible(entry.isIntersecting && entry.intersectionRatio >= 0.1),
-        { threshold: 0.1 },
-      );
-      observer.observe(element);
-      /**
-       * 响应页面前后台切换，调整动画或视频的播放状态。
-       * @returns 无返回值；更新播放条件。
-       */
-      const onVisibility = () => setForeground(document.visibilityState === 'visible');
-      document.addEventListener('visibilitychange', onVisibility);
-      /**
-       * 结束Rin 品牌动效场景当前建立的监听或临时操作，避免后续重复执行。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      return () => {
-        observer.disconnect();
-        document.removeEventListener('visibilitychange', onVisibility);
-      };
-    },
-    [],
-  );
+  useEffect(() => {
+    const element = container.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setVisible(entry.isIntersecting && entry.intersectionRatio >= 0.1),
+      { threshold: 0.1 },
+    );
+    observer.observe(element);
+    const onVisibility = () => setForeground(document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
 
-  useEffect(
-    /**
-     * 在Rin 品牌动效场景的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      if (canPlay) setLoaded(true);
-    },
-    [canPlay],
-  );
+  useEffect(() => {
+    if (canPlay) setLoaded(true);
+  }, [canPlay]);
 
-  useEffect(
-    /**
-     * 在Rin 品牌动效场景的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      const element = video.current;
-      if (!element) return;
-      let cancelled = false;
-      if (!canPlay || !loaded) {
-        element.pause();
-        setPlaying(false);
-        return;
-      }
-      element
-        .play()
-        .then(
-          /**
-           * 在Rin 品牌动效场景的异步步骤结束后处理结果。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          () => {
-            if (!cancelled) setPlaying(true);
-          },
-        )
-        .catch(
-          /**
-           * 处理Rin 品牌动效场景中的异步失败，按当前流程决定回退或继续抛出。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          () => {
-            if (!cancelled) {
-              setPlaying(false);
-              setFailed(true);
-            }
-          },
-        );
-      /**
-       * 结束Rin 品牌动效场景当前建立的监听或临时操作，避免后续重复执行。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      return () => {
-        cancelled = true;
-        element.pause();
-      };
-    },
-    [canPlay, loaded],
-  );
+  useEffect(() => {
+    const element = video.current;
+    if (!element) return;
+    let cancelled = false;
+    if (!canPlay || !loaded) {
+      element.pause();
+      setPlaying(false);
+      return;
+    }
+    element
+      .play()
+      .then(() => {
+        if (!cancelled) setPlaying(true);
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setPlaying(false);
+          setFailed(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+      element.pause();
+    };
+  }, [canPlay, loaded]);
 
   return (
     <figure
@@ -170,16 +121,10 @@ export function RinMotionScene({
           playsInline
           preload="none"
           aria-hidden="true"
-          onError={
-            /**
-             * 响应 onError 交互，将用户操作应用到Rin 品牌动效场景。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              setFailed(true);
-              setPlaying(false);
-            }
-          }
+          onError={() => {
+            setFailed(true);
+            setPlaying(false);
+          }}
         />
       </div>
       {controls && active === undefined && (
@@ -189,23 +134,13 @@ export function RinMotionScene({
           aria-label={manualPlaying && !failed ? '暂停凛的工作室动效' : '播放凛的工作室动效'}
           aria-pressed={manualPlaying && !reduced && !failed}
           disabled={reduced}
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到Rin 品牌动效场景。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              if (failed) {
-                video.current?.load();
-                setFailed(false);
-                setManualPlaying(true);
-              } else
-                setManualPlaying(
-                  /** 基于最新状态计算 ManualPlaying 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-                  (value) => !value,
-                );
-            }
-          }
+          onClick={() => {
+            if (failed) {
+              video.current?.load();
+              setFailed(false);
+              setManualPlaying(true);
+            } else setManualPlaying((value) => !value);
+          }}
         >
           {playing ? <Pause size={12} /> : <Play size={12} />}
           <span>
@@ -245,33 +180,15 @@ export function RinParallax({
   const { reduced } = useStudioMotion();
   const surface = useRef<HTMLDivElement>(null);
   const frame = useRef(0);
-  /**
-   * 把指针视差恢复到初始位置，避免离开区域后视觉元素仍保持倾斜。
-   * @returns 无返回值；重置视差状态。
-   */
   const reset = () => {
     cancelAnimationFrame(frame.current);
     surface.current?.style.setProperty('--rin-tilt-x', '0deg');
     surface.current?.style.setProperty('--rin-tilt-y', '0deg');
   };
-  useEffect(
-    /**
-     * 在指针视差容器的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () => {
-      if (reduced) reset();
-      /** 结束指针视差容器当前建立的监听或临时操作，避免后续重复执行。 @returns 无返回值；通过副作用完成当前操作。 */
-      return () => cancelAnimationFrame(frame.current);
-    },
-    [reduced],
-  );
-  /**
-   * 按指针位置更新轻量视差效果，使品牌元素响应用户移动。
-   *
-   * @param event - 当前事件及其触发位置。
-   * @returns 无返回值；更新视觉偏移。
-   */
+  useEffect(() => {
+    if (reduced) reset();
+    return () => cancelAnimationFrame(frame.current);
+  }, [reduced]);
   const move = (event: PointerEvent<HTMLDivElement>) => {
     onPointerMove?.(event);
     if (event.defaultPrevented || event.buttons !== 0) {
@@ -289,34 +206,20 @@ export function RinParallax({
     const y = Math.max(-1, Math.min(1, ((event.clientY - box.top) / box.height - 0.5) * 2));
     const tilt = Math.max(0, Math.min(3, amount));
     cancelAnimationFrame(frame.current);
-    frame.current = requestAnimationFrame(
-      /**
-       * 在下一帧刷新move，让多次界面变化合并到一次绘制。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      () => {
-        surface.current?.style.setProperty('--rin-tilt-x', `${-y * tilt}deg`);
-        surface.current?.style.setProperty('--rin-tilt-y', `${x * tilt}deg`);
-      },
-    );
+    frame.current = requestAnimationFrame(() => {
+      surface.current?.style.setProperty('--rin-tilt-x', `${-y * tilt}deg`);
+      surface.current?.style.setProperty('--rin-tilt-y', `${x * tilt}deg`);
+    });
   };
   return (
     <div
       ref={surface}
       className={`rin-parallax ${className}`}
       onPointerMove={move}
-      onPointerLeave={
-        /**
-         * 响应 onPointerLeave 交互，将用户操作应用到指针视差容器。
-         *
-         * @param event - 当前事件及其触发位置。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (event) => {
-          reset();
-          onPointerLeave?.(event);
-        }
-      }
+      onPointerLeave={(event) => {
+        reset();
+        onPointerLeave?.(event);
+      }}
       {...props}
     >
       {children}

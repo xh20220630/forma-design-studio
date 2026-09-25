@@ -72,18 +72,8 @@ export class CanvasPainter {
    * @returns 无返回值；释放不再使用的缓存。
    */
   retain(entries: SceneEntry[]) {
-    const nodes = new Set(
-      entries.map(
-        /** 提取记录的节点，供后续计算或展示使用。 @param entry - 缓存的已编译场景条目。 @returns 记录的节点。 */
-        (entry) => entry.node,
-      ),
-    );
-    const sources = new Set(
-      entries.map(
-        /** 提取记录的节点的图片地址，供后续计算或展示使用。 @param entry - 缓存的已编译场景条目。 @returns 记录的节点的图片地址。 */
-        (entry) => entry.node.src,
-      ),
-    );
+    const nodes = new Set(entries.map((entry) => entry.node));
+    const sources = new Set(entries.map((entry) => entry.node.src));
     for (const [node, raster] of this.rasters)
       if (!nodes.has(node)) {
         this.rasterBytes -= raster.bytes;
@@ -225,22 +215,12 @@ export class CanvasPainter {
     if (!image) {
       image = new Image();
       image.decoding = 'async';
-      image.onload =
-        /**
-         * 执行 image 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        () => {
-          if (!this.disposed) this.clearCaches();
-        };
-      image.onerror =
-        /**
-         * 执行 image 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        () => {
-          if (!this.disposed) this.invalidate();
-        };
+      image.onload = () => {
+        if (!this.disposed) this.clearCaches();
+      };
+      image.onerror = () => {
+        if (!this.disposed) this.invalidate();
+      };
       this.images.set(src, image);
       image.src = src;
     }
@@ -476,10 +456,7 @@ export class CanvasPainter {
       }
       layout = {
         lines,
-        widths: lines.map(
-          /** 提取的宽度，供后续计算或展示使用。 @param line - 当前文本行或线段。 @returns 的宽度。 */
-          (line) => ctx.measureText(line).width,
-        ),
+        widths: lines.map((line) => ctx.measureText(line).width),
         font,
         lineHeight: fontSize * (node.lineHeight ?? 1.45),
       };
@@ -506,50 +483,32 @@ export class CanvasPainter {
           : 0) +
       (layout.lineHeight - ascent - descent) / 2 +
       ascent;
-    layout.lines.forEach(
-      /**
-       * 逐项处理 drawText 中的内容，把结果写入外层维护的集合或绘制上下文。
-       *
-       * @param line - 当前文本行或线段。
-       * @param index - 空间查询索引或当前条目的位置。
-       * @returns 无返回值；当前项的处理通过副作用完成。
-       */
-      (line, index) => {
-        const lineWidth = layout!.widths[index];
-        const x =
-          px +
-          (align === 'right'
-            ? width - lineWidth
-            : align === 'center'
-              ? (width - lineWidth) / 2
-              : 0);
-        if (align === 'justify' && index < layout!.lines.length - 1 && line.includes(' ')) {
-          const words = line.split(' '),
-            gap =
-              (width -
-                words.reduce(
-                  /** 累积 drawText 中的条目结果，供后续计算使用。 @param sum - 累加到当前项之前的结果。 @param word - 正在测量或换行的词片段。 @returns 纳入当前条目后的累计结果。 */
-                  (sum, word) => sum + ctx.measureText(word).width,
-                  0,
-                )) /
-              (words.length - 1);
-          let cursor = x;
-          for (const word of words) {
-            ctx.fillText(word, cursor, y);
-            cursor += ctx.measureText(word).width + gap;
-          }
-        } else ctx.fillText(line, x, y);
-        if (node.textDecoration && node.textDecoration !== 'none') {
-          ctx.fillRect(
-            x,
-            y + (node.textDecoration === 'underline' ? fontSize * 0.12 : -fontSize * 0.3),
-            lineWidth,
-            Math.max(1, fontSize / 16),
-          );
+    layout.lines.forEach((line, index) => {
+      const lineWidth = layout!.widths[index];
+      const x =
+        px +
+        (align === 'right' ? width - lineWidth : align === 'center' ? (width - lineWidth) / 2 : 0);
+      if (align === 'justify' && index < layout!.lines.length - 1 && line.includes(' ')) {
+        const words = line.split(' '),
+          gap =
+            (width - words.reduce((sum, word) => sum + ctx.measureText(word).width, 0)) /
+            (words.length - 1);
+        let cursor = x;
+        for (const word of words) {
+          ctx.fillText(word, cursor, y);
+          cursor += ctx.measureText(word).width + gap;
         }
-        y += layout!.lineHeight;
-      },
-    );
+      } else ctx.fillText(line, x, y);
+      if (node.textDecoration && node.textDecoration !== 'none') {
+        ctx.fillRect(
+          x,
+          y + (node.textDecoration === 'underline' ? fontSize * 0.12 : -fontSize * 0.3),
+          lineWidth,
+          Math.max(1, fontSize / 16),
+        );
+      }
+      y += layout!.lineHeight;
+    });
     ctx.restore();
   }
 }

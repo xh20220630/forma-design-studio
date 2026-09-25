@@ -34,30 +34,16 @@ export const descendants = (nodes: DesignNode[], initial: string[]) => {
  * @returns 只保留选区根节点的 ID 列表。
  */
 export const rootSelection = (nodes: DesignNode[], ids: string[]) =>
-  ids.filter(
-    /**
-     * 判断 rootSelection 中的条目是否符合保留条件。
-     *
-     * @param id - 唯一标识，用于查找、更新和建立引用。
-     * @returns 该条目是否符合条件。
-     */
-    (id) => {
-      let node = nodes.find(
-        /** 检查条目的标识是否与目标标识一致，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (item) => item.id === id,
-      );
-      const visited = new Set<string>();
-      while (node?.parentId && !visited.has(node.parentId)) {
-        if (ids.includes(node.parentId)) return false;
-        visited.add(node.parentId);
-        node = nodes.find(
-          /** 检查条目的标识等于节点的父节点标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (item) => item.id === node!.parentId,
-        );
-      }
-      return true;
-    },
-  );
+  ids.filter((id) => {
+    let node = nodes.find((item) => item.id === id);
+    const visited = new Set<string>();
+    while (node?.parentId && !visited.has(node.parentId)) {
+      if (ids.includes(node.parentId)) return false;
+      visited.add(node.parentId);
+      node = nodes.find((item) => item.id === node!.parentId);
+    }
+    return true;
+  });
 /**
  * 计算节点集合的轴对齐包围盒，供对齐、编组和视图定位共用。
  *
@@ -66,35 +52,13 @@ export const rootSelection = (nodes: DesignNode[], ids: string[]) =>
  */
 export function boundsOf(nodes: DesignNode[]) {
   if (!nodes.length) return { x: 0, y: 0, width: 0, height: 0 };
-  const x = Math.min(
-      ...nodes.map(
-        /** 提取节点的横坐标，供后续计算或展示使用。 @param node - 当前处理的设计节点。 @returns 节点的横坐标。 */
-        (node) => node.x,
-      ),
-    ),
-    y = Math.min(
-      ...nodes.map(
-        /** 提取节点的纵坐标，供后续计算或展示使用。 @param node - 当前处理的设计节点。 @returns 节点的纵坐标。 */
-        (node) => node.y,
-      ),
-    );
+  const x = Math.min(...nodes.map((node) => node.x)),
+    y = Math.min(...nodes.map((node) => node.y));
   return {
     x,
     y,
-    width:
-      Math.max(
-        ...nodes.map(
-          /** 提取节点的横坐标加上节点的宽度，供后续计算或展示使用。 @param node - 当前处理的设计节点。 @returns 节点的横坐标加上节点的宽度。 */
-          (node) => node.x + node.width,
-        ),
-      ) - x,
-    height:
-      Math.max(
-        ...nodes.map(
-          /** 提取节点的纵坐标加上节点的高度，供后续计算或展示使用。 @param node - 当前处理的设计节点。 @returns 节点的纵坐标加上节点的高度。 */
-          (node) => node.y + node.height,
-        ),
-      ) - y,
+    width: Math.max(...nodes.map((node) => node.x + node.width)) - x,
+    height: Math.max(...nodes.map((node) => node.y + node.height)) - y,
   };
 }
 /**
@@ -110,10 +74,7 @@ export function visibleNode(node: DesignNode, nodes: DesignNode[]) {
   while (current && !visited.has(current.id)) {
     if (current.visible === false) return false;
     visited.add(current.id);
-    current = nodes.find(
-      /** 检查条目的标识等于当前值的父节点标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === current!.parentId,
-    );
+    current = nodes.find((item) => item.id === current!.parentId);
   }
   return true;
 }
@@ -128,10 +89,8 @@ export function visibleNode(node: DesignNode, nodes: DesignNode[]) {
  */
 export function moveNodes(nodes: DesignNode[], ids: string[], dx: number, dy: number) {
   const all = new Set(descendants(nodes, ids));
-  return nodes.map(
-    /** 转换 moveNodes 中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-    (node) =>
-      all.has(node.id) ? { ...node, x: Math.round(node.x + dx), y: Math.round(node.y + dy) } : node,
+  return nodes.map((node) =>
+    all.has(node.id) ? { ...node, x: Math.round(node.x + dx), y: Math.round(node.y + dy) } : node,
   );
 }
 /**
@@ -185,13 +144,7 @@ export function scalePath(path: string, sx: number, sy: number): string {
     } else
       for (let coordinate = 0; coordinate < values.length; coordinate++)
         values[coordinate] *= coordinate % 2 ? sy : sx;
-    output.push(
-      command,
-      ...values.map(
-        /** 转换 scalePath 中的集合条目，供后续处理或展示。 @param value - 当前字段、模式或控件的取值。 @returns 当前条目转换后的结果。 */
-        (value) => String(Number(value.toFixed(8))),
-      ),
-    );
+    output.push(command, ...values.map((value) => String(Number(value.toFixed(8)))));
     if (upper === 'M') command = command === 'm' ? 'l' : 'L';
   }
   return output.join(' ');
@@ -211,32 +164,22 @@ export function resizeNodes(
   patch: Partial<DesignNode>,
   layoutPrepared = false,
 ) {
-  const original = nodes.find(
-    /** 检查节点的标识等于标识，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (node) => node.id === id,
-  );
+  const original = nodes.find((node) => node.id === id);
   if (!original) return nodes;
   const next = { ...original, ...patch };
   const sx = original.width ? next.width / original.width : 1,
     sy = original.height ? next.height / original.height : 1;
   if (sx !== 1 || sy !== 1) {
     if (original.points && patch.points === undefined)
-      next.points = original.points.map(
-        /** 转换 resizeNodes 中的集合条目，供后续处理或展示。 @param point - 当前处理的坐标点。 @returns 当前条目转换后的结果。 */
-        (point) => ({ x: point.x * sx, y: point.y * sy }),
-      );
+      next.points = original.points.map((point) => ({ x: point.x * sx, y: point.y * sy }));
     if (original.path && patch.path === undefined) next.path = scalePath(original.path, sx, sy);
   }
-  let result = nodes.map(
-    /** 转换 resizeNodes 中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-    (node) => (node.id === id ? next : node),
-  );
+  let result = nodes.map((node) => (node.id === id ? next : node));
   const dx = next.x - original.x,
     dy = next.y - original.y;
   const dw = next.width - original.width,
     dh = next.height - original.height;
   for (const child of nodes.filter(
-    /** 检查节点的父节点标识等于标识且 next 的layout不成立或 next 的layout等于“none”或节点的可见性等于假，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
     (node) =>
       node.parentId === id && (!next.layout || next.layout === 'none' || node.visible === false),
   )) {
@@ -288,15 +231,11 @@ export function applyAutoLayout(nodes: DesignNode[], frameId: string): DesignNod
  * @returns 重新排列并按需调整容器尺寸后的节点数组。
  */
 function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: boolean): DesignNode[] {
-  const frame = nodes.find(
-    /** 检查节点的标识等于frameId，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (node) => node.id === frameId,
-  );
+  const frame = nodes.find((node) => node.id === frameId);
   if (!frame?.layout || frame.layout === 'none') return nodes;
   let result = nodes;
   if (measureChildren)
     for (const child of nodes.filter(
-      /** 检查节点的父节点标识等于 frame 的标识且节点的可见性不等于假且节点的layout且节点的layout不等于“none”，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
       (node) =>
         node.parentId === frame.id &&
         node.visible !== false &&
@@ -304,10 +243,7 @@ function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: bool
         node.layout !== 'none',
     ))
       result = layoutNodes(result, child.id, true);
-  const children = result.filter(
-    /** 检查节点的父节点标识等于 frame 的标识且节点的可见性不等于假，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (node) => node.parentId === frame.id && node.visible !== false,
-  );
+  const children = result.filter((node) => node.parentId === frame.id && node.visible !== false);
   const px = frame.paddingX ?? frame.padding ?? 16,
     py = frame.paddingY ?? frame.padding ?? 16,
     gap = frame.gap ?? 16;
@@ -338,14 +274,8 @@ function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: bool
   }
   let rowY = 0;
   for (const line of lines) {
-    const fillChildren = mainHug
-      ? []
-      : line.filter(
-          /** 检查child中指定项等于“fill”，供集合筛选或定位使用。 @param child - 当前处理的子节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (child) => child[mainSizing] === 'fill',
-        );
+    const fillChildren = mainHug ? [] : line.filter((child) => child[mainSizing] === 'fill');
     const fixed = line.reduce(
-      /** 累积 layoutNodes 中的条目结果，供后续计算使用。 @param sum - 累加到当前项之前的结果。 @param child - 当前处理的子节点。 @returns 纳入当前条目后的累计结果。 */
       (sum, child) => sum + (fillChildren.includes(child) ? 0 : child[mainSize]),
       0,
     );
@@ -365,13 +295,7 @@ function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: bool
         : frame.justifyContent === 'end'
           ? Math.max(0, target - used)
           : 0;
-    const naturalCross = Math.max(
-      0,
-      ...line.map(
-        /** 提取child中指定项，供后续计算或展示使用。 @param child - 当前处理的子节点。 @returns child中指定项。 */
-        (child) => child[crossSize],
-      ),
-    );
+    const naturalCross = Math.max(0, ...line.map((child) => child[crossSize]));
     const crossAvailable =
       crossHug || frame.layout === 'wrap'
         ? naturalCross
@@ -402,26 +326,16 @@ function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: bool
   }
   if (frame.sizingHorizontal === 'hug' || frame.sizingVertical === 'hug') {
     const bounds = boundsOf(
-      result.filter(
-        /** 检查节点的父节点标识等于 frame 的标识且节点的可见性不等于假，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (node) => node.parentId === frame.id && node.visible !== false,
-      ),
+      result.filter((node) => node.parentId === frame.id && node.visible !== false),
     );
-    result = result.map(
-      /**
-       * 转换 layoutNodes 中的集合条目，供后续处理或展示。
-       *
-       * @param node - 当前处理的设计节点。
-       * @returns 当前条目转换后的结果。
-       */
-      (node) =>
-        node.id === frame.id
-          ? {
-              ...node,
-              width: frame.sizingHorizontal === 'hug' ? bounds.width + px * 2 : node.width,
-              height: frame.sizingVertical === 'hug' ? bounds.height + py * 2 : node.height,
-            }
-          : node,
+    result = result.map((node) =>
+      node.id === frame.id
+        ? {
+            ...node,
+            width: frame.sizingHorizontal === 'hug' ? bounds.width + px * 2 : node.width,
+            height: frame.sizingVertical === 'hug' ? bounds.height + py * 2 : node.height,
+          }
+        : node,
     );
   }
   return result;
@@ -436,40 +350,19 @@ function layoutNodes(nodes: DesignNode[], frameId: string, measureChildren: bool
  */
 export function cloneNodes(nodes: DesignNode[], ids: string[], offset = 24) {
   const included = new Set(descendants(nodes, ids));
-  const idMap = new Map(
-    [...included].map(
-      /** 转换 cloneNodes 中的集合条目，供后续处理或展示。 @param id - 唯一标识，用于查找、更新和建立引用。 @returns 当前条目转换后的结果。 */
-      (id) => [id, uid()],
-    ),
-  );
+  const idMap = new Map([...included].map((id) => [id, uid()]));
   return {
     nodes: nodes
-      .filter(
-        /** 检查included包含节点的标识，供集合筛选或定位使用。 @param node - 当前处理的设计节点。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (node) => included.has(node.id),
-      )
-      .map(
-        /**
-         * 转换 cloneNodes 中的集合条目，供后续处理或展示。
-         *
-         * @param node - 当前处理的设计节点。
-         * @returns 当前条目转换后的结果。
-         */
-        (node) => ({
-          ...structuredClone(node),
-          id: idMap.get(node.id)!,
-          x: node.x + offset,
-          y: node.y + offset,
-          name: `${node.name} 副本`,
-          parentId: node.parentId ? (idMap.get(node.parentId) ?? node.parentId) : undefined,
-        }),
-      ),
-    ids: ids
-      .map(
-        /** 提取从新旧标识映射读取标识，供后续计算或展示使用。 @param id - 唯一标识，用于查找、更新和建立引用。 @returns 从新旧标识映射读取标识。 */
-        (id) => idMap.get(id)!,
-      )
-      .filter(Boolean),
+      .filter((node) => included.has(node.id))
+      .map((node) => ({
+        ...structuredClone(node),
+        id: idMap.get(node.id)!,
+        x: node.x + offset,
+        y: node.y + offset,
+        name: `${node.name} 副本`,
+        parentId: node.parentId ? (idMap.get(node.parentId) ?? node.parentId) : undefined,
+      })),
+    ids: ids.map((id) => idMap.get(id)!).filter(Boolean),
   };
 }
 /**
@@ -480,13 +373,6 @@ export function cloneNodes(nodes: DesignNode[], ids: string[], offset = 24) {
  * @returns 节点的 CSS 声明文本。
  */
 export function nodeCss(node: DesignNode, tokens: ThemeTokens) {
-  /**
-   * 解析属性对应的值，为调用处提供统一取值规则。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param fallback - 输入缺失或无效时采用的回退值。
-   * @returns 计算得到的文本。
-   */
   const value = (key: string, fallback: string) =>
     node.tokenBindings?.[key] ? `var(--forma-${node.tokenBindings[key]})` : fallback;
   return [

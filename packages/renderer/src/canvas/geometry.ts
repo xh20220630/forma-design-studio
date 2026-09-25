@@ -109,35 +109,13 @@ export function transformedBounds(matrix: Matrix, bounds: Bounds): Bounds {
     transform(matrix, { x: bounds.x, y: bounds.y + bounds.height }),
     transform(matrix, { x: bounds.x + bounds.width, y: bounds.y + bounds.height }),
   ];
-  const x = Math.min(
-      ...points.map(
-        /** 提取当前项的横坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的横坐标。 */
-        (p) => p.x,
-      ),
-    ),
-    y = Math.min(
-      ...points.map(
-        /** 提取当前项的纵坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的纵坐标。 */
-        (p) => p.y,
-      ),
-    );
+  const x = Math.min(...points.map((p) => p.x)),
+    y = Math.min(...points.map((p) => p.y));
   return {
     x,
     y,
-    width:
-      Math.max(
-        ...points.map(
-          /** 提取当前项的横坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的横坐标。 */
-          (p) => p.x,
-        ),
-      ) - x,
-    height:
-      Math.max(
-        ...points.map(
-          /** 提取当前项的纵坐标，供后续计算或展示使用。 @param p - 当前坐标点或内容片段。 @returns 当前项的纵坐标。 */
-          (p) => p.y,
-        ),
-      ) - y,
+    width: Math.max(...points.map((p) => p.x)) - x,
+    height: Math.max(...points.map((p) => p.y)) - y,
   };
 }
 
@@ -211,10 +189,7 @@ export class SpatialIndex<
   query(bounds: Bounds): T[] {
     const [left, top, right, bottom] = this.range(bounds);
     if ((right - left + 1) * (bottom - top + 1) > 4096)
-      return this.items.filter(
-        /** 判断 query 中的条目是否符合保留条件。 @param item - 当前遍历的条目。 @returns 该条目是否符合条件。 */
-        (item) => intersects(item.bounds, bounds),
-      );
+      return this.items.filter((item) => intersects(item.bounds, bounds));
     const result = new Set<T>();
     for (const item of this.large) if (intersects(item.bounds, bounds)) result.add(item);
     for (let y = top; y <= bottom; y++)

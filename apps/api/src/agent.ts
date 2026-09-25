@@ -120,26 +120,17 @@ async function changeSession(
   id: string,
   update: (session: StoredAgentSession) => StoredAgentSession,
 ) {
-  return transact(
-    /**
-     * 在串行事务内完成 changeSession 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const state = await sessionState();
-      const index = state.sessions.findIndex(
-        /** 检查会话的标识等于标识，供集合筛选或定位使用。 @param session - 本轮操作对应的完整会话。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (session) => session.id === id,
-      );
-      requireValue(index >= 0, '会话不存在。', 404);
-      const next = update(state.sessions[index]);
-      next.revision = state.sessions[index].revision + 1;
-      next.updatedAt = now();
-      state.sessions[index] = next;
-      await writeJson(sessionFile, state);
-      return next;
-    },
-  );
+  return transact(async () => {
+    const state = await sessionState();
+    const index = state.sessions.findIndex((session) => session.id === id);
+    requireValue(index >= 0, '会话不存在。', 404);
+    const next = update(state.sessions[index]);
+    next.revision = state.sessions[index].revision + 1;
+    next.updatedAt = now();
+    state.sessions[index] = next;
+    await writeJson(sessionFile, state);
+    return next;
+  });
 }
 /**
  * 读取会话并修正中断任务的状态，避免服务重启后界面一直等待。
@@ -149,46 +140,24 @@ async function changeSession(
  */
 async function readSession(id: string) {
   validateId(id);
-  const session = (await sessionState()).sessions.find(
-    /** 检查条目的标识是否与目标标识一致，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.id === id,
-  );
+  const session = (await sessionState()).sessions.find((item) => item.id === id);
   requireValue(session, '会话不存在。', 404);
   if (
     !runningSessions.has(id) &&
-    session.messages.some(
-      /** 检查消息的状态等于“pending”，供集合筛选或定位使用。 @param message - 面向用户或调用方的说明消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (message) => message.status === 'pending',
-    )
+    session.messages.some((message) => message.status === 'pending')
   ) {
-    return changeSession(
-      id,
-      /**
-       * 执行 readSession 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       *
-       * @param current - 更新前的当前值。
-       * @returns 当前步骤的处理结果。
-       */
-      (current) => ({
-        ...current,
-        messages: current.messages.map(
-          /**
-           * 转换 readSession 中的集合条目，供后续处理或展示。
-           *
-           * @param message - 面向用户或调用方的说明消息。
-           * @returns 当前条目转换后的结果。
-           */
-          (message) =>
-            message.status === 'pending'
-              ? {
-                  ...message,
-                  status: 'failed',
-                  content: '上次执行被中断。请先检查项目的最新状态，再发送消息继续。',
-                }
-              : message,
-        ),
-      }),
-    );
+    return changeSession(id, (current) => ({
+      ...current,
+      messages: current.messages.map((message) =>
+        message.status === 'pending'
+          ? {
+              ...message,
+              status: 'failed',
+              content: '上次执行被中断。请先检查项目的最新状态，再发送消息继续。',
+            }
+          : message,
+      ),
+    }));
   }
   return session;
 }
@@ -200,32 +169,19 @@ async function readSession(id: string) {
  */
 export async function listAgentSessions(projectId?: unknown) {
   if (projectId !== undefined) await findProject(validateId(projectId));
-  const sessions = (await sessionState()).sessions.filter(
-    /** 判断 listAgentSessions 中的条目是否符合保留条件。 @param session - 本轮操作对应的完整会话。 @returns 该条目是否符合条件。 */
-    (session) =>
-      projectId === undefined
-        ? session.scope === 'global'
-        : session.scope === 'project' && session.projectId === projectId,
+  const sessions = (await sessionState()).sessions.filter((session) =>
+    projectId === undefined
+      ? session.scope === 'global'
+      : session.scope === 'project' && session.projectId === projectId,
   );
   return Promise.all(
     sessions
-      .sort(
-        /** 比较 listAgentSessions 中的两个条目，确定它们的先后顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 负数、零或正数，分别表示前排、相同顺序或后排。 */
-        (a, b) => b.updatedAt.localeCompare(a.updatedAt),
-      )
-      .map(
-        /**
-         * 转换 listAgentSessions 中的集合条目，供后续处理或展示。
-         *
-         * @param item - 当前遍历的条目。
-         * @returns 当前条目转换后的结果。
-         */
-        async (item) => {
-          const session = publicSession(await readSession(item.id));
-          const { messages, ...summary } = session;
-          return { ...summary, messageCount: messages.length };
-        },
-      ),
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))
+      .map(async (item) => {
+        const session = publicSession(await readSession(item.id));
+        const { messages, ...summary } = session;
+        return { ...summary, messageCount: messages.length };
+      }),
   );
 }
 /**
@@ -262,18 +218,12 @@ export async function createAgentSession(input: Record<string, unknown>) {
     messages: [],
     pendingReviews: [],
   };
-  await transact(
-    /**
-     * 在串行事务内完成 createAgentSession 的状态修改，避免并发写入覆盖彼此。
-     * @returns 完成当前异步操作的 Promise，不携带业务数据。
-     */
-    async () => {
-      const state = await sessionState();
-      requireValue(state.sessions.length < 1000, '会话数量已达到 1000 个。');
-      state.sessions.unshift(session);
-      await writeJson(sessionFile, state);
-    },
-  );
+  await transact(async () => {
+    const state = await sessionState();
+    requireValue(state.sessions.length < 1000, '会话数量已达到 1000 个。');
+    state.sessions.unshift(session);
+    await writeJson(sessionFile, state);
+  });
   return publicSession(session);
 }
 
@@ -308,42 +258,24 @@ async function planTurn(
       }
     : null;
   const history = session.messages
-    .filter(
-      /** 检查消息的状态不等于“pending”，供集合筛选或定位使用。 @param message - 面向用户或调用方的说明消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (message) => message.status !== 'pending',
-    )
+    .filter((message) => message.status !== 'pending')
     .slice(-20)
-    .map(
-      /**
-       * 转换 planTurn 中的集合条目，供后续处理或展示。
-       *
-       * @param message - 面向用户或调用方的说明消息。
-       * @returns 当前条目转换后的结果。
-       */
-      (message) => ({
-        role: message.role,
-        content: `${message.content}${
-          message.actions?.length
-            ? '\nActual action results: ' +
-              JSON.stringify(
-                message.actions.map(
-                  /**
-                   * 转换 planTurn 中的集合条目，供后续处理或展示。
-                   *
-                   * @param options - 按字段解构的输入，字段用途见对应类型定义。
-                   * @param options.type - 用于区分数据形态或行为分支的类型。
-                   * @param options.status - 对象当前所处状态，决定后续可执行操作。
-                   * @param options.summary - 执行结果的简短说明。
-                   * @param options.error - 当前操作的失败信息，供界面反馈或重试判断。
-                   * @returns 当前条目转换后的结果。
-                   */
-                  ({ type, status, summary, error }) => ({ type, status, summary, error }),
-                ),
-              )
-            : ''
-        }`,
-      }),
-    );
+    .map((message) => ({
+      role: message.role,
+      content: `${message.content}${
+        message.actions?.length
+          ? '\nActual action results: ' +
+            JSON.stringify(
+              message.actions.map(({ type, status, summary, error }) => ({
+                type,
+                status,
+                summary,
+                error,
+              })),
+            )
+          : ''
+      }`,
+    }));
   const result = await generateJson([
     {
       role: 'system',
@@ -393,21 +325,12 @@ function assertRevision(current: Project, expected: unknown) {
  * @returns 保存后的项目。
  */
 async function saveMutation(snapshot: Project, update: (project: Project) => unknown) {
-  return mutateProject(
-    snapshot.id,
-    /**
-     * 执行 saveMutation 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param current - 更新前的当前值。
-     * @returns 当前步骤的处理结果。
-     */
-    (current) => {
-      assertRevision(current, snapshot.revision);
-      const candidate = validateProject(update(current));
-      candidate.generation = currentGeneration(current, candidate);
-      return { ...candidate, status: 'in-progress' };
-    },
-  );
+  return mutateProject(snapshot.id, (current) => {
+    assertRevision(current, snapshot.revision);
+    const candidate = validateProject(update(current));
+    candidate.generation = currentGeneration(current, candidate);
+    return { ...candidate, status: 'in-progress' };
+  });
 }
 /**
  * 依次执行已校验的设计动作，将人工确认和模型可执行动作分开处理。
@@ -454,17 +377,8 @@ async function executeAction(
       updatedAt: now(),
       cover: 'blank',
     });
-    project = await mutateProject(
-      id,
-      /** 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => candidate,
-      { create: true },
-    );
-    await changeSession(
-      session.id,
-      /** 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param current - 更新前的当前值。 @returns 当前步骤的处理结果。 */
-      (current) => ({ ...current, projectId: project.id }),
-    );
+    project = await mutateProject(id, () => candidate, { create: true });
+    await changeSession(session.id, (current) => ({ ...current, projectId: project.id }));
     session.projectId = project.id;
     result.summary = `已创建「${project.name}」，包含一个空白页面。`;
   } else {
@@ -478,30 +392,17 @@ async function executeAction(
         ? action.tokens
         : (await generateTheme(action.prompt)).tokens;
       requireValue(
-        Object.keys(patch).length > 0 &&
-          Object.keys(patch).every(
-            /** 检查tokenKeys包含键名，供集合筛选或定位使用。 @param key - 要访问或更新的字段名。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (key) => tokenKeys.includes(key),
-          ),
+        Object.keys(patch).length > 0 && Object.keys(patch).every((key) => tokenKeys.includes(key)),
         '主题 Token 名称无效；自定义 Token 请创建变量集合。',
       );
       const tokens = validateTokens({ ...activeProjectTokens(project), ...patch });
-      project = await saveMutation(
-        project,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => ({
-          ...current,
-          tokens,
-          ...(current.activeMode
-            ? { themeModes: { ...current.themeModes, [current.activeMode]: tokens } }
-            : {}),
-        }),
-      );
+      project = await saveMutation(project, (current) => ({
+        ...current,
+        tokens,
+        ...(current.activeMode
+          ? { themeModes: { ...current.themeModes, [current.activeMode]: tokens } }
+          : {}),
+      }));
       result.summary = '已更新项目主题，保留其他 Token 与已有节点绑定。';
     } else if (action.type === 'create_component') {
       requireValue(
@@ -516,18 +417,14 @@ async function executeAction(
         category: typeof definition.category === 'string' ? definition.category : 'Agent 组件',
       };
       requireValue(
-        !project.components.some(
-          /** 检查条目的标识等于 component 的标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (item) => item.id === component.id,
-        ),
+        !project.components.some((item) => item.id === component.id),
         '组件 ID 已存在，请使用新 ID；已有组件不会被覆盖。',
         409,
       );
-      project = await saveMutation(
-        project,
-        /** 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param current - 更新前的当前值。 @returns 当前步骤的处理结果。 */
-        (current) => ({ ...current, components: [...current.components, component] }),
-      );
+      project = await saveMutation(project, (current) => ({
+        ...current,
+        components: [...current.components, component],
+      }));
       result.summary = `已创建组件「${project.components.at(-1)!.name}」，包含 ${project.components.at(-1)!.nodes.length} 个图层。`;
     } else if (action.type === 'create_variables') {
       requireValue(
@@ -541,52 +438,31 @@ async function executeAction(
       const collection = {
         ...action.collection,
         id: action.collection.id || randomUUID(),
-        variables: action.collection.variables.map(
-          /** 转换 executeAction 中的集合条目，供后续处理或展示。 @param variable - 当前设计变量定义。 @returns 当前条目转换后的结果。 */
-          (variable) => ({ ...variable, id: variable.id || randomUUID() }),
-        ),
+        variables: action.collection.variables.map((variable) => ({
+          ...variable,
+          id: variable.id || randomUUID(),
+        })),
       };
       requireValue(
-        !project.variableCollections?.some(
-          /** 检查条目的标识等于 collection 的标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (item) => item.id === collection.id,
-        ),
+        !project.variableCollections?.some((item) => item.id === collection.id),
         '变量集合 ID 已存在，已有变量不会被覆盖。',
         409,
       );
-      project = await saveMutation(
-        project,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => ({
-          ...current,
-          variableCollections: [...(current.variableCollections || []), collection],
-          activeVariableModes: {
-            ...current.activeVariableModes,
-            [String(collection.id)]: Array.isArray(modes) ? modes[0] : undefined,
-          },
-        }),
-      );
+      project = await saveMutation(project, (current) => ({
+        ...current,
+        variableCollections: [...(current.variableCollections || []), collection],
+        activeVariableModes: {
+          ...current.activeVariableModes,
+          [String(collection.id)]: Array.isArray(modes) ? modes[0] : undefined,
+        },
+      }));
       result.summary = `已创建变量集合「${project.variableCollections!.at(-1)!.name}」，包含 ${collection.variables.length} 个变量。`;
     } else if (action.type === 'generate_image') {
       const generation = await generateImage(project, action.prompt);
-      project = await mutateProject(
-        project.id,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => {
-          assertRevision(current, project.revision);
-          return { ...current, generation, status: 'in-progress' };
-        },
-      );
+      project = await mutateProject(project.id, (current) => {
+        assertRevision(current, project.revision);
+        return { ...current, generation, status: 'in-progress' };
+      });
       result.status = 'awaiting-approval';
       result.imageUrl = generation.imageUrl;
       result.summary = '设计图已生成。请查看图片并确认后，再还原为可编辑 UI。';
@@ -598,20 +474,11 @@ async function executeAction(
         409,
       );
       requireCurrentImage(project);
-      project = await mutateProject(
-        project.id,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => {
-          assertRevision(current, project.revision);
-          requireCurrentImage(current);
-          return { ...current, generation: { ...current.generation, approved: true } };
-        },
-      );
+      project = await mutateProject(project.id, (current) => {
+        assertRevision(current, project.revision);
+        requireCurrentImage(current);
+        return { ...current, generation: { ...current.generation, approved: true } };
+      });
       result.imageUrl = project.generation?.imageUrl;
       result.summary = '已确认当前设计图，可以还原为可编辑 UI。';
     } else if (action.type === 'reconstruct_design') {
@@ -623,24 +490,15 @@ async function executeAction(
         );
       requireApproved(project);
       const design = await generateDesign(project);
-      project = await mutateProject(
-        project.id,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => {
-          assertRevision(current, project.revision);
-          requireApproved(current);
-          const next = validateProject({ ...current, ...design, status: 'in-progress' });
-          return {
-            ...next,
-            generation: { ...current.generation, contextHash: designContextHash(next) },
-          };
-        },
-      );
+      project = await mutateProject(project.id, (current) => {
+        assertRevision(current, project.revision);
+        requireApproved(current);
+        const next = validateProject({ ...current, ...design, status: 'in-progress' });
+        return {
+          ...next,
+          generation: { ...current.generation, contextHash: designContextHash(next) },
+        };
+      });
       result.summary = `已从确认的设计图还原 ${project.pages.length} 个可编辑页面。`;
     } else if (action.type === 'preview_sync') {
       const preview = await previewSync(project, { includeBaselines: true });
@@ -651,20 +509,13 @@ async function executeAction(
         revision: project.revision,
         baselines: preview.baselines,
         workspace: JSON.stringify(project.workspace),
-        files: preview.files.map(
-          /** 转换 executeAction 中的集合条目，供后续处理或展示。 @param file - 需要读取、写入或导入的文件。 @returns 当前条目转换后的结果。 */
-          (file) => ({ path: file.path, hash: hash(file.content) }),
-        ),
+        files: preview.files.map((file) => ({ path: file.path, hash: hash(file.content) })),
         used: false,
       };
-      await changeSession(
-        session.id,
-        /** 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param current - 更新前的当前值。 @returns 当前步骤的处理结果。 */
-        (current) => ({
-          ...current,
-          pendingReviews: [...(current.pendingReviews || []).slice(-19), proof],
-        }),
-      );
+      await changeSession(session.id, (current) => ({
+        ...current,
+        pendingReviews: [...(current.pendingReviews || []).slice(-19), proof],
+      }));
       const { baselines, ...visible } = preview;
       result.syncPreview = { ...visible, previewId };
       result.status = 'awaiting-approval';
@@ -674,7 +525,6 @@ async function executeAction(
     } else if (action.type === 'apply_sync') {
       requireValue(review, '模型不能直接应用代码同步。', 403);
       const proof = (await readSession(session.id)).pendingReviews?.find(
-        /** 检查条目的标识等于 action 的previewId，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
         (item) => item.id === action.previewId,
       );
       requireValue(
@@ -685,59 +535,37 @@ async function executeAction(
         '同步预览不存在、已应用或已过期，请重新预览。',
         409,
       );
-      project = await transact(
-        /**
-         * 在串行事务内完成 executeAction 的状态修改，避免并发写入覆盖彼此。
-         * @returns 当前步骤的处理结果。
-         */
-        async () => {
-          const state = await getState();
-          const current = state.projects.find(
-            /** 检查条目的标识等于项目的标识，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (item) => item.id === project.id,
-          );
-          requireValue(current, '项目不存在。', 404);
-          assertRevision(current, project.revision);
-          requireValue(
-            JSON.stringify(current.workspace) === proof.workspace,
-            '工作空间已改变，请重新预览同步。',
-            409,
-          );
-          const fresh = await previewSync(current, { includeBaselines: true });
-          requireValue(
-            JSON.stringify(fresh.baselines) === JSON.stringify(proof.baselines) &&
-              JSON.stringify(
-                fresh.files.map(
-                  /** 转换 executeAction 中的集合条目，供后续处理或展示。 @param file - 需要读取、写入或导入的文件。 @returns 当前条目转换后的结果。 */
-                  (file) => ({ path: file.path, hash: hash(file.content) }),
-                ),
-              ) === JSON.stringify(proof.files),
-            '预览后文件或生成器发生变化，请重新预览后确认。',
-            409,
-          );
-          await applySync(current);
-          current.lastSyncedRevision = current.revision;
-          current.status = 'synced';
-          await writeJson(path.join(dataRoot, 'projects.json'), state);
-          return current;
-        },
-      );
-      await changeSession(
-        session.id,
-        /**
-         * 执行 executeAction 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => ({
-          ...current,
-          pendingReviews: current.pendingReviews.map(
-            /** 转换 executeAction 中的集合条目，供后续处理或展示。 @param item - 当前遍历的条目。 @returns 当前条目转换后的结果。 */
-            (item) => (item.id === action.previewId ? { ...item, used: true } : item),
-          ),
-        }),
-      );
+      project = await transact(async () => {
+        const state = await getState();
+        const current = state.projects.find((item) => item.id === project.id);
+        requireValue(current, '项目不存在。', 404);
+        assertRevision(current, project.revision);
+        requireValue(
+          JSON.stringify(current.workspace) === proof.workspace,
+          '工作空间已改变，请重新预览同步。',
+          409,
+        );
+        const fresh = await previewSync(current, { includeBaselines: true });
+        requireValue(
+          JSON.stringify(fresh.baselines) === JSON.stringify(proof.baselines) &&
+            JSON.stringify(
+              fresh.files.map((file) => ({ path: file.path, hash: hash(file.content) })),
+            ) === JSON.stringify(proof.files),
+          '预览后文件或生成器发生变化，请重新预览后确认。',
+          409,
+        );
+        await applySync(current);
+        current.lastSyncedRevision = current.revision;
+        current.status = 'synced';
+        await writeJson(path.join(dataRoot, 'projects.json'), state);
+        return current;
+      });
+      await changeSession(session.id, (current) => ({
+        ...current,
+        pendingReviews: current.pendingReviews.map((item) =>
+          item.id === action.previewId ? { ...item, used: true } : item,
+        ),
+      }));
       result.previewId = proof.id;
       result.summary = '已将审查过的设计代码同步到绑定工作空间。';
     } else throw new ApiError(400, '不支持此操作。');
@@ -839,20 +667,11 @@ export async function sendAgentMessage(
   let errorText: string | undefined;
   let currentAction: AgentAction | undefined;
   try {
-    await changeSession(
-      id,
-      /**
-       * 执行 sendAgentMessage 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       *
-       * @param current - 更新前的当前值。
-       * @returns 当前步骤的处理结果。
-       */
-      (current) => ({
-        ...current,
-        title: current.messages.length ? current.title : content.slice(0, 60),
-        messages: [...current.messages, userMessage, assistantMessage],
-      }),
-    );
+    await changeSession(id, (current) => ({
+      ...current,
+      title: current.messages.length ? current.title : content.slice(0, 60),
+      messages: [...current.messages, userMessage, assistantMessage],
+    }));
     const plan = reviewAction
       ? { message: '', actions: [reviewAction] }
       : await planTurn(
@@ -866,34 +685,20 @@ export async function sendAgentMessage(
       const executed = await executeAction(action, project, session, review);
       project = executed.project;
       assistantMessage.actions.push(executed.result);
-      await changeSession(
-        id,
-        /**
-         * 执行 sendAgentMessage 传入的局部处理步骤，使调用处能够控制结果如何更新。
-         *
-         * @param current - 更新前的当前值。
-         * @returns 当前步骤的处理结果。
-         */
-        (current) => ({
-          ...current,
-          messages: current.messages.map(
-            /** 转换 sendAgentMessage 中的集合条目，供后续处理或展示。 @param message - 面向用户或调用方的说明消息。 @returns 当前条目转换后的结果。 */
-            (message) =>
-              message.id === assistantMessage.id
-                ? { ...assistantMessage, content: plan.message || executed.result.summary }
-                : message,
-          ),
-        }),
-      );
+      await changeSession(id, (current) => ({
+        ...current,
+        messages: current.messages.map((message) =>
+          message.id === assistantMessage.id
+            ? { ...assistantMessage, content: plan.message || executed.result.summary }
+            : message,
+        ),
+      }));
       if (executed.result.status === 'awaiting-approval') break;
     }
     assistantMessage.status = 'completed';
     if (assistantMessage.actions.length)
       assistantMessage.content = assistantMessage.actions
-        .map(
-          /** 提取 action 的summary，供后续计算或展示使用。 @param action - 当前要执行的操作或操作结果分类。 @returns action的summary。 */
-          (action) => action.summary,
-        )
+        .map((action) => action.summary)
         .join('\n');
     else if (!assistantMessage.content.trim())
       assistantMessage.content = '请描述你希望创建或调整的项目、主题、组件或页面。';
@@ -903,12 +708,7 @@ export async function sendAgentMessage(
     assistantMessage.status = 'failed';
     assistantMessage.content = `${
       assistantMessage.actions.length
-        ? assistantMessage.actions
-            .map(
-              /** 提取 action 的summary，供后续计算或展示使用。 @param action - 当前要执行的操作或操作结果分类。 @returns action的summary。 */
-              (action) => action.summary,
-            )
-            .join('\n') + '\n\n'
+        ? assistantMessage.actions.map((action) => action.summary).join('\n') + '\n\n'
         : ''
     }执行未完成：${errorText}`;
     if (currentAction)
@@ -922,44 +722,25 @@ export async function sendAgentMessage(
         projectId: project?.id,
         revision: project?.revision,
       });
-    if (project)
-      project = await findProject(project.id).catch(
-        /** 处理 sendAgentMessage 中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-        () => undefined,
-      );
+    if (project) project = await findProject(project.id).catch(() => undefined);
   }
   try {
-    const saved = await changeSession(
-      id,
-      /**
-       * 执行 sendAgentMessage 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       *
-       * @param current - 更新前的当前值。
-       * @returns 当前步骤的处理结果。
-       */
-      (current) => ({
-        ...current,
-        messages: current.messages.map(
-          /** 转换 sendAgentMessage 中的集合条目，供后续处理或展示。 @param message - 面向用户或调用方的说明消息。 @returns 当前条目转换后的结果。 */
-          (message) => (message.id === assistantMessage.id ? assistantMessage : message),
-        ),
-      }),
-    );
+    const saved = await changeSession(id, (current) => ({
+      ...current,
+      messages: current.messages.map((message) =>
+        message.id === assistantMessage.id ? assistantMessage : message,
+      ),
+    }));
     return {
       status,
       body: {
         session: publicSession(saved),
         message: assistantMessage,
         ...(project ? { project } : {}),
-        ...(assistantMessage.actions.findLast(
-          /** 执行 sendAgentMessage 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param action - 当前要执行的操作或操作结果分类。 @returns 当前步骤的处理结果。 */
-          (action) => action.syncPreview,
-        )?.syncPreview
+        ...(assistantMessage.actions.findLast((action) => action.syncPreview)?.syncPreview
           ? {
-              syncPreview: assistantMessage.actions.findLast(
-                /** 执行 sendAgentMessage 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param action - 当前要执行的操作或操作结果分类。 @returns 当前步骤的处理结果。 */
-                (action) => action.syncPreview,
-              )?.syncPreview,
+              syncPreview: assistantMessage.actions.findLast((action) => action.syncPreview)
+                ?.syncPreview,
             }
           : {}),
         ...(errorText ? { error: errorText } : {}),

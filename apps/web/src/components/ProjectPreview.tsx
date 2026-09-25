@@ -105,24 +105,16 @@ export default function ProjectPreview({ project, template, compact }: ProjectPr
                 overflow: 'hidden',
               }}
             >
-              {livePage.nodes.map(
-                /**
-                 * 转换项目封面预览中的集合条目，供后续处理或展示。
-                 *
-                 * @param node - 当前处理的设计节点。
-                 * @returns 当前条目转换后的结果。
-                 */
-                (node) => (
-                  <DesignNodeVisual
-                    key={node.id}
-                    node={node}
-                    tokens={project.tokens}
-                    components={project.components}
-                    nodes={livePage.nodes}
-                    project={project}
-                  />
-                ),
-              )}
+              {livePage.nodes.map((node) => (
+                <DesignNodeVisual
+                  key={node.id}
+                  node={node}
+                  tokens={project.tokens}
+                  components={project.components}
+                  nodes={livePage.nodes}
+                  project={project}
+                />
+              ))}
             </div>
           </foreignObject>
         </svg>
@@ -143,23 +135,11 @@ export default function ProjectPreview({ project, template, compact }: ProjectPr
               {cover === 'finance' ? '◈ vault' : '◈ nexus'}
             </div>
             <div className="project-preview-overline">WORKSPACE</div>
-            {['◫  Overview', '▥  Analytics', '▤  Projects', '◷  Activity'].map(
-              /**
-               * 转换项目封面预览中的集合条目，供后续处理或展示。
-               *
-               * @param label - 面向用户显示的简短标签。
-               * @param index - 空间查询索引或当前条目的位置。
-               * @returns 当前条目转换后的结果。
-               */
-              (label, index) => (
-                <div
-                  className={`project-preview-nav ${index === 0 ? 'is-active' : ''}`}
-                  key={label}
-                >
-                  {label}
-                </div>
-              ),
-            )}
+            {['◫  Overview', '▥  Analytics', '▤  Projects', '◷  Activity'].map((label, index) => (
+              <div className={`project-preview-nav ${index === 0 ? 'is-active' : ''}`} key={label}>
+                {label}
+              </div>
+            ))}
             <div className="project-preview-team">
               <span>AC</span> Alex Chen <small>⌄</small>
             </div>
@@ -200,29 +180,18 @@ export default function ProjectPreview({ project, template, compact }: ProjectPr
                     ['Active users', '8,549'],
                     ['Conversion rate', '4.28%'],
                   ]
-              ).map(
-                /**
-                 * 转换项目封面预览中的集合条目，供后续处理或展示。
-                 *
-                 * @param arg1 - 按顺序解构的当前条目。
-                 * @param arg1.name - 面向用户展示的名称。
-                 * @param arg1.value - 当前字段、模式或控件的取值。
-                 * @param i - 当前循环位置，从 0 开始。
-                 * @returns 当前条目转换后的结果。
-                 */
-                ([name, value], i) => (
-                  <div key={name}>
-                    <label>
-                      {name}
-                      <span>↗</span>
-                    </label>
-                    <strong>{value}</strong>
-                    <small>
-                      ↗ {['18.6', '12.8', '2.4'][i]}% <em>vs. last month</em>
-                    </small>
-                  </div>
-                ),
-              )}
+              ).map(([name, value], i) => (
+                <div key={name}>
+                  <label>
+                    {name}
+                    <span>↗</span>
+                  </label>
+                  <strong>{value}</strong>
+                  <small>
+                    ↗ {['18.6', '12.8', '2.4'][i]}% <em>vs. last month</em>
+                  </small>
+                </div>
+              ))}
             </div>
             <div className="project-preview-chart-card">
               <div className="project-preview-chart-heading">
@@ -270,33 +239,21 @@ export default function ProjectPreview({ project, template, compact }: ProjectPr
                     </svg>
                   ) : (
                     <div className="project-preview-bars">
-                      {[38, 56, 46, 70, 54, 79, 63, 91, 73, 84, 69, 98].map(
-                        /**
-                         * 转换项目封面预览中的集合条目，供后续处理或展示。
-                         *
-                         * @param height - 对象的高度。
-                         * @param i - 当前循环位置，从 0 开始。
-                         * @returns 当前条目转换后的结果。
-                         */
-                        (height, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              height: `${height}%`,
-                              opacity: i === 8 ? 1 : 0.24 + i * 0.045,
-                            }}
-                          />
-                        ),
-                      )}
+                      {[38, 56, 46, 70, 54, 79, 63, 91, 73, 84, 69, 98].map((height, i) => (
+                        <div
+                          key={i}
+                          style={{
+                            height: `${height}%`,
+                            opacity: i === 8 ? 1 : 0.24 + i * 0.045,
+                          }}
+                        />
+                      ))}
                     </div>
                   )}
                   <div className="project-preview-months">
-                    {['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'].map(
-                      /** 转换项目封面预览中的集合条目，供后续处理或展示。 @param month - 日期显示使用的月份。 @returns 当前条目转换后的结果。 */
-                      (month) => (
-                        <span key={month}>{month}</span>
-                      ),
-                    )}
+                    {['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'].map((month) => (
+                      <span key={month}>{month}</span>
+                    ))}
                   </div>
                 </div>
               </div>

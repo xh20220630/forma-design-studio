@@ -229,27 +229,16 @@ export function SettingsView({
               label: '数据与隐私',
               icon: <ShieldCheck size={16} />,
             },
-          ].map(
-            /**
-             * 转换项目设置中的集合条目，供后续处理或展示。
-             *
-             * @param item - 当前遍历的条目。
-             * @returns 当前条目转换后的结果。
-             */
-            (item) => (
-              <button
-                key={item.id}
-                aria-current={section === item.id ? 'page' : undefined}
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到项目设置。 @returns 当前步骤的处理结果。 */
-                  () => setSection(item.id)
-                }
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ),
-          )}
+          ].map((item) => (
+            <button
+              key={item.id}
+              aria-current={section === item.id ? 'page' : undefined}
+              onClick={() => setSection(item.id)}
+            >
+              {item.icon}
+              {item.label}
+            </button>
+          ))}
           <div className="settings-rin-note">
             <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛 Rin" loading="lazy" />
             <span>
@@ -285,23 +274,12 @@ export function SettingsView({
                     </div>
                     <div>
                       <strong>
-                        {projects.reduce(
-                          /** 累积项目设置中的条目结果，供后续计算使用。 @param total - 当前统计的总量。 @param project - 当前设计项目或工作空间项目元信息。 @returns 纳入当前条目后的累计结果。 */
-                          (total, project) => total + project.pages.length,
-                          0,
-                        )}
+                        {projects.reduce((total, project) => total + project.pages.length, 0)}
                       </strong>
                       <span>设计页面</span>
                     </div>
                     <div>
-                      <strong>
-                        {
-                          projects.filter(
-                            /** 检查项目的workspace，供集合筛选或定位使用。 @param project - 当前设计项目或工作空间项目元信息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                            (project) => project.workspace,
-                          ).length
-                        }
-                      </strong>
+                      <strong>{projects.filter((project) => project.workspace).length}</strong>
                       <span>已绑定工作空间</span>
                     </div>
                   </div>
@@ -470,22 +448,11 @@ export function AgentsView({
                 variant="ghost"
                 size="icon"
                 aria-label="复制 Agent API 命令"
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到助手配置视图。
-                   * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                   */
-                  () =>
-                    navigator.clipboard
-                      .writeText(command)
-                      .then(
-                        /** 在助手配置视图的异步步骤结束后处理结果。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => notify('API 命令已复制'),
-                      )
-                      .catch(
-                        /** 处理助手配置视图中的异步失败，按当前流程决定回退或继续抛出。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => notify('复制失败，请手动选择命令', true),
-                      )
+                onClick={() =>
+                  navigator.clipboard
+                    .writeText(command)
+                    .then(() => notify('API 命令已复制'))
+                    .catch(() => notify('复制失败，请手动选择命令', true))
                 }
               >
                 <Copy size={14} />
@@ -607,31 +574,13 @@ export function SyncView({
     /** 面向用户或调用方的说明消息。 */
     message: string;
   }>();
-  useEffect(
-    /**
-     * 在代码同步视图的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      setPreview(null);
-      setSyncNotice(undefined);
-      setFilePath('');
-    },
-    [project.id, project.revision],
-  );
-  const file =
-    preview?.files.find(
-      /** 检查条目的路径等于filePath，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.path === filePath,
-    ) ?? preview?.files[0];
-  const conflicts = preview?.files.some(
-    /** 检查条目的状态等于“conflict”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.status === 'conflict',
-  );
-  /**
-   * 读取代码同步预览，使用户能够在写入前查看变更与冲突。
-   * @returns 预览加载操作的结果。
-   */
+  useEffect(() => {
+    setPreview(null);
+    setSyncNotice(undefined);
+    setFilePath('');
+  }, [project.id, project.revision]);
+  const file = preview?.files.find((item) => item.path === filePath) ?? preview?.files[0];
+  const conflicts = preview?.files.some((item) => item.status === 'conflict');
   const loadPreview = async () => {
     setBusy('preview');
     setSyncNotice(undefined);
@@ -656,22 +605,16 @@ export function SyncView({
       >
         <Button
           variant="outline"
-          onClick={
-            /**
-             * 响应 onClick 交互，将用户操作应用到代码同步视图。
-             * @returns 完成当前异步操作的 Promise，不携带业务数据。
-             */
-            async () => {
-              try {
-                await flush();
-                const result = await api(`/projects/${project.id}/export`);
-                downloadJson(`${project.name}-react-export.json`, result);
-                notify('React 文件包已导出');
-              } catch (error) {
-                notify((error as Error).message, true);
-              }
+          onClick={async () => {
+            try {
+              await flush();
+              const result = await api(`/projects/${project.id}/export`);
+              downloadJson(`${project.name}-react-export.json`, result);
+              notify('React 文件包已导出');
+            } catch (error) {
+              notify((error as Error).message, true);
             }
-          }
+          }}
         >
           <Download size={15} />
           导出代码包
@@ -753,21 +696,13 @@ export function SyncView({
           checked={!!project.workspace?.autoSync}
           aria-label="自动同步设计变更"
           disabled={!project.workspace || !project.lastSyncedRevision}
-          onCheckedChange={
-            /**
-             * 响应 onCheckedChange 交互，将用户操作应用到代码同步视图。
-             *
-             * @param checked - 复选控件当前是否选中。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            (checked) => {
-              if (project.workspace)
-                onChange({
-                  ...project,
-                  workspace: { ...project.workspace, autoSync: checked },
-                });
-            }
-          }
+          onCheckedChange={(checked) => {
+            if (project.workspace)
+              onChange({
+                ...project,
+                workspace: { ...project.workspace, autoSync: checked },
+              });
+          }}
         />
       </div>
       <section className="wf-panel wf-diff-panel">
@@ -775,12 +710,7 @@ export function SyncView({
           title="文件变更"
           description={
             preview
-              ? `${
-                  preview.files.filter(
-                    /** 检查条目的状态不等于“unchanged”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                    (item) => item.status !== 'unchanged',
-                  ).length
-                } 个文件有变更`
+              ? `${preview.files.filter((item) => item.status !== 'unchanged').length} 个文件有变更`
               : '检查生成文件与工作空间中的差异'
           }
           icon={<FileCode2 size={19} />}
@@ -827,39 +757,28 @@ export function SyncView({
           <>
             <div className="wf-diff-layout">
               <nav className="wf-diff-files">
-                {preview.files.map(
-                  /**
-                   * 转换代码同步视图中的集合条目，供后续处理或展示。
-                   *
-                   * @param item - 当前遍历的条目。
-                   * @returns 当前条目转换后的结果。
-                   */
-                  (item) => (
-                    <button
-                      className={file?.path === item.path ? 'active' : ''}
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到代码同步视图。 @returns 当前步骤的处理结果。 */
-                        () => setFilePath(item.path)
+                {preview.files.map((item) => (
+                  <button
+                    className={file?.path === item.path ? 'active' : ''}
+                    onClick={() => setFilePath(item.path)}
+                    key={item.path}
+                  >
+                    <FileCode2 size={14} />
+                    <span>{item.path.replace('forma-generated/', '')}</span>
+                    <b className={`wf-file-${item.status}`}>
+                      {
+                        (
+                          {
+                            added: 'A',
+                            modified: 'M',
+                            conflict: '!',
+                            unchanged: '–',
+                          } as const
+                        )[item.status]
                       }
-                      key={item.path}
-                    >
-                      <FileCode2 size={14} />
-                      <span>{item.path.replace('forma-generated/', '')}</span>
-                      <b className={`wf-file-${item.status}`}>
-                        {
-                          (
-                            {
-                              added: 'A',
-                              modified: 'M',
-                              conflict: '!',
-                              unchanged: '–',
-                            } as const
-                          )[item.status]
-                        }
-                      </b>
-                    </button>
-                  ),
-                )}
+                    </b>
+                  </button>
+                ))}
               </nav>
               <div className="wf-diff-code">
                 <div>
@@ -896,43 +815,34 @@ export function SyncView({
                 disabled={
                   !!busy ||
                   !!conflicts ||
-                  preview.files.every(
-                    /** 检查条目的状态等于“unchanged”，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                    (item) => item.status === 'unchanged',
-                  )
+                  preview.files.every((item) => item.status === 'unchanged')
                 }
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到代码同步视图。
-                   * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                   */
-                  async () => {
-                    setBusy('apply');
-                    setSyncNotice(undefined);
-                    try {
-                      await flush();
-                      const response = await api<Mutated>('/sync/apply', {
-                        projectId: project.id,
-                        revision: preview.revision,
-                      });
-                      await refresh(response);
-                      setPreview(null);
-                      setSyncNotice({
-                        state: 'success',
-                        message: '当前设计已同步到工作空间。',
-                      });
-                      notify('设计已同步到工作空间');
-                    } catch (error) {
-                      setSyncNotice({
-                        state: 'error',
-                        message: (error as Error).message,
-                      });
-                      notify((error as Error).message, true);
-                    } finally {
-                      setBusy('');
-                    }
+                onClick={async () => {
+                  setBusy('apply');
+                  setSyncNotice(undefined);
+                  try {
+                    await flush();
+                    const response = await api<Mutated>('/sync/apply', {
+                      projectId: project.id,
+                      revision: preview.revision,
+                    });
+                    await refresh(response);
+                    setPreview(null);
+                    setSyncNotice({
+                      state: 'success',
+                      message: '当前设计已同步到工作空间。',
+                    });
+                    notify('设计已同步到工作空间');
+                  } catch (error) {
+                    setSyncNotice({
+                      state: 'error',
+                      message: (error as Error).message,
+                    });
+                    notify((error as Error).message, true);
+                  } finally {
+                    setBusy('');
                   }
-                }
+                }}
               >
                 {busy === 'apply' ? (
                   <LoaderCircle className="animate-spin" size={15} />
@@ -1066,12 +976,6 @@ export function AgentDialog({
     tokens: ThemeTokens;
   } | null>(null);
   const stage = complete ? 3 : approved ? 2 : imageUrl ? 1 : 0;
-  /**
-   * 执行当前用户发起的操作，并同步执行进度和结果。
-   *
-   * @param action - 当前要执行的操作或操作结果分类。
-   * @returns 完成当前异步操作的 Promise，不携带业务数据。
-   */
   const run = async (action: string) => {
     setBusy(action);
     setError('');
@@ -1126,13 +1030,7 @@ export function AgentDialog({
       onClose={onClose}
     >
       <div className="wf-agent-dialog">
-        <Tabs
-          value={mode}
-          onValueChange={
-            /** 响应 onValueChange 交互，将用户操作应用到模型操作对话框。 @param value - 当前字段、模式或控件的取值。 @returns 当前步骤的处理结果。 */
-            (value) => setMode(value as 'design' | 'theme')
-          }
-        >
+        <Tabs value={mode} onValueChange={(value) => setMode(value as 'design' | 'theme')}>
           <TabsList>
             <TabsTrigger value="design" disabled={!project || !!busy}>
               <Layers3 size={14} />
@@ -1158,25 +1056,13 @@ export function AgentDialog({
         )}
         {mode === 'design' && (
           <div className="wf-generation-steps">
-            {['生成设计图', '确认方案', '还原画布'].map(
-              /**
-               * 转换模型操作对话框中的集合条目，供后续处理或展示。
-               *
-               * @param label - 面向用户显示的简短标签。
-               * @param index - 空间查询索引或当前条目的位置。
-               * @returns 当前条目转换后的结果。
-               */
-              (label, index) => (
-                <div
-                  className={stage > index ? 'done' : stage === index ? 'active' : ''}
-                  key={label}
-                >
-                  <span>{stage > index ? <Check size={13} /> : `0${index + 1}`}</span>
-                  <strong>{label}</strong>
-                  {index < 2 && <ArrowRight size={13} />}
-                </div>
-              ),
-            )}
+            {['生成设计图', '确认方案', '还原画布'].map((label, index) => (
+              <div className={stage > index ? 'done' : stage === index ? 'active' : ''} key={label}>
+                <span>{stage > index ? <Check size={13} /> : `0${index + 1}`}</span>
+                <strong>{label}</strong>
+                {index < 2 && <ArrowRight size={13} />}
+              </div>
+            ))}
           </div>
         )}
         <label className="wf-prompt-label">
@@ -1184,10 +1070,7 @@ export function AgentDialog({
           <Textarea
             value={prompt}
             disabled={!!busy}
-            onChange={
-              /** 响应 onChange 交互，将用户操作应用到模型操作对话框。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-              (event) => setPrompt(event.target.value)
-            }
+            onChange={(event) => setPrompt(event.target.value)}
             placeholder={
               mode === 'theme'
                 ? '描述品牌色、字体、圆角与整体风格。例如：专业 B2B 工作台，蓝色主色，浅灰背景，紧凑布局。'
@@ -1200,37 +1083,24 @@ export function AgentDialog({
           {(mode === 'theme'
             ? ['极简中性', '深色科技', '清晰商务']
             : ['数据仪表盘', '电商产品页', '项目管理看板']
-          ).map(
-            /**
-             * 转换模型操作对话框中的集合条目，供后续处理或展示。
-             *
-             * @param suggestion - 提供给用户的快捷需求或建议文字。
-             * @returns 当前条目转换后的结果。
-             */
-            (suggestion) => (
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={!!busy}
-                key={suggestion}
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到模型操作对话框。
-                   * @returns 当前步骤的处理结果。
-                   */
-                  () =>
-                    setPrompt(
-                      mode === 'theme'
-                        ? `创建${suggestion}风格的完整 UI 主题，包含配色、排版、圆角和间距。`
-                        : `设计一个${suggestion}，使用当前项目配色与组件，信息层次清晰，保留常用操作。`,
-                    )
-                }
-              >
-                <Plus size={12} />
-                {suggestion}
-              </Button>
-            ),
-          )}
+          ).map((suggestion) => (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!!busy}
+              key={suggestion}
+              onClick={() =>
+                setPrompt(
+                  mode === 'theme'
+                    ? `创建${suggestion}风格的完整 UI 主题，包含配色、排版、圆角和间距。`
+                    : `设计一个${suggestion}，使用当前项目配色与组件，信息层次清晰，保留常用操作。`,
+                )
+              }
+            >
+              <Plus size={12} />
+              {suggestion}
+            </Button>
+          ))}
         </div>
         {mode === 'design' && project && (
           <div className="wf-generation-context">
@@ -1262,30 +1132,17 @@ export function AgentDialog({
             <button
               type="button"
               className="wf-reference-open"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到模型操作对话框。 @returns 当前步骤的处理结果。 */
-                () => setPreviewOpen(true)
-              }
+              onClick={() => setPreviewOpen(true)}
               aria-label="查看完整设计图"
             >
               <img src={imageUrl} alt="AI 生成的 UI 设计提案" />
             </button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到模型操作对话框。 @returns 当前步骤的处理结果。 */
-                () => setPreviewOpen(true)
-              }
-            >
+            <Button variant="ghost" size="sm" onClick={() => setPreviewOpen(true)}>
               查看完整设计图
             </Button>
             <ReferenceImagePreview
               image={previewOpen ? { url: imageUrl, title: 'UI 参考图' } : undefined}
-              onClose={
-                /** 响应 onClose 交互，将用户操作应用到模型操作对话框。 @returns 当前步骤的处理结果。 */
-                () => setPreviewOpen(false)
-              }
+              onClose={() => setPreviewOpen(false)}
             />
             {!approved && <p>检查视觉方案后确认，再还原为可编辑节点。</p>}
           </div>
@@ -1315,15 +1172,12 @@ export function AgentDialog({
                 theme.tokens.text,
                 theme.tokens.muted,
                 theme.tokens.border,
-              ].map(
-                /** 转换模型操作对话框中的集合条目，供后续处理或展示。 @param color - 文字或视觉元素的颜色。 @param index - 空间查询索引或当前条目的位置。 @returns 当前条目转换后的结果。 */
-                (color, index) => (
-                  <span key={index}>
-                    <i style={{ background: color }} />
-                    <code>{color}</code>
-                  </span>
-                ),
-              )}
+              ].map((color, index) => (
+                <span key={index}>
+                  <i style={{ background: color }} />
+                  <code>{color}</code>
+                </span>
+              ))}
             </div>
             <span
               style={{
@@ -1368,34 +1222,25 @@ export function AgentDialog({
                 <Button
                   variant="outline"
                   disabled={!!busy}
-                  onClick={
-                    /**
-                     * 响应 onClick 交互，将用户操作应用到模型操作对话框。
-                     * @returns 无返回值；通过副作用完成当前操作。
-                     */
-                    () => {
-                      onTemplate({
-                        id: crypto.randomUUID(),
-                        name: theme.name,
-                        description: theme.description,
-                        tokens: theme.tokens,
-                        category: '自定义',
-                        author: '我的工作空间',
-                        cover: 'dashboard',
-                      });
-                      onClose();
-                    }
-                  }
+                  onClick={() => {
+                    onTemplate({
+                      id: crypto.randomUUID(),
+                      name: theme.name,
+                      description: theme.description,
+                      tokens: theme.tokens,
+                      category: '自定义',
+                      author: '我的工作空间',
+                      cover: 'dashboard',
+                    });
+                    onClose();
+                  }}
                 >
                   保存模板
                 </Button>
               )}
               <Button
                 disabled={!settings.configured || !prompt.trim() || !!busy}
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到模型操作对话框。 @returns 完成当前异步操作的 Promise，不携带业务数据。 */
-                  () => run('theme')
-                }
+                onClick={() => run('theme')}
               >
                 <Sparkles size={15} />
                 {theme ? '重新生成' : '生成主题'}
@@ -1412,10 +1257,7 @@ export function AgentDialog({
                 <Button
                   variant="outline"
                   disabled={!!busy || !prompt.trim() || !settings.imageConfigured}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到模型操作对话框。 @returns 完成当前异步操作的 Promise，不携带业务数据。 */
-                    () => run('image')
-                  }
+                  onClick={() => run('image')}
                 >
                   重新生成
                 </Button>
@@ -1431,10 +1273,7 @@ export function AgentDialog({
                   !!busy ||
                   !project
                 }
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到模型操作对话框。 @returns 完成当前异步操作的 Promise，不携带业务数据。 */
-                  () => run(!imageUrl ? 'image' : !approved ? 'approve' : 'design')
-                }
+                onClick={() => run(!imageUrl ? 'image' : !approved ? 'approve' : 'design')}
               >
                 {busy ? (
                   <LoaderCircle size={15} className="animate-spin" />

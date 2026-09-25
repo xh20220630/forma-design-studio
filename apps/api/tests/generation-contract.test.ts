@@ -48,51 +48,30 @@ let output: unknown = {
   ],
 };
 const upstream = http
-  .createServer(
-    /**
-     * 执行generation-contract.test传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param req - 当前 HTTP 请求。
-     * @param res - 当前 HTTP 响应对象。
-     * @returns 完成当前异步操作的 Promise，不携带业务数据。
-     */
-    async (req, res) => {
-      for await (const _ of req) {
-        /* consume request */
-      }
-      res.setHeader('content-type', 'application/json');
-      res.end(
-        JSON.stringify(
-          req.url?.endsWith('/images/generations')
-            ? {
-                data: [
-                  {
-                    b64_json:
-                      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-                  },
-                ],
-              }
-            : { choices: [{ message: { content: JSON.stringify(output) } }] },
-        ),
-      );
-    },
-  )
+  .createServer(async (req, res) => {
+    for await (const _ of req) {
+      /* consume request */
+    }
+    res.setHeader('content-type', 'application/json');
+    res.end(
+      JSON.stringify(
+        req.url?.endsWith('/images/generations')
+          ? {
+              data: [
+                {
+                  b64_json:
+                    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+                },
+              ],
+            }
+          : { choices: [{ message: { content: JSON.stringify(output) } }] },
+      ),
+    );
+  })
   .listen(0, '127.0.0.1');
 const server = createApp().listen(0, '127.0.0.1');
 await Promise.all(
-  [server, upstream].map(
-    /**
-     * 转换generation-contract.test中的集合条目，供后续处理或展示。
-     *
-     * @param s - 当前遍历的状态或文本片段。
-     * @returns 当前条目转换后的结果。
-     */
-    (s) =>
-      new Promise<void>(
-        /** 把generation-contract.test中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-        (resolve) => s.once('listening', resolve),
-      ),
-  ),
+  [server, upstream].map((s) => new Promise<void>((resolve) => s.once('listening', resolve))),
 );
 /**
  * 读取临时服务实际监听端口，避免固定端口发生冲突。
@@ -121,43 +100,12 @@ async function api(route: string, body?: unknown, method = body === undefined ? 
   });
   return { status: response.status, body: await response.json() };
 }
-after(
-  /**
-   * 组织当前场景的准备或清理步骤。
-   * @returns 完成当前检查或生命周期操作。
-   */
-  async () => {
-    await Promise.all(
-      [server, upstream].map(
-        /**
-         * 转换generation-contract.test中的集合条目，供后续处理或展示。
-         *
-         * @param s - 当前遍历的状态或文本片段。
-         * @returns 当前条目转换后的结果。
-         */
-        (s) =>
-          new Promise<void>(
-            /**
-             * 把generation-contract.test中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-             *
-             * @param resolve - 异步操作成功时调用的完成函数。
-             * @returns 无返回值；通过 resolve 或 reject 结束等待。
-             */
-            (resolve) =>
-              s.close(
-                /** 执行generation-contract.test传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 无返回值；通过副作用完成当前操作。 */
-                () => resolve(),
-              ),
-          ),
-      ),
-    );
-    await rm(root, { recursive: true, force: true });
-  },
-);
-/**
- * 验证image reconstruction adapts unambiguous model field representations and still rejects invalid graphs。
- * @returns 完成当前检查或生命周期操作。
- */
+after(async () => {
+  await Promise.all(
+    [server, upstream].map((s) => new Promise<void>((resolve) => s.close(() => resolve()))),
+  );
+  await rm(root, { recursive: true, force: true });
+});
 test('image reconstruction adapts unambiguous model field representations and still rejects invalid graphs', async () => {
   await api('/settings', {
     baseUrl: `http://127.0.0.1:${port(upstream)}/v1`,

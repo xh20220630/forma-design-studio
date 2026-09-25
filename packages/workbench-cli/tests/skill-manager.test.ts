@@ -6,10 +6,6 @@ import path from 'node:path';
 import { initializeProject } from '../src/init.ts';
 import { inspectSkill, installSkill } from '../src/skill-manager.ts';
 
-/**
- * 验证installs the bundled skill at project scope and reuses an identical installation。
- * @returns 完成当前检查或生命周期操作。
- */
 test('installs the bundled skill at project scope and reuses an identical installation', async () => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forma-cli-skill-'));
   try {
@@ -73,10 +69,6 @@ test('installs the bundled skill at project scope and reuses an identical instal
   }
 });
 
-/**
- * 验证keeps an intact newer major and refuses to overwrite it when corrupted。
- * @returns 完成当前检查或生命周期操作。
- */
 test('keeps an intact newer major and refuses to overwrite it when corrupted', async () => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forma-cli-newer-skill-'));
   try {
@@ -89,40 +81,24 @@ test('keeps an intact newer major and refuses to overwrite it when corrupted', a
     await writeFile(markerFile, JSON.stringify({ ...marker, version: '3.0.0' }));
     assert.equal((await installSkill(projectRoot, 'project')).action, 'kept-newer');
     await writeFile(path.join(installed.path, 'SKILL.md'), '# Corrupted newer skill');
-    await assert.rejects(
-      /** 执行skill-manager.test传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => installSkill(projectRoot, 'project'),
-      /损坏的更高版本/,
-    );
+    await assert.rejects(() => installSkill(projectRoot, 'project'), /损坏的更高版本/);
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }
 });
 
-/**
- * 验证refuses to replace an unmanaged skill directory。
- * @returns 完成当前检查或生命周期操作。
- */
 test('refuses to replace an unmanaged skill directory', async () => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forma-cli-unmanaged-'));
   try {
     const target = path.join(projectRoot, '.agents/skills/forma-ai-ui-designer');
     await mkdir(target, { recursive: true });
     await writeFile(path.join(target, 'SKILL.md'), '# User-owned skill');
-    await assert.rejects(
-      /** 执行skill-manager.test传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
-      () => installSkill(projectRoot, 'project'),
-      /Forma 管理/,
-    );
+    await assert.rejects(() => installSkill(projectRoot, 'project'), /Forma 管理/);
   } finally {
     await rm(projectRoot, { recursive: true, force: true });
   }
 });
 
-/**
- * 验证initializes a minimal project without overwriting existing files。
- * @returns 完成当前检查或生命周期操作。
- */
 test('initializes a minimal project without overwriting existing files', async () => {
   const projectRoot = await mkdtemp(path.join(os.tmpdir(), 'forma-cli-init-'));
   try {

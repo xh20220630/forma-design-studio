@@ -31,13 +31,9 @@ export function resolveNode(node: DesignNode, theme: ThemeTokens | Project): Des
   }
   for (const [property, binding] of Object.entries(node.variableBindings || {})) {
     const collection = project?.variableCollections?.find(
-      /** 检查条目的标识等于 binding 的collectionId，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
       (item) => item.id === binding.collectionId,
     );
-    const variable = collection?.variables.find(
-      /** 检查条目的标识等于 binding 的variableId，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-      (item) => item.id === binding.variableId,
-    );
+    const variable = collection?.variables.find((item) => item.id === binding.variableId);
     const mode =
       collection && (project?.activeVariableModes?.[collection.id] || collection.modes[0]);
     const value =
@@ -54,31 +50,15 @@ export function resolveNode(node: DesignNode, theme: ThemeTokens | Project): Des
  * @returns 节点局部空间中的顶点列表。
  */
 export function shapePoints(node: DesignNode): string {
-  if (node.points?.length)
-    return node.points
-      .map(
-        /** 转换 shapePoints 中的集合条目，供后续处理或展示。 @param point - 当前处理的坐标点。 @returns 当前条目转换后的结果。 */
-        (point) => `${point.x},${point.y}`,
-      )
-      .join(' ');
+  if (node.points?.length) return node.points.map((point) => `${point.x},${point.y}`).join(' ');
   const sides = Math.max(
     3,
     Math.min(64, Math.round(node.polygonSides ?? (node.type === 'star' ? 5 : 3))),
   );
   const count = node.type === 'star' ? sides * 2 : sides;
-  return Array.from(
-    { length: count },
-    /**
-     * 执行 shapePoints 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param _ - 当前步骤不使用的占位参数。
-     * @param index - 空间查询索引或当前条目的位置。
-     * @returns 计算得到的文本。
-     */
-    (_, index) => {
-      const angle = (index * Math.PI * 2) / count - Math.PI / 2;
-      const ratio = node.type === 'star' && index % 2 ? (node.starRatio ?? 0.45) : 1;
-      return `${node.width / 2 + ((Math.cos(angle) * node.width) / 2) * ratio},${node.height / 2 + ((Math.sin(angle) * node.height) / 2) * ratio}`;
-    },
-  ).join(' ');
+  return Array.from({ length: count }, (_, index) => {
+    const angle = (index * Math.PI * 2) / count - Math.PI / 2;
+    const ratio = node.type === 'star' && index % 2 ? (node.starRatio ?? 0.45) : 1;
+    return `${node.width / 2 + ((Math.cos(angle) * node.width) / 2) * ratio},${node.height / 2 + ((Math.sin(angle) * node.height) / 2) * ratio}`;
+  }).join(' ');
 }

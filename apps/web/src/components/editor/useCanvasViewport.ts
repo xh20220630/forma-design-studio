@@ -75,55 +75,36 @@ export function useCanvasViewport({ pageKey, width, height, canZoom }: CanvasVie
     wheel: (event: WheelEvent) => void;
   } | null>(null);
 
-  const readCamera = useCallback(
-    /**
-     * 从当前 DOM 与引用读取相机，避免高频事件使用上一次渲染的旧坐标。
-     * @returns 当前步骤的处理结果。
-     */
-    (): CanvasCamera => {
-      const element = scrollRef.current;
-      const pending = pendingRef.current;
-      if (pending && element)
-        return {
-          ...pending.camera,
-          scrollX: pending.camera.scrollX + element.scrollLeft - pending.sourceScroll.x,
-          scrollY: pending.camera.scrollY + element.scrollTop - pending.sourceScroll.y,
-        };
+  // 从 DOM 与引用读取即时相机状态，避免高频事件使用上一帧的坐标。
+  const readCamera = useCallback((): CanvasCamera => {
+    const element = scrollRef.current;
+    const pending = pendingRef.current;
+    if (pending && element)
       return {
-        ...cameraRef.current,
-        scrollX: element?.scrollLeft ?? cameraRef.current.scrollX,
-        scrollY: element?.scrollTop ?? cameraRef.current.scrollY,
+        ...pending.camera,
+        scrollX: pending.camera.scrollX + element.scrollLeft - pending.sourceScroll.x,
+        scrollY: pending.camera.scrollY + element.scrollTop - pending.sourceScroll.y,
       };
-    },
-    [],
-  );
+    return {
+      ...cameraRef.current,
+      scrollX: element?.scrollLeft ?? cameraRef.current.scrollX,
+      scrollY: element?.scrollTop ?? cameraRef.current.scrollY,
+    };
+  }, []);
 
-  const requestCamera = useCallback(
-    /**
-     * 暂存目标相机并等待滚动区域尺寸更新，再应用滚动位置以避免浏览器截断。
-     *
-     * @param next - 后续值或中间件入口。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    (next: CanvasCamera) => {
-      const element = scrollRef.current;
-      if (!element || !next.width || !next.height) return;
-      pendingRef.current = {
-        camera: next,
-        sourceScroll: { x: element.scrollLeft, y: element.scrollTop },
-      };
-      setCamera(next);
-    },
-    [],
-  );
+  // 等滚动区域尺寸更新后再应用目标位置，避免浏览器按旧范围截断滚动。
+  const requestCamera = useCallback((next: CanvasCamera) => {
+    const element = scrollRef.current;
+    if (!element || !next.width || !next.height) return;
+    pendingRef.current = {
+      camera: next,
+      sourceScroll: { x: element.scrollLeft, y: element.scrollTop },
+    };
+    setCamera(next);
+  }, []);
 
+  // 适配时为标尺和工具栏预留安全区域。
   const fit = useCallback(
-    /**
-     * 计算目标内容在安全区域内的倍率和位置，避开标尺与工具栏。
-     *
-     * @param bounds - 用于布局、查询或素材定位的矩形范围。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
     (bounds?: CanvasBounds) => {
       const element = scrollRef.current;
       const page = pageRef.current;
@@ -142,14 +123,8 @@ export function useCanvasViewport({ pageKey, width, height, canZoom }: CanvasVie
     [requestCamera],
   );
 
+  // 缩放前后保持锚点对应的画布位置不变。
   const zoomTo = useCallback(
-    /**
-     * 围绕指定锚点调整缩放，使用户关注的位置保持在屏幕原处。
-     *
-     * @param value - 当前字段、模式或控件的取值。
-     * @param clientPoint - 浏览器视口中的指针位置。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
     (value: number, clientPoint?: CanvasPoint) => {
       const element = scrollRef.current;
       if (!element || !Number.isFinite(value)) return;
@@ -171,156 +146,103 @@ export function useCanvasViewport({ pageKey, width, height, canZoom }: CanvasVie
     [readCamera, requestCamera],
   );
 
-  const onScroll = useCallback(
-    /**
-     * 把原生滚动位置同步到相机，并处理待应用相机产生的偏移。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      const element = scrollRef.current;
-      if (!element) return;
-      const expected = programmaticScrollRef.current;
-      if (
-        !expected ||
-        Math.abs(expected.x - element.scrollLeft) > 1 ||
-        Math.abs(expected.y - element.scrollTop) > 1
-      ) {
-        fitModeRef.current = null;
-      }
-      const current = cameraRef.current;
-      setOrigin({ x: current.width - element.scrollLeft, y: current.height - element.scrollTop });
-    },
-    [],
-  );
+  const onScroll = useCallback(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+    const expected = programmaticScrollRef.current;
+    if (
+      !expected ||
+      Math.abs(expected.x - element.scrollLeft) > 1 ||
+      Math.abs(expected.y - element.scrollTop) > 1
+    ) {
+      fitModeRef.current = null;
+    }
+    const current = cameraRef.current;
+    setOrigin({ x: current.width - element.scrollLeft, y: current.height - element.scrollTop });
+  }, []);
 
-  useLayoutEffect(
-    /**
-     * 在 useCanvasViewport 的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      canZoomRef.current = canZoom;
-    },
-    [canZoom],
-  );
+  useLayoutEffect(() => {
+    canZoomRef.current = canZoom;
+  }, [canZoom]);
 
-  useLayoutEffect(
-    /**
-     * 在 useCanvasViewport 的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      cameraRef.current = camera;
-      const element = scrollRef.current;
-      const pending = pendingRef.current;
-      if (!element || !pending || pending.camera !== camera) return;
-      // Include native panning that occurred while React committed the new scale.
-      const { x: dx, y: dy } = canvasPendingPanDelta(
-        pending.sourceScroll,
-        { x: element.scrollLeft, y: element.scrollTop },
-        {
-          x: element.scrollWidth - element.clientWidth,
-          y: element.scrollHeight - element.clientHeight,
-        },
-      );
-      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) fitModeRef.current = null;
-      element.scrollLeft = camera.scrollX + dx;
-      element.scrollTop = camera.scrollY + dy;
-      programmaticScrollRef.current = { x: element.scrollLeft, y: element.scrollTop };
-      pendingRef.current = null;
-      setOrigin({ x: camera.width - element.scrollLeft, y: camera.height - element.scrollTop });
-    },
-    [camera],
-  );
-
-  useLayoutEffect(
-    /**
-     * 在 useCanvasViewport 的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      pageRef.current = { pageKey, width, height };
-      fit();
-    },
-    [pageKey, width, height, fit],
-  );
-
-  useLayoutEffect(
-    /**
-     * 在 useCanvasViewport 的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      const element = scrollRef.current;
-      if (attachedRef.current?.element === element) return;
-      if (attachedRef.current) {
-        attachedRef.current.observer.disconnect();
-        attachedRef.current.element.removeEventListener('wheel', attachedRef.current.wheel);
-        attachedRef.current = null;
-      }
-      if (!element) return;
-      /**
-       * 读取当前容器尺寸，使可见区域与布局计算保持同步。
-       * @returns 测量操作的结果。
-       */
-      const measure = () => {
-        const viewport = { width: element.clientWidth, height: element.clientHeight };
-        if (!viewport.width || !viewport.height) return;
-        const previous = readCamera();
-        if (previous.width === viewport.width && previous.height === viewport.height) return;
-        const mode = fitModeRef.current;
-        if (mode || !previous.width || !previous.height) {
-          fit(mode?.bounds);
-        } else {
-          const world = canvasWorldPoint(previous, canvasViewportCenter(previous));
-          const scroll = canvasAnchorScroll(
-            viewport,
-            previous.zoom,
-            world,
-            canvasViewportCenter(viewport),
-          );
-          requestCamera({ ...viewport, zoom: previous.zoom, scrollX: scroll.x, scrollY: scroll.y });
-        }
-      };
-      /**
-       * 根据滚轮事件更新缩放或滚动，并保持缩放锚点稳定。
-       *
-       * @param event - 当前事件及其触发位置。
-       * @returns 无返回值；更新视口。
-       */
-      const wheel = (event: WheelEvent) => {
-        if (!event.ctrlKey && !event.metaKey) return;
-        event.preventDefault();
-        if (canZoomRef.current?.() === false) return;
-        zoomTo(readCamera().zoom * Math.exp(-event.deltaY * 0.002), {
-          x: event.clientX,
-          y: event.clientY,
-        });
-      };
-      const observer = new ResizeObserver(measure);
-      observer.observe(element);
-      element.addEventListener('wheel', wheel, { passive: false });
-      attachedRef.current = { element, observer, wheel };
-      measure();
-    },
-  );
-
-  useLayoutEffect(
-    /**
-     * 在 useCanvasViewport 的依赖变化后同步外部资源或界面状态。
-     * @returns 用于结束当前订阅或恢复现场的清理函数。
-     */
-    () =>
-      /**
-       * 执行 useCanvasViewport 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       * @returns 无返回值；通过副作用完成当前操作。
-       */
-      () => {
-        const attached = attachedRef.current;
-        attached?.observer.disconnect();
-        attached?.element.removeEventListener('wheel', attached.wheel);
-        attachedRef.current = null;
+  useLayoutEffect(() => {
+    cameraRef.current = camera;
+    const element = scrollRef.current;
+    const pending = pendingRef.current;
+    if (!element || !pending || pending.camera !== camera) return;
+    // Include native panning that occurred while React committed the new scale.
+    const { x: dx, y: dy } = canvasPendingPanDelta(
+      pending.sourceScroll,
+      { x: element.scrollLeft, y: element.scrollTop },
+      {
+        x: element.scrollWidth - element.clientWidth,
+        y: element.scrollHeight - element.clientHeight,
       },
+    );
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) fitModeRef.current = null;
+    element.scrollLeft = camera.scrollX + dx;
+    element.scrollTop = camera.scrollY + dy;
+    programmaticScrollRef.current = { x: element.scrollLeft, y: element.scrollTop };
+    pendingRef.current = null;
+    setOrigin({ x: camera.width - element.scrollLeft, y: camera.height - element.scrollTop });
+  }, [camera]);
+
+  useLayoutEffect(() => {
+    pageRef.current = { pageKey, width, height };
+    fit();
+  }, [pageKey, width, height, fit]);
+
+  useLayoutEffect(() => {
+    const element = scrollRef.current;
+    if (attachedRef.current?.element === element) return;
+    if (attachedRef.current) {
+      attachedRef.current.observer.disconnect();
+      attachedRef.current.element.removeEventListener('wheel', attachedRef.current.wheel);
+      attachedRef.current = null;
+    }
+    if (!element) return;
+    const measure = () => {
+      const viewport = { width: element.clientWidth, height: element.clientHeight };
+      if (!viewport.width || !viewport.height) return;
+      const previous = readCamera();
+      if (previous.width === viewport.width && previous.height === viewport.height) return;
+      const mode = fitModeRef.current;
+      if (mode || !previous.width || !previous.height) {
+        fit(mode?.bounds);
+      } else {
+        const world = canvasWorldPoint(previous, canvasViewportCenter(previous));
+        const scroll = canvasAnchorScroll(
+          viewport,
+          previous.zoom,
+          world,
+          canvasViewportCenter(viewport),
+        );
+        requestCamera({ ...viewport, zoom: previous.zoom, scrollX: scroll.x, scrollY: scroll.y });
+      }
+    };
+    const wheel = (event: WheelEvent) => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      if (canZoomRef.current?.() === false) return;
+      zoomTo(readCamera().zoom * Math.exp(-event.deltaY * 0.002), {
+        x: event.clientX,
+        y: event.clientY,
+      });
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(element);
+    element.addEventListener('wheel', wheel, { passive: false });
+    attachedRef.current = { element, observer, wheel };
+    measure();
+  });
+
+  useLayoutEffect(
+    () => () => {
+      const attached = attachedRef.current;
+      attached?.observer.disconnect();
+      attached?.element.removeEventListener('wheel', attached.wheel);
+      attachedRef.current = null;
+    },
     [],
   );
 

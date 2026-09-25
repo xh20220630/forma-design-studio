@@ -197,10 +197,7 @@ function validateOptionalNodeFields(node: DesignNode) {
     requireValue(
       Array.isArray(node.points) &&
         node.points.length <= 10000 &&
-        node.points.every(
-          /** 判断 validateOptionalNodeFields 中的条目是否符合检查条件。 @param point - 当前处理的坐标点。 @returns 该条目是否符合条件。 */
-          (point) => record(point) && finite(point.x) && finite(point.y),
-        ),
+        node.points.every((point) => record(point) && finite(point.x) && finite(point.y)),
       '路径节点坐标无效。',
     );
   if (node.path !== undefined)
@@ -270,12 +267,7 @@ export function validateTokens(input: unknown): ThemeTokens {
       !/[;{}<>\r\n]/.test(tokens.fontFamily),
     '无效的字体名称。',
   );
-  return Object.fromEntries(
-    tokenKeys.map(
-      /** 转换 validateTokens 中的集合条目，供后续处理或展示。 @param key - 要访问或更新的字段名。 @returns 当前条目转换后的结果。 */
-      (key) => [key, tokens[key]],
-    ),
-  ) as unknown as ThemeTokens;
+  return Object.fromEntries(tokenKeys.map((key) => [key, tokens[key]])) as unknown as ThemeTokens;
 }
 
 /**
@@ -355,19 +347,11 @@ export function validateNodes(
     if (node.type === 'component') requireValue(node.componentId, '组件实例缺少 componentId。');
     if (node.componentId)
       requireValue(
-        components.some(
-          /** 检查 component 的标识等于节点的组件引用，供集合筛选或定位使用。 @param component - 当前组件母版或组件规范。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (component) => component.id === node.componentId,
-        ),
+        components.some((component) => component.id === node.componentId),
         `未找到组件 ${node.componentId}。`,
       );
   }
-  const byId = new Map(
-    nodes.map(
-      /** 转换 validateNodes 中的集合条目，供后续处理或展示。 @param node - 当前处理的设计节点。 @returns 当前条目转换后的结果。 */
-      (node) => [node.id, node],
-    ),
-  );
+  const byId = new Map(nodes.map((node) => [node.id, node]));
   for (const node of nodes) {
     let parent = node.parentId;
     const visited = new Set([node.id]);
@@ -447,34 +431,14 @@ export function validateProject(input: unknown, { historicalSnapshot = false } =
       requireValue(
         record(entry.variantProperties) &&
           Object.entries(entry.variantProperties).every(
-            /**
-             * 判断 validateProject 中的条目是否符合检查条件。
-             *
-             * @param options - 按顺序解构的当前条目。
-             * @param options.key - 要访问或更新的字段名。
-             * @param options.value - 当前字段、模式或控件的取值。
-             * @returns 该条目是否符合条件。
-             */
             ([key, value]) => text(key, 100) && text(value, 200),
           ),
         '组件变体参数无效。',
       );
     validateNodes(entry.nodes, project.components, entry.name);
   }
-  const byId = new Map(
-    project.components.map(
-      /** 转换 validateProject 中的集合条目，供后续处理或展示。 @param component - 当前组件母版或组件规范。 @returns 当前条目转换后的结果。 */
-      (component) => [component.id, component],
-    ),
-  );
+  const byId = new Map(project.components.map((component) => [component.id, component]));
   const complete = new Set();
-  /**
-   * 递归访问当前结构，处理子项并维护访问状态。
-   *
-   * @param id - 唯一标识，用于查找、更新和建立引用。
-   * @param chain - 当前遍历经过的引用链，用于识别循环依赖。
-   * @returns 无返回值；通过副作用完成当前操作。
-   */
   const visit = (id: string, chain: Set<string>): void => {
     if (complete.has(id)) return;
     requireValue(!chain.has(id), '组件引用包含循环。');
@@ -513,10 +477,7 @@ export function validateProject(input: unknown, { historicalSnapshot = false } =
           collection.modes.length > 0 &&
           collection.modes.length <= 50 &&
           new Set(collection.modes).size === collection.modes.length &&
-          collection.modes.every(
-            /** 判断 validateProject 中的条目是否符合检查条件。 @param mode - 当前使用的模式或操作方式。 @returns 该条目是否符合条件。 */
-            (mode) => text(mode, 100) && mode.length > 0,
-          ),
+          collection.modes.every((mode) => text(mode, 100) && mode.length > 0),
         '变量集合模式无效。',
       );
       requireValue(
@@ -552,7 +513,6 @@ export function validateProject(input: unknown, { historicalSnapshot = false } =
     for (const [id, mode] of Object.entries(project.activeVariableModes))
       requireValue(
         project.variableCollections?.some(
-          /** 检查 collection 的标识等于标识且 collection 的modes包含模式，供集合筛选或定位使用。 @param collection - 当前处理的设计变量集合。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
           (collection) => collection.id === id && collection.modes.includes(mode),
         ),
         '当前变量集合模式不存在。',
@@ -565,13 +525,9 @@ export function validateProject(input: unknown, { historicalSnapshot = false } =
         for (const [property, binding] of Object.entries(node.variableBindings)) {
           requireValue(record(binding), '变量绑定参数无效。');
           const collection = project.variableCollections?.find(
-            /** 检查条目的标识等于 binding 的collectionId，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
             (item) => item.id === binding.collectionId,
           );
-          const variable = collection?.variables.find(
-            /** 检查条目的标识等于 binding 的variableId，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-            (item) => item.id === binding.variableId,
-          );
+          const variable = collection?.variables.find((item) => item.id === binding.variableId);
           const expected = ['fill', 'color', 'stroke'].includes(property)
             ? 'color'
             : ['text', 'name'].includes(property)

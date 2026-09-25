@@ -39,63 +39,33 @@ function MotionStudy() {
         <div>
           <label>主题材质</label>
           <div>
-            {(['paper', 'glacier', 'midnight'] as const).map(
-              /**
-               * 转换动效研究预览页中的集合条目，供后续处理或展示。
-               *
-               * @param value - 当前字段、模式或控件的取值。
-               * @param index - 空间查询索引或当前条目的位置。
-               * @returns 当前条目转换后的结果。
-               */
-              (value, index) => (
-                <button
-                  key={value}
-                  aria-pressed={preset === value}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到动效研究预览页。 @returns 当前步骤的处理结果。 */
-                    () => setPreset(value)
-                  }
-                >
-                  {['素白', '冰川', '夜航'][index]}
-                </button>
-              ),
-            )}
+            {(['paper', 'glacier', 'midnight'] as const).map((value, index) => (
+              <button key={value} aria-pressed={preset === value} onClick={() => setPreset(value)}>
+                {['素白', '冰川', '夜航'][index]}
+              </button>
+            ))}
           </div>
         </div>
         <div>
           <label>真实强调色</label>
           <div>
-            {['#38bdf8', '#8463f8', '#f29c55', '#29ae8d'].map(
-              /**
-               * 转换动效研究预览页中的集合条目，供后续处理或展示。
-               *
-               * @param value - 当前字段、模式或控件的取值。
-               * @returns 当前条目转换后的结果。
-               */
-              (value) => (
-                <button
-                  className="study-swatch"
-                  key={value}
-                  aria-label={value}
-                  aria-pressed={value === accent}
-                  style={{ backgroundColor: value }}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到动效研究预览页。 @returns 当前步骤的处理结果。 */
-                    () => setAccent(value)
-                  }
-                />
-              ),
-            )}
+            {['#38bdf8', '#8463f8', '#f29c55', '#29ae8d'].map((value) => (
+              <button
+                className="study-swatch"
+                key={value}
+                aria-label={value}
+                aria-pressed={value === accent}
+                style={{ backgroundColor: value }}
+                onClick={() => setAccent(value)}
+              />
+            ))}
           </div>
         </div>
         <label className="study-reduced">
           <input
             type="checkbox"
             checked={reduced}
-            onChange={
-              /** 响应 onChange 交互，将用户操作应用到动效研究预览页。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-              (event) => setReduced(event.target.checked)
-            }
+            onChange={(event) => setReduced(event.target.checked)}
           />{' '}
           减少动态效果
         </label>

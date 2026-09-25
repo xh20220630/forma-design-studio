@@ -82,16 +82,9 @@ function openBrowser(url: string) {
     process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'cmd' : 'xdg-open';
   const args = process.platform === 'win32' ? ['/c', 'start', '', url] : [url];
   const child = spawn(command, args, { detached: true, stdio: 'ignore' });
-  child.once(
-    'error',
-    /**
-     * 响应 error 事件，推进 openBrowser 的状态更新。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      /* headless environment: keep the printed URL usable */
-    },
-  );
+  child.once('error', () => {
+    /* headless environment: keep the printed URL usable */
+  });
   child.unref();
 }
 
@@ -164,10 +157,7 @@ export async function main(argv = process.argv.slice(2)) {
         : report.valid
           ? '设计资产有效。'
           : report.issues
-              .map(
-                /** 转换 main 中的集合条目，供后续处理或展示。 @param item - 当前遍历的条目。 @returns 当前条目转换后的结果。 */
-                (item) => `${item.severity.toUpperCase()} ${item.path} ${item.message}`,
-              )
+              .map((item) => `${item.severity.toUpperCase()} ${item.path} ${item.message}`)
               .join('\n'),
       asJson,
     );
@@ -195,7 +185,6 @@ export async function main(argv = process.argv.slice(2)) {
           ? result
           : result
               .map(
-                /** 转换 main 中的集合条目，供后续处理或展示。 @param item - 当前遍历的条目。 @returns 当前条目转换后的结果。 */
                 (item) =>
                   `${item.scope}: ${item.installed ? `${item.version || 'unmanaged'}${item.compatible ? ' compatible' : ''}` : 'not installed'} · ${item.path}`,
               )
@@ -252,23 +241,13 @@ export async function main(argv = process.argv.slice(2)) {
       asJson,
     );
     if (!parsed.options.has('no-open')) openBrowser(server.url);
-    /**
-     * 关闭当前服务并结束相关资源，避免退出后仍占用端口。
-     * @returns 清理操作的结果。
-     */
     const stop = async () => {
       await server.close();
       process.exit(0);
     };
     process.once('SIGINT', stop);
     process.once('SIGTERM', stop);
-    await new Promise(
-      /**
-       * 把 main 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-       * @returns 无返回值；通过 resolve 或 reject 结束等待。
-       */
-      () => {},
-    );
+    await new Promise(() => {});
   }
   throw new Error(`未知命令：${command}\n\n${help()}`);
 }
@@ -293,16 +272,8 @@ export function isDirectExecution(argvPath = process.argv[1], moduleUrl = import
 }
 
 if (isDirectExecution()) {
-  main().catch(
-    /**
-     * 处理 cli 中的异步失败，按当前流程决定回退或继续抛出。
-     *
-     * @param error - 当前操作的失败信息，供界面反馈或重试判断。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    (error) => {
-      process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
-      process.exitCode = 1;
-    },
-  );
+  main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.exitCode = 1;
+  });
 }

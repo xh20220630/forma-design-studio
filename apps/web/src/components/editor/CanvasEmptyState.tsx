@@ -35,19 +35,13 @@ interface Props {
 export default function CanvasEmptyState({ background, onFrame, onText, onOpenAgent }: Props) {
   const hex = background.replace(/^#/, '');
   const rgb = /^[\da-f]{6}$/i.test(hex)
-    ? [0, 2, 4].map(
-        /** 转换空白画布引导中的集合条目，供后续处理或展示。 @param offset - 相对起点的偏移量。 @returns 当前条目转换后的结果。 */
-        (offset) => parseInt(hex.slice(offset, offset + 2), 16),
-      )
+    ? [0, 2, 4].map((offset) => parseInt(hex.slice(offset, offset + 2), 16))
     : [255, 255, 255];
   const dark = rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722 < 140;
   return (
     <div
       className={`ed-start-design${dark ? ' is-dark' : ''}`}
-      onPointerDown={
-        /** 响应 onPointerDown 交互，将用户操作应用到空白画布引导。 @param event - 当前事件及其触发位置。 @returns 当前步骤的处理结果。 */
-        (event) => event.stopPropagation()
-      }
+      onPointerDown={(event) => event.stopPropagation()}
     >
       <img
         className="ed-start-illustration"

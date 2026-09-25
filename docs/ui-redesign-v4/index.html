@@ -77,18 +77,13 @@
         img.alt = title + '高保真 UI 设计图';
         img.loading = 'lazy';
         img.src = 'designs/' + id + '.png';
-        img.onerror =
-          /**
-           * 图片加载失败时显示可点击的原图入口，避免预览留下空白。
-           * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-           */
-          () => {
-            img.hidden = true;
-            const pending = document.createElement('div');
-            pending.className = 'pending';
-            pending.textContent = '图片加载失败，请使用下方链接打开原图。';
-            figure.prepend(pending);
-          };
+        img.onerror = () => {
+          img.hidden = true;
+          const pending = document.createElement('div');
+          pending.className = 'pending';
+          pending.textContent = '图片加载失败，请使用下方链接打开原图。';
+          figure.prepend(pending);
+        };
         const caption = document.createElement('figcaption');
         caption.innerHTML =
           '<span>Rin / Pearl Studio · ' +

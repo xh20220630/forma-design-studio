@@ -36,14 +36,7 @@ def remove_detached_specks(mask, minimum_area=24):
     previous = []
 
     def root(index):
-        """沿并查集父链寻找连通区域根节点，并压缩路径以加快后续噪点分组。
-
-        参数：
-            index：当前像素或连通区域的编号。
-
-        返回：
-            连通区域的根节点编号。
-        """
+        # 查找时压缩父链，减少后续连通区域合并的遍历次数。
         while parents[index] != index:
             parents[index] = parents[parents[index]]
             index = parents[index]

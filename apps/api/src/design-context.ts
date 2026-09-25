@@ -13,10 +13,7 @@ function stable(value: unknown): unknown {
     return Object.fromEntries(
       Object.keys(value)
         .sort()
-        .map(
-          /** 转换 stable 中的集合条目，供后续处理或展示。 @param key - 要访问或更新的字段名。 @returns 当前条目转换后的结果。 */
-          (key) => [key, stable((value as Record<string, unknown>)[key])],
-        ),
+        .map((key) => [key, stable((value as Record<string, unknown>)[key])]),
     );
   return value;
 }
@@ -37,19 +34,7 @@ export function designContext(project: Project) {
     variableCollections: project.variableCollections,
     activeVariableModes: project.activeVariableModes,
     components: project.components,
-    pages: project.pages.map(
-      /**
-       * 转换 designContext 中的集合条目，供后续处理或展示。
-       *
-       * @param options - 按字段解构的输入，字段用途见对应类型定义。
-       * @param options.id - 唯一标识，用于查找、更新和建立引用。
-       * @param options.name - 面向用户展示的名称。
-       * @param options.width - 对象的宽度。
-       * @param options.height - 对象的高度。
-       * @returns 当前条目转换后的结果。
-       */
-      ({ id, name, width, height }) => ({ id, name, width, height }),
-    ),
+    pages: project.pages.map(({ id, name, width, height }) => ({ id, name, width, height })),
   };
 }
 

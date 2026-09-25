@@ -149,64 +149,35 @@ export default function WorkspaceHome(props: Props) {
   /** 界面状态：当前列表的排序规则。通过状态更新驱动界面刷新。 */
   const [sort, setSort] = useState('updated');
   /** 界面状态：用户收藏的项目标识集合。通过状态更新驱动界面刷新。 */
-  const [favorites, setFavorites] = useState<string[]>(
-    /**
-     * 在项目工作空间首页首次挂载时建立初始状态，避免每次渲染重复初始化。
-     * @returns 初始状态值。
-     */
-    () => {
-      try {
-        return JSON.parse(localStorage.getItem('forma-favorites') || '[]');
-      } catch {
-        return [];
-      }
-    },
-  );
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('forma-favorites') || '[]');
+    } catch {
+      return [];
+    }
+  });
   /** 界面状态：是否正在导入文件。通过状态更新驱动界面刷新。 */
   const [importing, setImporting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const items = [...projects]
     .filter(
-      /**
-       * 判断项目工作空间首页中的条目是否符合保留条件。
-       *
-       * @param project - 当前设计项目或工作空间项目元信息。
-       * @returns 该条目是否符合条件。
-       */
       (project) =>
         `${project.name} ${project.description}`.toLowerCase().includes(query.toLowerCase()) &&
         (tab !== 'favorites' || favorites.includes(project.id)) &&
         (tab !== 'connected' || project.workspace),
     )
-    .sort(
-      /** 比较项目工作空间首页中的两个条目，确定它们的先后顺序。 @param a - 第一个比较或计算对象。 @param b - 第二个比较或计算对象。 @returns 负数、零或正数，分别表示前排、相同顺序或后排。 */
-      (a, b) =>
-        sort === 'name'
-          ? a.name.localeCompare(b.name, 'zh')
-          : Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
+    .sort((a, b) =>
+      sort === 'name'
+        ? a.name.localeCompare(b.name, 'zh')
+        : Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
     );
-  /**
-   * 切换项目收藏状态并持久化，方便之后快速找到常用项目。
-   *
-   * @param id - 唯一标识，用于查找、更新和建立引用。
-   * @returns 无返回值；更新收藏记录。
-   */
   const toggleFavorite = (id: string) => {
     const next = favorites.includes(id)
-      ? favorites.filter(
-          /** 检查取值不等于标识，供集合筛选或定位使用。 @param value - 当前字段、模式或控件的取值。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (value) => value !== id,
-        )
+      ? favorites.filter((value) => value !== id)
       : [...favorites, id];
     setFavorites(next);
     localStorage.setItem('forma-favorites', JSON.stringify(next));
   };
-  /**
-   * 读取导入文件并交给项目导入流程，集中处理上传入口。
-   *
-   * @param event - 当前事件及其触发位置。
-   * @returns 上传处理的结果。
-   */
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -250,12 +221,7 @@ export default function WorkspaceHome(props: Props) {
           </p>
           <div className="workspace-hero-actions">
             <div className="workspace-create-group">
-              <Button
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                  () => props.onCreate()
-                }
-              >
+              <Button onClick={() => props.onCreate()}>
                 <Plus size={15} />
                 新建项目
               </Button>
@@ -267,26 +233,12 @@ export default function WorkspaceHome(props: Props) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>从模板创建</DropdownMenuLabel>
-                  {templates.map(
-                    /**
-                     * 转换项目工作空间首页中的集合条目，供后续处理或展示。
-                     *
-                     * @param template - 用于创建项目的模板定义。
-                     * @returns 当前条目转换后的结果。
-                     */
-                    (template) => (
-                      <DropdownMenuItem
-                        key={template.id}
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => props.onCreate(template)
-                        }
-                      >
-                        <RinIcon kind="canvas" size={16} />
-                        {template.name}
-                      </DropdownMenuItem>
-                    ),
-                  )}
+                  {templates.map((template) => (
+                    <DropdownMenuItem key={template.id} onClick={() => props.onCreate(template)}>
+                      <RinIcon kind="canvas" size={16} />
+                      {template.name}
+                    </DropdownMenuItem>
+                  ))}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={props.onTemplates}>
                     <ArrowRight />
@@ -295,13 +247,7 @@ export default function WorkspaceHome(props: Props) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <Button
-              variant="outline"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                () => props.onAgent()
-              }
-            >
+            <Button variant="outline" onClick={() => props.onAgent()}>
               <MessageSquare size={17} />
               与凛对话
             </Button>
@@ -340,10 +286,7 @@ export default function WorkspaceHome(props: Props) {
             <Input
               aria-label="搜索项目"
               value={query}
-              onChange={
-                /** 响应 onChange 交互，将用户操作应用到项目工作空间首页。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-                (event) => onQuery(event.target.value)
-              }
+              onChange={(event) => onQuery(event.target.value)}
               placeholder="搜索项目"
             />
           </div>
@@ -355,21 +298,11 @@ export default function WorkspaceHome(props: Props) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>排序方式</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 当前步骤的处理结果。 */
-                  () => setSort('updated')
-                }
-              >
+              <DropdownMenuItem onClick={() => setSort('updated')}>
                 <Clock3 />
                 最近修改{sort === 'updated' && <Check className="ml-auto" />}
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 当前步骤的处理结果。 */
-                  () => setSort('name')
-                }
-              >
+              <DropdownMenuItem onClick={() => setSort('name')}>
                 <ArrowDownAZ />
                 项目名称{sort === 'name' && <Check className="ml-auto" />}
               </DropdownMenuItem>
@@ -383,10 +316,7 @@ export default function WorkspaceHome(props: Props) {
                   size="icon-sm"
                   aria-label="网格视图"
                   aria-pressed={!listMode}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 当前步骤的处理结果。 */
-                    () => setListMode(false)
-                  }
+                  onClick={() => setListMode(false)}
                 >
                   <Grid2X2 />
                 </Button>
@@ -400,10 +330,7 @@ export default function WorkspaceHome(props: Props) {
                   size="icon-sm"
                   aria-label="列表视图"
                   aria-pressed={listMode}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 当前步骤的处理结果。 */
-                    () => setListMode(true)
-                  }
+                  onClick={() => setListMode(true)}
                 >
                   <List />
                 </Button>
@@ -414,10 +341,7 @@ export default function WorkspaceHome(props: Props) {
           <Button
             variant="outline"
             className="workspace-import"
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 当前步骤的处理结果。 */
-              () => inputRef.current?.click()
-            }
+            onClick={() => inputRef.current?.click()}
             disabled={importing}
           >
             <FileUp size={15} />
@@ -428,197 +352,132 @@ export default function WorkspaceHome(props: Props) {
 
       <div className={listMode ? 'file-list' : 'file-grid'}>
         <AnimatePresence mode="popLayout">
-          {items.map(
-            /**
-             * 转换项目工作空间首页中的集合条目，供后续处理或展示。
-             *
-             * @param project - 当前设计项目或工作空间项目元信息。
-             * @returns 当前条目转换后的结果。
-             */
-            (project) => (
-              <motion.article
-                key={project.id}
-                className="design-file"
-                layout={!reduced}
-                initial={reduced ? false : { opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={transition}
+          {items.map((project) => (
+            <motion.article
+              key={project.id}
+              className="design-file"
+              layout={!reduced}
+              initial={reduced ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={transition}
+            >
+              <div
+                className="design-file-preview"
+                role="button"
+                tabIndex={0}
+                onClick={() => props.onOpen(project)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    props.onOpen(project);
+                  }
+                }}
+                aria-label={`打开 ${project.name}`}
               >
-                <div
-                  className="design-file-preview"
-                  role="button"
-                  tabIndex={0}
-                  onClick={
-                    /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                    () => props.onOpen(project)
-                  }
-                  onKeyDown={
-                    /**
-                     * 响应 onKeyDown 交互，将用户操作应用到项目工作空间首页。
-                     *
-                     * @param event - 当前事件及其触发位置。
-                     * @returns 无返回值；通过副作用完成当前操作。
-                     */
-                    (event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        props.onOpen(project);
-                      }
-                    }
-                  }
-                  aria-label={`打开 ${project.name}`}
-                >
-                  <div inert className="project-preview-noninteractive">
-                    <ProjectPreview project={project} />
-                  </div>
-                  <span className="design-file-open">
-                    打开项目 <ArrowRight size={14} />
-                  </span>
+                <div inert className="project-preview-noninteractive">
+                  <ProjectPreview project={project} />
                 </div>
-                <div className="design-file-content">
-                  <div className="design-file-body">
-                    <div className="design-file-name">
-                      <button
-                        onClick={
-                          /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                          () => props.onOpen(project)
-                        }
+                <span className="design-file-open">
+                  打开项目 <ArrowRight size={14} />
+                </span>
+              </div>
+              <div className="design-file-content">
+                <div className="design-file-body">
+                  <div className="design-file-name">
+                    <button onClick={() => props.onOpen(project)}>{project.name}</button>
+                    <span>{project.description || project.category || '未添加项目描述'}</span>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        className="file-more"
+                        aria-label={`${project.name} 项目操作`}
                       >
-                        {project.name}
-                      </button>
-                      <span>{project.description || project.category || '未添加项目描述'}</span>
-                    </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="ghost"
-                          className="file-more"
-                          aria-label={`${project.name} 项目操作`}
-                        >
-                          <Ellipsis />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
-                        <DropdownMenuLabel>{project.name}</DropdownMenuLabel>
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onOpen(project)
-                          }
-                        >
-                          <RinIcon kind="canvas" size={16} />
-                          打开项目
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => toggleFavorite(project.id)
-                          }
-                        >
-                          <Star />
-                          {favorites.includes(project.id) ? '取消收藏' : '添加到收藏'}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onRename(project)
-                          }
-                        >
-                          <Settings2 />
-                          项目设置
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onDuplicate(project)
-                          }
-                        >
-                          <Copy />
-                          创建副本
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onBind(project)
-                          }
-                        >
-                          <FolderGit2 />
-                          连接工作空间
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onExport(project)
-                          }
-                        >
-                          <Download />
-                          导出项目
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          variant="destructive"
-                          onClick={
-                            /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                            () => props.onDelete(project)
-                          }
-                        >
-                          <Trash2 />
-                          删除项目
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  <div className="design-file-details">
-                    <span>{project.pages.length} 个页面</span>
-                    <span className="project-card-updated">
-                      {relativeDate(project.updatedAt)}更新
-                    </span>
-                    {project.workspace && (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <button
-                            className="project-card-connection"
-                            aria-label={`${project.name} 已连接工作空间`}
-                            onClick={
-                              /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                              () => props.onBind(project)
-                            }
-                          >
-                            <FolderGit2 size={14} />
-                          </button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {project.workspace.repo ?? project.workspace.path ?? '工作空间已连接'}
-                        </TooltipContent>
-                      </Tooltip>
-                    )}
-                    <button
-                      className="project-card-favorite"
-                      aria-label={
-                        favorites.includes(project.id)
-                          ? `取消收藏 ${project.name}`
-                          : `收藏 ${project.name}`
-                      }
-                      aria-pressed={favorites.includes(project.id)}
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到项目工作空间首页。 @returns 无返回值；通过副作用完成当前操作。 */
-                        () => toggleFavorite(project.id)
-                      }
-                    >
-                      <Star
-                        size={14}
-                        fill={favorites.includes(project.id) ? 'currentColor' : 'none'}
-                        className={favorites.includes(project.id) ? 'is-favorite' : ''}
-                      />
-                    </button>
-                  </div>
+                        <Ellipsis />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>{project.name}</DropdownMenuLabel>
+                      <DropdownMenuItem onClick={() => props.onOpen(project)}>
+                        <RinIcon kind="canvas" size={16} />
+                        打开项目
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => toggleFavorite(project.id)}>
+                        <Star />
+                        {favorites.includes(project.id) ? '取消收藏' : '添加到收藏'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => props.onRename(project)}>
+                        <Settings2 />
+                        项目设置
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => props.onDuplicate(project)}>
+                        <Copy />
+                        创建副本
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => props.onBind(project)}>
+                        <FolderGit2 />
+                        连接工作空间
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => props.onExport(project)}>
+                        <Download />
+                        导出项目
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        variant="destructive"
+                        onClick={() => props.onDelete(project)}
+                      >
+                        <Trash2 />
+                        删除项目
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
-              </motion.article>
-            ),
-          )}
+                <div className="design-file-details">
+                  <span>{project.pages.length} 个页面</span>
+                  <span className="project-card-updated">
+                    {relativeDate(project.updatedAt)}更新
+                  </span>
+                  {project.workspace && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="project-card-connection"
+                          aria-label={`${project.name} 已连接工作空间`}
+                          onClick={() => props.onBind(project)}
+                        >
+                          <FolderGit2 size={14} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {project.workspace.repo ?? project.workspace.path ?? '工作空间已连接'}
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  <button
+                    className="project-card-favorite"
+                    aria-label={
+                      favorites.includes(project.id)
+                        ? `取消收藏 ${project.name}`
+                        : `收藏 ${project.name}`
+                    }
+                    aria-pressed={favorites.includes(project.id)}
+                    onClick={() => toggleFavorite(project.id)}
+                  >
+                    <Star
+                      size={14}
+                      fill={favorites.includes(project.id) ? 'currentColor' : 'none'}
+                      className={favorites.includes(project.id) ? 'is-favorite' : ''}
+                    />
+                  </button>
+                </div>
+              </div>
+            </motion.article>
+          ))}
         </AnimatePresence>
       </div>
 
@@ -645,19 +504,13 @@ export default function WorkspaceHome(props: Props) {
           </p>
           <Button
             variant="outline"
-            onClick={
-              /**
-               * 响应 onClick 交互，将用户操作应用到项目工作空间首页。
-               * @returns 无返回值；通过副作用完成当前操作。
-               */
-              () => {
-                if (!projects.length) props.onCreate();
-                else {
-                  onTab('recent');
-                  onQuery('');
-                }
+            onClick={() => {
+              if (!projects.length) props.onCreate();
+              else {
+                onTab('recent');
+                onQuery('');
               }
-            }
+            }}
           >
             {!projects.length ? '新建项目' : '查看所有项目'}
           </Button>

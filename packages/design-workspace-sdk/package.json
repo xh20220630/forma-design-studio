@@ -10,7 +10,7 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.ts"
+    "test": "node --test tests/integration/*.test.ts"
   },
   "dependencies": {
     "@forma/schema": "workspace:*"

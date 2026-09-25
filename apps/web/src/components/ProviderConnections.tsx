@@ -114,21 +114,11 @@ function Choice({
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {options.map(
-          /**
-           * 转换选项选择控件中的集合条目，供后续处理或展示。
-           *
-           * @param options - 按顺序解构的当前条目。
-           * @param options.id - 唯一标识，用于查找、更新和建立引用。
-           * @param options.name - 面向用户展示的名称。
-           * @returns 当前条目转换后的结果。
-           */
-          ([id, name]) => (
-            <SelectItem key={id} value={id}>
-              {name}
-            </SelectItem>
-          ),
-        )}
+        {options.map(([id, name]) => (
+          <SelectItem key={id} value={id}>
+            {name}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -179,13 +169,8 @@ function ModelField({
   });
   const title = channel === 'text' ? '文本 / 视觉模型' : '图片生成模型';
   const providers = settings.providers.filter(
-    /** 检查当前项中指定项不等于“none”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
     (p) => p[channel === 'text' ? 'textProtocol' : 'imageProtocol'] !== 'none',
   );
-  /**
-   * 读取选定供应商的模型列表，同时维护加载和错误提示。
-   * @returns 模型列表加载操作的结果。
-   */
   const fetchModels = async () => {
     const id = value.providerId;
     setLoading(id);
@@ -195,10 +180,7 @@ function ModelField({
         /** 供应商提供的模型选项。 */
         models: ProviderModel[];
       }>(`/providers/${encodeURIComponent(id)}/models`);
-      setCatalogs(
-        /** 基于最新状态计算 Catalogs 的下一份值，避免连续更新时读到旧状态。 @param old - 更新前的值。 @returns 供 React 保存的新状态。 */
-        (old) => ({ ...old, [id]: result.models }),
-      );
+      setCatalogs((old) => ({ ...old, [id]: result.models }));
       setFeedback({
         id,
         message: `已获取 ${result.models.length} 个模型，请选择支持${channel === 'text' ? '文本 / 视觉' : '生图'}的模型。`,
@@ -229,17 +211,8 @@ function ModelField({
           label={`${title}供应商`}
           value={value.providerId || '__none'}
           disabled={disabled || !!loading}
-          options={[
-            ['__none', '暂不配置'],
-            ...providers.map(
-              /** 转换模型选择字段中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-              (p) => [p.id, p.name] as const,
-            ),
-          ]}
-          onChange={
-            /** 响应 onChange 交互，将用户操作应用到模型选择字段。 @param id - 唯一标识，用于查找、更新和建立引用。 @returns 无返回值；通过副作用完成当前操作。 */
-            (id) => onChange({ providerId: id === '__none' ? '' : id, model: '' })
-          }
+          options={[['__none', '暂不配置'], ...providers.map((p) => [p.id, p.name] as const)]}
+          onChange={(id) => onChange({ providerId: id === '__none' ? '' : id, model: '' })}
         />
       </label>
       <label>
@@ -251,19 +224,13 @@ function ModelField({
             value={value.model}
             disabled={disabled || !value.providerId}
             placeholder="选择或输入上游模型 ID"
-            onChange={
-              /** 响应 onChange 交互，将用户操作应用到模型选择字段。 @param event - 当前事件及其触发位置。 @returns 无返回值；通过副作用完成当前操作。 */
-              (event) => onChange({ ...value, model: event.target.value })
-            }
+            onChange={(event) => onChange({ ...value, model: event.target.value })}
           />
           <Button
             type="button"
             variant="outline"
             disabled={disabled || !value.providerId || !!loading}
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到模型选择字段。 @returns 当前步骤的处理结果。 */
-              () => void fetchModels()
-            }
+            onClick={() => void fetchModels()}
             title="从上游获取模型列表"
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
@@ -272,44 +239,23 @@ function ModelField({
         </div>
       </label>
       <datalist id={listId}>
-        {models.map(
-          /** 转换模型选择字段中的集合条目，供后续处理或展示。 @param model - 发送给上游的模型标识。 @returns 当前条目转换后的结果。 */
-          (model) => (
-            <option key={model.id} value={model.id}>
-              {model.name}
-            </option>
-          ),
-        )}
+        {models.map((model) => (
+          <option key={model.id} value={model.id}>
+            {model.name}
+          </option>
+        ))}
       </datalist>
       {models.length > 0 && (
         <Choice
           label={`${title}上游列表`}
-          value={
-            models.some(
-              /** 检查 m 的标识等于取值的模型名称，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-              (m) => m.id === value.model,
-            )
-              ? value.model
-              : '__choose'
-          }
+          value={models.some((m) => m.id === value.model) ? value.model : '__choose'}
           disabled={disabled}
-          onChange={
-            /**
-             * 响应 onChange 交互，将用户操作应用到模型选择字段。
-             *
-             * @param model - 发送给上游的模型标识。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            (model) => {
-              if (model !== '__choose') onChange({ ...value, model });
-            }
-          }
+          onChange={(model) => {
+            if (model !== '__choose') onChange({ ...value, model });
+          }}
           options={[
             ['__choose', `从 ${models.length} 个上游模型中选择`],
-            ...models.map(
-              /** 转换模型选择字段中的集合条目，供后续处理或展示。 @param m - 当前变换矩阵或消息。 @returns 当前条目转换后的结果。 */
-              (m) => [m.id, m.name === m.id ? m.id : `${m.name} · ${m.id}`] as const,
-            ),
+            ...models.map((m) => [m.id, m.name === m.id ? m.id : `${m.name} · ${m.id}`] as const),
           ]}
         />
       )}
@@ -364,60 +310,31 @@ function Bindings({
   const [busy, setBusy] = useState(false);
   /** 界面状态：连接操作的即时反馈。通过状态更新驱动界面刷新。 */
   const [feedback, setFeedback] = useState('');
-  useEffect(
-    /**
-     * 在模型任务绑定的依赖变化后同步外部资源或界面状态。
-     * @returns 无返回值；通过副作用完成当前操作。
-     */
-    () => {
-      /**
-       * 按文字或图片能力筛选可用连接，避免选择不支持当前任务的供应商。
-       *
-       * @param value - 当前字段、模式或控件的取值。
-       * @param channel - 文字或图片任务通道。
-       * @returns 符合当前能力要求的供应商。
-       */
-      const available = (value: ModelBinding, channel: 'textProtocol' | 'imageProtocol') =>
-        !value.providerId ||
-        settings.providers.some(
-          /** 检查当前项的标识等于取值的供应商标识且当前项中指定项不等于“none”，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-          (p) => p.id === value.providerId && p[channel] !== 'none',
-        );
-      setText(
-        /** 基于最新状态计算 Text 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-        (value) => (available(value, 'textProtocol') ? value : { providerId: '', model: '' }),
-      );
-      setImage(
-        /** 基于最新状态计算 Image 的下一份值，避免连续更新时读到旧状态。 @param value - 当前字段、模式或控件的取值。 @returns 供 React 保存的新状态。 */
-        (value) => (available(value, 'imageProtocol') ? value : { providerId: '', model: '' }),
-      );
-    },
-    [settings.providers],
-  );
+  useEffect(() => {
+    const available = (value: ModelBinding, channel: 'textProtocol' | 'imageProtocol') =>
+      !value.providerId ||
+      settings.providers.some((p) => p.id === value.providerId && p[channel] !== 'none');
+    setText((value) => (available(value, 'textProtocol') ? value : { providerId: '', model: '' }));
+    setImage((value) =>
+      available(value, 'imageProtocol') ? value : { providerId: '', model: '' },
+    );
+  }, [settings.providers]);
   return (
     <form
-      onSubmit={
-        /**
-         * 响应 onSubmit 交互，将用户操作应用到模型任务绑定。
-         *
-         * @param event - 当前事件及其触发位置。
-         * @returns 完成当前异步操作的 Promise，不携带业务数据。
-         */
-        async (event) => {
-          event.preventDefault();
-          setBusy(true);
-          setFeedback('');
-          try {
-            onSettings(await api<ProviderSettings>('/settings/models', { text, image }));
-            setFeedback('模型选择已保存，将用于接下来的请求。');
-            onDone?.();
-          } catch (error) {
-            setFeedback((error as Error).message);
-          } finally {
-            setBusy(false);
-          }
+      onSubmit={async (event) => {
+        event.preventDefault();
+        setBusy(true);
+        setFeedback('');
+        try {
+          onSettings(await api<ProviderSettings>('/settings/models', { text, image }));
+          setFeedback('模型选择已保存，将用于接下来的请求。');
+          onDone?.();
+        } catch (error) {
+          setFeedback((error as Error).message);
+        } finally {
+          setBusy(false);
         }
-      }
+      }}
     >
       <div className="pc-models">
         <ModelField
@@ -556,29 +473,20 @@ function ProviderEditor({
     imageEditPath: '',
     ...provider,
   } as Omit<ModelProvider, 'id' | 'hasApiKey' | 'headerNames'>);
-  const versionHint =
-    /**
-     * 执行供应商配置编辑器传入的局部处理步骤，使调用处能够控制结果如何更新。
-     * @returns 计算得到的文本。
-     */
-    (() => {
-      const openaiText =
-        ['openai', 'openai-responses'].includes(draft.textProtocol) && !draft.textPath;
-      const openaiImage = draft.imageProtocol === 'openai-images' && !draft.imagePath;
-      if (!openaiText && !openaiImage) return '';
-      try {
-        const base = new URL(draft.baseUrl);
-        return base.pathname === '/' &&
-          !base.username &&
-          !base.password &&
-          !base.search &&
-          !base.hash
-          ? `${base.origin}/v1`
-          : '';
-      } catch {
-        return '';
-      }
-    })();
+  const versionHint = (() => {
+    const openaiText =
+      ['openai', 'openai-responses'].includes(draft.textProtocol) && !draft.textPath;
+    const openaiImage = draft.imageProtocol === 'openai-images' && !draft.imagePath;
+    if (!openaiText && !openaiImage) return '';
+    try {
+      const base = new URL(draft.baseUrl);
+      return base.pathname === '/' && !base.username && !base.password && !base.search && !base.hash
+        ? `${base.origin}/v1`
+        : '';
+    } catch {
+      return '';
+    }
+  })();
   /** 界面状态：服务端保存的供应商密钥，禁止作为公开配置返回。通过状态更新驱动界面刷新。 */
   const [apiKey, setApiKey] = useState('');
   /** 界面状态：是否明确删除已经保存的密钥；空输入本身不等同于清除。通过状态更新驱动界面刷新。 */
@@ -589,24 +497,8 @@ function ProviderEditor({
   const [busy, setBusy] = useState('');
   /** 界面状态：连接操作的即时反馈。通过状态更新驱动界面刷新。 */
   const [feedback, setFeedback] = useState({ error: false, message: '' });
-  /**
-   * 同步当前数据变化，让依赖该数据的界面及时更新。
-   *
-   * @param key - 要访问或更新的字段名。
-   * @param value - 当前字段、模式或控件的取值。
-   * @returns 当前步骤的处理结果。
-   */
   const update = <K extends keyof typeof draft>(key: K, value: (typeof draft)[K]) =>
-    setDraft(
-      /** 基于最新状态计算 Draft 的下一份值，避免连续更新时读到旧状态。 @param old - 更新前的值。 @returns 供 React 保存的新状态。 */
-      (old) => ({ ...old, [key]: value }),
-    );
-  /**
-   * 统一包裹供应商设置操作，集中管理忙碌状态与错误反馈。
-   *
-   * @param probe - 连接检查的结果数据。
-   * @returns 对应设置操作的结果。
-   */
+    setDraft((old) => ({ ...old, [key]: value }));
   const perform = async (probe: boolean) => {
     setBusy(probe ? 'probe' : 'save');
     setFeedback({ error: false, message: '' });
@@ -654,30 +546,16 @@ function ProviderEditor({
       title={provider ? '编辑供应商' : '添加供应商'}
       subtitle="密钥保存在本地服务端；文本和生图协议可以分别指定。"
       wide
-      onClose={
-        /**
-         * 响应 onClose 交互，将用户操作应用到供应商配置编辑器。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        () => {
-          if (!busy) onClose();
-        }
-      }
+      onClose={() => {
+        if (!busy) onClose();
+      }}
     >
       <form
         className="pc-editor"
-        onSubmit={
-          /**
-           * 响应 onSubmit 交互，将用户操作应用到供应商配置编辑器。
-           *
-           * @param event - 当前事件及其触发位置。
-           * @returns 无返回值；通过副作用完成当前操作。
-           */
-          (event) => {
-            event.preventDefault();
-            void perform(false);
-          }
-        }
+        onSubmit={(event) => {
+          event.preventDefault();
+          void perform(false);
+        }}
       >
         <fieldset disabled={!!busy}>
           {!provider && (
@@ -685,58 +563,26 @@ function ProviderEditor({
               快速开始
               <Choice
                 label="供应商预设"
-                value={
-                  presets.find(
-                    /** 检查当前项的名称等于 draft 的名称，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                    (p) => p.name === draft.name,
-                  )?.name || presets[0].name
-                }
-                options={presets.map(
-                  /** 转换供应商配置编辑器中的集合条目，供后续处理或展示。 @param p - 当前坐标点或内容片段。 @returns 当前条目转换后的结果。 */
-                  (p) => [p.name, p.name],
-                )}
-                onChange={
-                  /**
-                   * 响应 onChange 交互，将用户操作应用到供应商配置编辑器。
-                   *
-                   * @param name - 面向用户展示的名称。
-                   * @returns 无返回值；通过副作用完成当前操作。
-                   */
-                  (name) => {
-                    const preset = presets.find(
-                      /** 检查当前项的名称等于名称，供集合筛选或定位使用。 @param p - 当前坐标点或内容片段。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                      (p) => p.name === name,
-                    )!;
-                    setDraft(
-                      /** 基于最新状态计算 Draft 的下一份值，避免连续更新时读到旧状态。 @param old - 更新前的值。 @returns 供 React 保存的新状态。 */
-                      (old) => ({ ...old, ...preset }),
-                    );
-                  }
-                }
+                value={presets.find((p) => p.name === draft.name)?.name || presets[0].name}
+                options={presets.map((p) => [p.name, p.name])}
+                onChange={(name) => {
+                  const preset = presets.find((p) => p.name === name)!;
+                  setDraft((old) => ({ ...old, ...preset }));
+                }}
               />
             </label>
           )}
           <div className="pc-two">
             <label>
               供应商名称
-              <Input
-                required
-                value={draft.name}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                  (e) => update('name', e.target.value)
-                }
-              />
+              <Input required value={draft.name} onChange={(e) => update('name', e.target.value)} />
             </label>
             <label>
               认证方式
               <Choice
                 label="认证方式"
                 value={draft.auth}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param value - 当前字段、模式或控件的取值。 @returns 当前步骤的处理结果。 */
-                  (value) => update('auth', value as typeof draft.auth)
-                }
+                onChange={(value) => update('auth', value as typeof draft.auth)}
                 options={[
                   ['auto', '按协议自动认证'],
                   ['none', '无需密钥 · 本地服务'],
@@ -754,10 +600,7 @@ function ProviderEditor({
               type="url"
               value={draft.baseUrl}
               placeholder="https://api.example.com/v1"
-              onChange={
-                /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                (e) => update('baseUrl', e.target.value)
-              }
+              onChange={(e) => update('baseUrl', e.target.value)}
             />
             <small>填写包含 API 版本的基础地址；本机服务可使用 HTTP。</small>
             {versionHint && (
@@ -775,10 +618,7 @@ function ProviderEditor({
               autoComplete="new-password"
               disabled={clearApiKey}
               value={apiKey}
-              onChange={
-                /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                (e) => setApiKey(e.target.value)
-              }
+              onChange={(e) => setApiKey(e.target.value)}
               placeholder={
                 provider?.hasApiKey ? '已保存密钥，留空保留' : '输入密钥；无需认证时可留空'
               }
@@ -789,18 +629,10 @@ function ProviderEditor({
               <input
                 type="checkbox"
                 checked={clearApiKey}
-                onChange={
-                  /**
-                   * 响应 onChange 交互，将用户操作应用到供应商配置编辑器。
-                   *
-                   * @param e - 当前事件对象。
-                   * @returns 无返回值；通过副作用完成当前操作。
-                   */
-                  (e) => {
-                    setClearApiKey(e.target.checked);
-                    setApiKey('');
-                  }
-                }
+                onChange={(e) => {
+                  setClearApiKey(e.target.checked);
+                  setApiKey('');
+                }}
               />
               清除已保存的密钥
             </label>
@@ -812,10 +644,7 @@ function ProviderEditor({
                 label="文本协议"
                 value={draft.textProtocol}
                 options={textProtocols}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param v - 当前步骤需要处理的值。 @returns 当前步骤的处理结果。 */
-                  (v) => update('textProtocol', v as TextProtocol)
-                }
+                onChange={(v) => update('textProtocol', v as TextProtocol)}
               />
             </label>
             <label>
@@ -824,10 +653,7 @@ function ProviderEditor({
                 label="生图协议"
                 value={draft.imageProtocol}
                 options={imageProtocols}
-                onChange={
-                  /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param v - 当前步骤需要处理的值。 @returns 当前步骤的处理结果。 */
-                  (v) => update('imageProtocol', v as ImageProtocol)
-                }
+                onChange={(v) => update('imageProtocol', v as ImageProtocol)}
               />
             </label>
           </div>
@@ -839,10 +665,7 @@ function ProviderEditor({
                 <Input
                   value={draft.modelsPath}
                   placeholder="models"
-                  onChange={
-                    /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                    (e) => update('modelsPath', e.target.value)
-                  }
+                  onChange={(e) => update('modelsPath', e.target.value)}
                 />
               </label>
               <div className="pc-two">
@@ -851,10 +674,7 @@ function ProviderEditor({
                   <Input
                     value={draft.textPath}
                     placeholder="留空按协议自动选择"
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                      (e) => update('textPath', e.target.value)
-                    }
+                    onChange={(e) => update('textPath', e.target.value)}
                   />
                 </label>
                 <label>
@@ -862,10 +682,7 @@ function ProviderEditor({
                   <Input
                     value={draft.imagePath}
                     placeholder="留空按协议自动选择"
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                      (e) => update('imagePath', e.target.value)
-                    }
+                    onChange={(e) => update('imagePath', e.target.value)}
                   />
                 </label>
               </div>
@@ -878,10 +695,7 @@ function ProviderEditor({
                     min={1}
                     max={600}
                     value={draft.timeoutMs / 1000}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                      (e) => update('timeoutMs', Number(e.target.value) * 1000)
-                    }
+                    onChange={(e) => update('timeoutMs', Number(e.target.value) * 1000)}
                   />
                 </label>
                 <label>
@@ -891,10 +705,7 @@ function ProviderEditor({
                     min={128}
                     max={131072}
                     value={draft.maxOutputTokens}
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                      (e) => update('maxOutputTokens', Number(e.target.value))
-                    }
+                    onChange={(e) => update('maxOutputTokens', Number(e.target.value))}
                   />
                   <small>用于 Responses、Claude 和 Gemini。</small>
                 </label>
@@ -903,10 +714,7 @@ function ProviderEditor({
                 <input
                   type="checkbox"
                   checked={draft.jsonMode}
-                  onChange={
-                    /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                    (e) => update('jsonMode', e.target.checked)
-                  }
+                  onChange={(e) => update('jsonMode', e.target.checked)}
                 />
                 请求 JSON 输出模式（Claude 通过提示词约束）
               </label>
@@ -916,10 +724,7 @@ function ProviderEditor({
                   <Input
                     value={draft.imageEditPath ?? ''}
                     placeholder="images/edits"
-                    onChange={
-                      /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                      (e) => update('imageEditPath', e.target.value)
-                    }
+                    onChange={(e) => update('imageEditPath', e.target.value)}
                   />
                   <small>素材重建需要支持图片输入的编辑接口。</small>
                 </label>
@@ -929,10 +734,7 @@ function ProviderEditor({
                 自定义请求头（JSON）
                 <Textarea
                   value={headers}
-                  onChange={
-                    /** 响应 onChange 交互，将用户操作应用到供应商配置编辑器。 @param e - 当前事件对象。 @returns 当前步骤的处理结果。 */
-                    (e) => setHeaders(e.target.value)
-                  }
+                  onChange={(e) => setHeaders(e.target.value)}
                   placeholder={'{"X-Custom-Header": "value"}'}
                 />
                 <small>
@@ -953,14 +755,7 @@ function ProviderEditor({
             </p>
           )}
           <footer className="pc-footer">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={
-                /** 响应 onClick 交互，将用户操作应用到供应商配置编辑器。 @returns 当前步骤的处理结果。 */
-                () => void perform(true)
-              }
-            >
+            <Button type="button" variant="outline" onClick={() => void perform(true)}>
               <RefreshCw size={14} className={busy === 'probe' ? 'animate-spin' : ''} />
               {busy === 'probe' ? '检测中…' : '检测连接'}
             </Button>
@@ -1019,18 +814,10 @@ export function ProviderConnections({
         <Bindings
           key={bindingKey(settings)}
           settings={settings}
-          onSettings={
-            /**
-             * 响应 onSettings 交互，将用户操作应用到模型连接管理面板。
-             *
-             * @param value - 当前字段、模式或控件的取值。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            (value) => {
-              onSettings(value);
-              notify('模型选择已保存，将用于接下来的请求');
-            }
-          }
+          onSettings={(value) => {
+            onSettings(value);
+            notify('模型选择已保存，将用于接下来的请求');
+          }}
         />
       </section>
       <section className="wf-panel">
@@ -1041,89 +828,58 @@ export function ProviderConnections({
             </h2>
             <p>管理 API Key、本地服务与自定义兼容接口。</p>
           </div>
-          <Button
-            onClick={
-              /** 响应 onClick 交互，将用户操作应用到模型连接管理面板。 @returns 当前步骤的处理结果。 */
-              () => setEditing('new')
-            }
-          >
+          <Button onClick={() => setEditing('new')}>
             <Plus size={14} />
             添加供应商
           </Button>
         </header>
         <div className="pc-providers">
           {settings.providers.length ? (
-            settings.providers.map(
-              /**
-               * 转换模型连接管理面板中的集合条目，供后续处理或展示。
-               *
-               * @param provider - 当前上游连接配置。
-               * @returns 当前条目转换后的结果。
-               */
-              (provider) => (
-                <article key={provider.id} className="pc-provider">
-                  <div>
-                    <h3>{provider.name}</h3>
-                    <p title={provider.baseUrl}>{provider.baseUrl}</p>
-                    <div className="pc-tags">
-                      {provider.textProtocol !== 'none' && (
-                        <span>
-                          文本 ·{' '}
-                          {
-                            textProtocols.find(
-                              /** 检查标识等于 provider 的textProtocol，供集合筛选或定位使用。 @param options - 按顺序解构的当前条目。 @param options.id - 唯一标识，用于查找、更新和建立引用。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                              ([id]) => id === provider.textProtocol,
-                            )?.[1]
-                          }
-                        </span>
-                      )}
-                      {provider.imageProtocol !== 'none' && (
-                        <span>
-                          生图 ·{' '}
-                          {
-                            imageProtocols.find(
-                              /** 检查标识等于 provider 的imageProtocol，供集合筛选或定位使用。 @param options - 按顺序解构的当前条目。 @param options.id - 唯一标识，用于查找、更新和建立引用。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-                              ([id]) => id === provider.imageProtocol,
-                            )?.[1]
-                          }
-                        </span>
-                      )}
+            settings.providers.map((provider) => (
+              <article key={provider.id} className="pc-provider">
+                <div>
+                  <h3>{provider.name}</h3>
+                  <p title={provider.baseUrl}>{provider.baseUrl}</p>
+                  <div className="pc-tags">
+                    {provider.textProtocol !== 'none' && (
                       <span>
-                        {provider.auth === 'none'
-                          ? '无需密钥'
-                          : provider.hasApiKey || provider.headerNames.length
-                            ? '已保存凭据'
-                            : '未配置凭据'}
+                        文本 · {textProtocols.find(([id]) => id === provider.textProtocol)?.[1]}
                       </span>
-                      {settings.text.providerId === provider.id && <span>当前文本</span>}
-                      {settings.image.providerId === provider.id && <span>当前生图</span>}
-                    </div>
+                    )}
+                    {provider.imageProtocol !== 'none' && (
+                      <span>
+                        生图 · {imageProtocols.find(([id]) => id === provider.imageProtocol)?.[1]}
+                      </span>
+                    )}
+                    <span>
+                      {provider.auth === 'none'
+                        ? '无需密钥'
+                        : provider.hasApiKey || provider.headerNames.length
+                          ? '已保存凭据'
+                          : '未配置凭据'}
+                    </span>
+                    {settings.text.providerId === provider.id && <span>当前文本</span>}
+                    {settings.image.providerId === provider.id && <span>当前生图</span>}
                   </div>
-                  <div className="pc-actions">
-                    <Button
-                      variant="outline"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到模型连接管理面板。 @returns 当前步骤的处理结果。 */
-                        () => setEditing(provider)
-                      }
-                      aria-label={`编辑 ${provider.name}`}
-                    >
-                      编辑
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      onClick={
-                        /** 响应 onClick 交互，将用户操作应用到模型连接管理面板。 @returns 当前步骤的处理结果。 */
-                        () => setDeleting(provider)
-                      }
-                      aria-label={`删除 ${provider.name}`}
-                    >
-                      <Trash2 size={14} />
-                    </Button>
-                  </div>
-                </article>
-              ),
-            )
+                </div>
+                <div className="pc-actions">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditing(provider)}
+                    aria-label={`编辑 ${provider.name}`}
+                  >
+                    编辑
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setDeleting(provider)}
+                    aria-label={`删除 ${provider.name}`}
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
+              </article>
+            ))
           ) : (
             <p className="pc-empty">添加供应商后，即可分别选择文本与生图模型。</p>
           )}
@@ -1132,37 +888,20 @@ export function ProviderConnections({
       {editing && (
         <ProviderEditor
           provider={editing === 'new' ? undefined : editing}
-          onSettings={
-            /**
-             * 响应 onSettings 交互，将用户操作应用到模型连接管理面板。
-             *
-             * @param value - 当前字段、模式或控件的取值。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            (value) => {
-              onSettings(value);
-              notify('供应商已保存');
-            }
-          }
-          onClose={
-            /** 响应 onClose 交互，将用户操作应用到模型连接管理面板。 @returns 当前步骤的处理结果。 */
-            () => setEditing(undefined)
-          }
+          onSettings={(value) => {
+            onSettings(value);
+            notify('供应商已保存');
+          }}
+          onClose={() => setEditing(undefined)}
         />
       )}
       {deleting && (
         <Modal
           title="删除供应商"
           subtitle={`删除「${deleting.name}」及其本地连接凭据。`}
-          onClose={
-            /**
-             * 响应 onClose 交互，将用户操作应用到模型连接管理面板。
-             * @returns 无返回值；通过副作用完成当前操作。
-             */
-            () => {
-              if (!busy) setDeleting(undefined);
-            }
-          }
+          onClose={() => {
+            if (!busy) setDeleting(undefined);
+          }}
         >
           <div className="pc-delete">
             <p>
@@ -1171,43 +910,30 @@ export function ProviderConnections({
                 : '已生成的设计和对话会保留。'}
             </p>
             <footer className="pc-footer">
-              <Button
-                variant="outline"
-                disabled={busy}
-                onClick={
-                  /** 响应 onClick 交互，将用户操作应用到模型连接管理面板。 @returns 当前步骤的处理结果。 */
-                  () => setDeleting(undefined)
-                }
-              >
+              <Button variant="outline" disabled={busy} onClick={() => setDeleting(undefined)}>
                 取消
               </Button>
               <Button
                 variant="destructive"
                 disabled={busy}
-                onClick={
-                  /**
-                   * 响应 onClick 交互，将用户操作应用到模型连接管理面板。
-                   * @returns 完成当前异步操作的 Promise，不携带业务数据。
-                   */
-                  async () => {
-                    setBusy(true);
-                    try {
-                      onSettings(
-                        await api<ProviderSettings>(
-                          `/providers/${encodeURIComponent(deleting.id)}`,
-                          undefined,
-                          'DELETE',
-                        ),
-                      );
-                      setDeleting(undefined);
-                      notify('供应商已删除');
-                    } catch (error) {
-                      notify((error as Error).message, true);
-                    } finally {
-                      setBusy(false);
-                    }
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    onSettings(
+                      await api<ProviderSettings>(
+                        `/providers/${encodeURIComponent(deleting.id)}`,
+                        undefined,
+                        'DELETE',
+                      ),
+                    );
+                    setDeleting(undefined);
+                    notify('供应商已删除');
+                  } catch (error) {
+                    notify((error as Error).message, true);
+                  } finally {
+                    setBusy(false);
                   }
-                }
+                }}
               >
                 删除供应商
               </Button>

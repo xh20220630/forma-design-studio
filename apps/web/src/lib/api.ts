@@ -12,10 +12,9 @@ export async function api<T>(path: string, body?: unknown, method?: string): Pro
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  const result = await response.json().catch(
-    /** 处理 api 中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-    () => ({ error: `服务请求失败 (${response.status})` }),
-  );
+  const result = await response
+    .json()
+    .catch(() => ({ error: `服务请求失败 (${response.status})` }));
   if (!response.ok) throw new Error(result.error || `请求失败 (${response.status})`);
   return result as T;
 }
@@ -35,9 +34,5 @@ export function downloadJson(name: string, data: unknown) {
   link.href = url;
   link.download = name;
   link.click();
-  setTimeout(
-    /** 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。 @returns 供 React 保存的新状态。 */
-    () => URL.revokeObjectURL(url),
-    1000,
-  );
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

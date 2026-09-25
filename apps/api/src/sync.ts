@@ -27,33 +27,24 @@ export async function synchronize(
     expectedRevision?: unknown;
   } = {},
 ): Promise<SyncResult> {
-  return transact(
-    /**
-     * 在串行事务内完成 synchronize 的状态修改，避免并发写入覆盖彼此。
-     * @returns 当前步骤的处理结果。
-     */
-    async () => {
-      const state = await getState();
-      const project = state.projects.find(
-        /** 检查条目的标识是否与目标标识一致，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (item) => item.id === id,
+  return transact(async () => {
+    const state = await getState();
+    const project = state.projects.find((item) => item.id === id);
+    requireValue(project, '项目不存在。', 404);
+    if (expectedRevision !== undefined)
+      requireValue(
+        Number(expectedRevision) === project.revision,
+        '预览后设计版本已改变，请重新预览再同步。',
+        409,
       );
-      requireValue(project, '项目不存在。', 404);
-      if (expectedRevision !== undefined)
-        requireValue(
-          Number(expectedRevision) === project.revision,
-          '预览后设计版本已改变，请重新预览再同步。',
-          409,
-        );
-      if (automatic && (!project.workspace?.autoSync || !(await hasSyncManifest(project))))
-        return { project };
-      const result = await applySync(project);
-      project.lastSyncedRevision = project.revision;
-      project.status = 'synced';
-      await writeJson(path.join(dataRoot, 'projects.json'), state);
-      return { ...result, project };
-    },
-  );
+    if (automatic && (!project.workspace?.autoSync || !(await hasSyncManifest(project))))
+      return { project };
+    const result = await applySync(project);
+    project.lastSyncedRevision = project.revision;
+    project.status = 'synced';
+    await writeJson(path.join(dataRoot, 'projects.json'), state);
+    return { ...result, project };
+  });
 }
 
 /**

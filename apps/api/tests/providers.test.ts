@@ -35,178 +35,152 @@ const requests: {
   body: any;
 }[] = [];
 const upstream = http
-  .createServer(
-    /**
-     * 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param req - 当前 HTTP 请求。
-     * @param res - 当前 HTTP 响应对象。
-     * @returns 当前步骤的处理结果。
-     */
-    async (req, res) => {
-      let raw = '';
-      for await (const chunk of req) raw += chunk;
-      const body = raw ? JSON.parse(raw) : undefined;
-      requests.push({ url: req.url!, headers: req.headers, body });
-      res.setHeader('content-type', 'application/json');
-      if (req.url!.startsWith('/slow-headers/') || req.url!.startsWith('/slow-body/')) {
-        if (req.url!.startsWith('/slow-body/')) res.flushHeaders();
-        const timer = setTimeout(
-          /** 基于最新状态计算 Timeout 的下一份值，避免连续更新时读到旧状态。 @returns 供 React 保存的新状态。 */
-          () =>
-            res.end(
-              JSON.stringify({
-                choices: [{ message: { content: '{"ok":true}' } }],
-              }),
-            ),
-          1500,
-        );
-        res.once(
-          'close',
-          /** 响应 close 事件，推进 providers.test 的状态更新。 @returns 无返回值；通过副作用完成当前操作。 */
-          () => clearTimeout(timer),
-        );
-        return;
-      }
-      if (req.url!.startsWith('/upstream-timeout/')) {
-        res.statusCode = 504;
-        return res.end(JSON.stringify({ error: { message: 'upstream inference timeout' } }));
-      }
-      // A gateway may expose its catalog at the root but serve its website for a missing API prefix.
-      if (req.url === '/chat/completions') {
-        res.setHeader('content-type', 'text/html; charset=utf-8');
-        return res.end('<!doctype html><html><body>private-key private-header</body></html>');
-      }
-      if (req.url!.startsWith('/error/')) {
-        res.statusCode = 401;
-        return res.end(
-          JSON.stringify({
-            error: { message: 'key private-key header private-header' },
-          }),
-        );
-      }
-      if (req.url!.startsWith('/redirect/')) {
-        res.statusCode = 302;
-        res.setHeader('location', '/v1/models');
-        return res.end('{}');
-      }
-      if (req.url!.includes('/models') && !body) {
-        if (req.headers['x-api-key'])
-          return res.end(
-            JSON.stringify(
-              req.url!.includes('after_id=')
-                ? {
-                    data: [{ id: 'claude-b', display_name: 'Claude B' }],
-                    has_more: false,
-                  }
-                : {
-                    data: [{ id: 'claude-a', display_name: 'Claude A' }],
-                    has_more: true,
-                    last_id: 'claude-a',
-                  },
-            ),
-          );
-        if (req.headers['x-goog-api-key'])
-          return res.end(
-            JSON.stringify(
-              req.url!.includes('pageToken=')
-                ? {
-                    models: [{ name: 'models/gemini-b', displayName: 'Gemini B' }],
-                  }
-                : {
-                    models: [{ name: 'models/gemini-a', displayName: 'Gemini A' }],
-                    nextPageToken: 'next',
-                  },
-            ),
-          );
-        return res.end(JSON.stringify({ data: [{ id: 'text-local' }, { id: 'image-local' }] }));
-      }
-      if (req.url!.endsWith('/responses'))
-        return res.end(
-          JSON.stringify({
-            output: [
-              {
-                type: 'message',
-                content: [{ type: 'output_text', text: '{"protocol":"responses"}' }],
-              },
-            ],
-          }),
-        );
-      if (req.url!.endsWith('/messages'))
-        return res.end(
-          JSON.stringify({
-            content: [
-              { type: 'thinking', thinking: 'hidden' },
-              { type: 'text', text: '{"protocol":"anthropic"}' },
-            ],
-          }),
-        );
-      if (req.url!.endsWith(':generateContent'))
-        return res.end(
-          JSON.stringify({
-            candidates: [
-              {
-                content: {
-                  parts: body.generationConfig.responseModalities
-                    ? [
-                        {
-                          inlineData: {
-                            mimeType: 'image/png',
-                            data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-                          },
-                        },
-                      ]
-                    : [{ thought: true, text: 'hidden' }, { text: '{"protocol":"gemini"}' }],
-                },
-              },
-            ],
-          }),
-        );
-      if (req.url!.endsWith(':predict'))
-        return res.end(
-          JSON.stringify({
-            predictions: [
-              {
-                bytesBase64Encoded:
-                  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-              },
-            ],
-          }),
-        );
-      if (req.url!.endsWith('/images/generations'))
-        return res.end(
-          JSON.stringify({
-            data: [
-              {
-                b64_json:
-                  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
-              },
-            ],
-          }),
-        );
-      res.end(
+  .createServer(async (req, res) => {
+    let raw = '';
+    for await (const chunk of req) raw += chunk;
+    const body = raw ? JSON.parse(raw) : undefined;
+    requests.push({ url: req.url!, headers: req.headers, body });
+    res.setHeader('content-type', 'application/json');
+    if (req.url!.startsWith('/slow-headers/') || req.url!.startsWith('/slow-body/')) {
+      if (req.url!.startsWith('/slow-body/')) res.flushHeaders();
+      const timer = setTimeout(
+        () =>
+          res.end(
+            JSON.stringify({
+              choices: [{ message: { content: '{"ok":true}' } }],
+            }),
+          ),
+        1500,
+      );
+      res.once('close', () => clearTimeout(timer));
+      return;
+    }
+    if (req.url!.startsWith('/upstream-timeout/')) {
+      res.statusCode = 504;
+      return res.end(JSON.stringify({ error: { message: 'upstream inference timeout' } }));
+    }
+    // A gateway may expose its catalog at the root but serve its website for a missing API prefix.
+    if (req.url === '/chat/completions') {
+      res.setHeader('content-type', 'text/html; charset=utf-8');
+      return res.end('<!doctype html><html><body>private-key private-header</body></html>');
+    }
+    if (req.url!.startsWith('/error/')) {
+      res.statusCode = 401;
+      return res.end(
         JSON.stringify({
-          choices: [{ message: { content: '{"protocol":"openai"}' } }],
+          error: { message: 'key private-key header private-header' },
         }),
       );
-    },
-  )
+    }
+    if (req.url!.startsWith('/redirect/')) {
+      res.statusCode = 302;
+      res.setHeader('location', '/v1/models');
+      return res.end('{}');
+    }
+    if (req.url!.includes('/models') && !body) {
+      if (req.headers['x-api-key'])
+        return res.end(
+          JSON.stringify(
+            req.url!.includes('after_id=')
+              ? {
+                  data: [{ id: 'claude-b', display_name: 'Claude B' }],
+                  has_more: false,
+                }
+              : {
+                  data: [{ id: 'claude-a', display_name: 'Claude A' }],
+                  has_more: true,
+                  last_id: 'claude-a',
+                },
+          ),
+        );
+      if (req.headers['x-goog-api-key'])
+        return res.end(
+          JSON.stringify(
+            req.url!.includes('pageToken=')
+              ? {
+                  models: [{ name: 'models/gemini-b', displayName: 'Gemini B' }],
+                }
+              : {
+                  models: [{ name: 'models/gemini-a', displayName: 'Gemini A' }],
+                  nextPageToken: 'next',
+                },
+          ),
+        );
+      return res.end(JSON.stringify({ data: [{ id: 'text-local' }, { id: 'image-local' }] }));
+    }
+    if (req.url!.endsWith('/responses'))
+      return res.end(
+        JSON.stringify({
+          output: [
+            {
+              type: 'message',
+              content: [{ type: 'output_text', text: '{"protocol":"responses"}' }],
+            },
+          ],
+        }),
+      );
+    if (req.url!.endsWith('/messages'))
+      return res.end(
+        JSON.stringify({
+          content: [
+            { type: 'thinking', thinking: 'hidden' },
+            { type: 'text', text: '{"protocol":"anthropic"}' },
+          ],
+        }),
+      );
+    if (req.url!.endsWith(':generateContent'))
+      return res.end(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: body.generationConfig.responseModalities
+                  ? [
+                      {
+                        inlineData: {
+                          mimeType: 'image/png',
+                          data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+                        },
+                      },
+                    ]
+                  : [{ thought: true, text: 'hidden' }, { text: '{"protocol":"gemini"}' }],
+              },
+            },
+          ],
+        }),
+      );
+    if (req.url!.endsWith(':predict'))
+      return res.end(
+        JSON.stringify({
+          predictions: [
+            {
+              bytesBase64Encoded:
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+            },
+          ],
+        }),
+      );
+    if (req.url!.endsWith('/images/generations'))
+      return res.end(
+        JSON.stringify({
+          data: [
+            {
+              b64_json:
+                'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=',
+            },
+          ],
+        }),
+      );
+    res.end(
+      JSON.stringify({
+        choices: [{ message: { content: '{"protocol":"openai"}' } }],
+      }),
+    );
+  })
   .listen(0, '127.0.0.1');
 const server = createApp().listen(0, '127.0.0.1');
 await Promise.all(
-  [upstream, server].map(
-    /**
-     * 转换 providers.test 中的集合条目，供后续处理或展示。
-     *
-     * @param s - 当前遍历的状态或文本片段。
-     * @returns 当前条目转换后的结果。
-     */
-    (s) =>
-      new Promise<void>(
-        /** 把 providers.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。 @param resolve - 异步操作成功时调用的完成函数。 @returns 无返回值；通过 resolve 或 reject 结束等待。 */
-        (resolve) => s.once('listening', resolve),
-      ),
-  ),
+  [upstream, server].map((s) => new Promise<void>((resolve) => s.once('listening', resolve))),
 );
 const upstreamBase = `http://127.0.0.1:${(upstream.address() as import('node:net').AddressInfo).port}`;
 const appBase = `http://127.0.0.1:${(server.address() as import('node:net').AddressInfo).port}/api`;
@@ -230,39 +204,12 @@ async function api(route: string, method = 'GET', data?: unknown) {
   });
   return { status: response.status, body: await response.json() };
 }
-after(
-  /**
-   * 组织当前场景的准备或清理步骤。
-   * @returns 完成当前检查或生命周期操作。
-   */
-  async () => {
-    await Promise.all(
-      [server, upstream].map(
-        /**
-         * 转换 providers.test 中的集合条目，供后续处理或展示。
-         *
-         * @param s - 当前遍历的状态或文本片段。
-         * @returns 当前条目转换后的结果。
-         */
-        (s) =>
-          new Promise<void>(
-            /**
-             * 把 providers.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-             *
-             * @param resolve - 异步操作成功时调用的完成函数。
-             * @returns 无返回值；通过 resolve 或 reject 结束等待。
-             */
-            (resolve) =>
-              s.close(
-                /** 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 无返回值；通过副作用完成当前操作。 */
-                () => resolve(),
-              ),
-          ),
-      ),
-    );
-    await rm(root, { recursive: true, force: true });
-  },
-);
+after(async () => {
+  await Promise.all(
+    [server, upstream].map((s) => new Promise<void>((resolve) => s.close(() => resolve()))),
+  );
+  await rm(root, { recursive: true, force: true });
+});
 const messages = [
   { role: 'system', content: 'Return JSON.' },
   {
@@ -279,10 +226,6 @@ const messages = [
   },
 ];
 
-/**
- * 验证legacy settings migrate; independent bindings route generation and keep credentials private。
- * @returns 完成当前检查或生命周期操作。
- */
 test('legacy settings migrate; independent bindings route generation and keep credentials private', async () => {
   const legacy = (await api('/settings')).body;
   assert.equal(legacy.text.model, 'old-text');
@@ -364,10 +307,6 @@ test('legacy settings migrate; independent bindings route generation and keep cr
   assert.equal((await api('/settings')).body.text.providerId, '');
 });
 
-/**
- * 验证protocol adapters preserve images, auth, model selection and JSON output。
- * @returns 完成当前检查或生命周期操作。
- */
 test('protocol adapters preserve images, auth, model selection and JSON output', async () => {
   for (const protocol of ['openai', 'openai-responses', 'anthropic', 'gemini'] as const) {
     const provider = validateProvider({
@@ -430,10 +369,6 @@ test('protocol adapters preserve images, auth, model selection and JSON output',
   assert.equal(requests.at(-1)?.body.response_format, undefined);
 });
 
-/**
- * 验证catalog pagination, failed requests and redirects do not expose secrets。
- * @returns 完成当前检查或生命周期操作。
- */
 test('catalog pagination, failed requests and redirects do not expose secrets', async () => {
   for (const protocol of ['anthropic', 'gemini'] as const) {
     const models = await listProviderModels(
@@ -444,12 +379,7 @@ test('catalog pagination, failed requests and redirects do not expose secrets', 
       }),
     );
     assert.equal(models.models.length, 2);
-    assert.ok(
-      models.models.every(
-        /** 检查不成立，供集合筛选或定位使用。 @param m - 当前变换矩阵或消息。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-        (m) => !m.id.startsWith('models/'),
-      ),
-    );
+    assert.ok(models.models.every((m) => !m.id.startsWith('models/')));
   }
   const result = await api('/providers/probe', 'POST', {
     baseUrl: upstreamBase + '/error',
@@ -475,10 +405,6 @@ test('catalog pagination, failed requests and redirects do not expose secrets', 
     assert.equal((await api('/providers', 'POST', data)).status, 400);
 });
 
-/**
- * 验证root catalog success does not hide an HTML fallback at an unversioned chat endpoint。
- * @returns 完成当前检查或生命周期操作。
- */
 test('root catalog success does not hide an HTML fallback at an unversioned chat endpoint', async () => {
   const provider = validateProvider({
     baseUrl: upstreamBase,
@@ -487,14 +413,7 @@ test('root catalog success does not hide an HTML fallback at an unversioned chat
   });
   assert.equal((await listProviderModels(provider)).models.length, 2);
   await assert.rejects(
-    /** 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
     () => requestText(provider, 'local-text', messages),
-    /**
-     * 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param error - 当前操作的失败信息，供界面反馈或重试判断。
-     * @returns 条件是否成立的布尔值。
-     */
     (error) => {
       assert.match(error.message, /返回了网页/);
       assert.match(error.message, /\/chat\/completions/);
@@ -511,10 +430,6 @@ test('root catalog success does not hide an HTML fallback at an unversioned chat
   });
 });
 
-/**
- * 验证local request deadline identifies its stage and differs from an upstream HTTP timeout。
- * @returns 完成当前检查或生命周期操作。
- */
 test('local request deadline identifies its stage and differs from an upstream HTTP timeout', async () => {
   for (const [path, stage] of [
     ['slow-headers', '等待上游响应'],
@@ -526,14 +441,7 @@ test('local request deadline identifies its stage and differs from an upstream H
       timeoutMs: 1000,
     });
     await assert.rejects(
-      /** 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
       () => requestText(provider, 'local-text', messages),
-      /**
-       * 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-       *
-       * @param error - 当前操作的失败信息，供界面反馈或重试判断。
-       * @returns 条件是否成立的布尔值。
-       */
       (error) => {
         assert.match(error.message, /本地.*1 秒/);
         assert.ok(error.message.includes(stage));
@@ -547,14 +455,7 @@ test('local request deadline identifies its stage and differs from an upstream H
     auth: 'none',
   });
   await assert.rejects(
-    /** 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @returns 当前步骤的处理结果。 */
     () => requestText(provider, 'local-text', messages),
-    /**
-     * 执行 providers.test 传入的局部处理步骤，使调用处能够控制结果如何更新。
-     *
-     * @param error - 当前操作的失败信息，供界面反馈或重试判断。
-     * @returns 条件是否成立的布尔值。
-     */
     (error) => {
       assert.match(error.message, /HTTP 504/);
       assert.ok(!error.message.includes('本地'));

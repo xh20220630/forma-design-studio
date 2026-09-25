@@ -6,13 +6,9 @@ import path from 'node:path';
 import { mkdtemp } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { createWorkbenchServer } from '../src/server.ts';
-import { createV1Workspace } from './fixture.ts';
+import { createWorkbenchServer } from '@forma/design-workspace-sdk/server';
+import { createV1Workspace } from '../helpers/fixture.ts';
 
-/**
- * 验证serves the workbench document, assets, writes, and rejects foreign origins。
- * @returns 完成当前检查或生命周期操作。
- */
 test('serves the workbench document, assets, writes, and rejects foreign origins', async () => {
   const designRoot = await createV1Workspace();
   const staticRoot = await mkdtemp(path.join(os.tmpdir(), 'forma-workbench-static-'));
@@ -20,23 +16,11 @@ test('serves the workbench document, assets, writes, and rejects foreign origins
   await writeFile(path.join(staticRoot, 'index.html'), '<!doctype html><title>Workbench</title>');
   await writeFile(path.join(staticRoot, 'assets/app.js'), 'console.log("workbench")');
   await symlink(path.join(designRoot, 'project.json'), path.join(staticRoot, 'leak.json'));
-  const blocker = createServer(
-    /** 执行 server.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param _request - 当前处理步骤不使用的请求对象。 @param response - 上游或本地服务的响应。 @returns 当前步骤的处理结果。 */
-    (_request, response) => response.end('occupied'),
-  );
-  await new Promise<void>(
-    /**
-     * 把 server.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-     *
-     * @param resolve - 异步操作成功时调用的完成函数。
-     * @param reject - 异步操作失败时调用的拒绝函数。
-     * @returns 无返回值；通过 resolve 或 reject 结束等待。
-     */
-    (resolve, reject) => {
-      blocker.once('error', reject);
-      blocker.listen(0, '127.0.0.1', resolve);
-    },
-  );
+  const blocker = createServer((_request, response) => response.end('occupied'));
+  await new Promise<void>((resolve, reject) => {
+    blocker.once('error', reject);
+    blocker.listen(0, '127.0.0.1', resolve);
+  });
   const occupiedPort = (blocker.address() as AddressInfo).port;
   const server = await createWorkbenchServer({ designRoot, staticRoot, port: occupiedPort });
   assert.notEqual(server.port, occupiedPort);
@@ -137,19 +121,8 @@ test('serves the workbench document, assets, writes, and rejects foreign origins
     assert.equal(invalidChange.status, 400);
   } finally {
     await server.close();
-    await new Promise<void>(
-      /**
-       * 把 server.test 中的回调式操作接入 Promise，以便调用方等待完成或处理失败。
-       *
-       * @param resolve - 异步操作成功时调用的完成函数。
-       * @param reject - 异步操作失败时调用的拒绝函数。
-       * @returns 无返回值；通过 resolve 或 reject 结束等待。
-       */
-      (resolve, reject) =>
-        blocker.close(
-          /** 执行 server.test 传入的局部处理步骤，使调用处能够控制结果如何更新。 @param error - 当前操作的失败信息，供界面反馈或重试判断。 @returns 无返回值；通过副作用完成当前操作。 */
-          (error) => (error ? reject(error) : resolve()),
-        ),
+    await new Promise<void>((resolve, reject) =>
+      blocker.close((error) => (error ? reject(error) : resolve())),
     );
     await rm(path.dirname(designRoot), { recursive: true, force: true });
     await rm(staticRoot, { recursive: true, force: true });

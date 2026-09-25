@@ -120,27 +120,16 @@
             'section',
             null,
             row([
-              ...presets.map(
-                /**
-                 * 应用选中的主题预设，让资源预览立即采用该配色。
-                 * @param preset - 工作室基础配色预设。
-                 * @returns 用于预览的 React 界面内容。
-                 */
-                (preset) =>
-                  h(
-                    'button',
-                    {
-                      key: preset.id,
-                      onClick:
-                        /**
-                         * 应用选中的主题预设，让资源预览立即采用该配色。
-                         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-                         */
-                        () => updateSettings({ preset: preset.id }),
-                      'aria-pressed': settings.preset === preset.id,
-                    },
-                    preset.name,
-                  ),
+              ...presets.map((preset) =>
+                h(
+                  'button',
+                  {
+                    key: preset.id,
+                    onClick: () => updateSettings({ preset: preset.id }),
+                    'aria-pressed': settings.preset === preset.id,
+                  },
+                  preset.name,
+                ),
               ),
               h('a', { href: '/#/theme', key: 'studio' }, '打开 Rin 主题工作室 →'),
             ]),
@@ -150,19 +139,13 @@
             'section',
             null,
             row(
-              kinds.map(
-                /**
-                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
-                 * @param kind - 用于决定展示或处理分支的类别。
-                 * @returns 用于预览的 React 界面内容。
-                 */
-                (kind) =>
-                  h(
-                    'div',
-                    { className: 'specimen-item', key: kind },
-                    h(RinIcon, { kind, size: 24 }),
-                    h('span', null, kind),
-                  ),
+              kinds.map((kind) =>
+                h(
+                  'div',
+                  { className: 'specimen-item', key: kind },
+                  h(RinIcon, { kind, size: 24 }),
+                  h('span', null, kind),
+                ),
               ),
             ),
           ),
@@ -170,19 +153,13 @@
             'section',
             null,
             row(
-              kinds.map(
-                /**
-                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
-                 * @param kind - 用于决定展示或处理分支的类别。
-                 * @returns 用于预览的 React 界面内容。
-                 */
-                (kind) =>
-                  h(
-                    'div',
-                    { className: 'specimen-item', key: kind },
-                    h(RinIcon, { kind, size: 40, variant: 'sculptural' }),
-                    h('span', null, kind),
-                  ),
+              kinds.map((kind) =>
+                h(
+                  'div',
+                  { className: 'specimen-item', key: kind },
+                  h(RinIcon, { kind, size: 40, variant: 'sculptural' }),
+                  h('span', null, kind),
+                ),
               ),
             ),
           ),
@@ -191,19 +168,13 @@
             null,
             row([
               h(RinAvatar, { size: 44, ready: true, key: 'avatar' }),
-              ...['empty', 'thinking', 'success', 'error'].map(
-                /**
-                 * 构造当前资源的预览项，便于比较品牌形象的不同状态。
-                 * @param state - 当前操作所依赖的完整状态。
-                 * @returns 用于预览的 React 界面内容。
-                 */
-                (state) =>
-                  h(
-                    'div',
-                    { className: 'specimen-item', key: state },
-                    h(RinIllustration, { state, size: 128 }),
-                    h('span', null, state),
-                  ),
+              ...['empty', 'thinking', 'success', 'error'].map((state) =>
+                h(
+                  'div',
+                  { className: 'specimen-item', key: state },
+                  h(RinIllustration, { state, size: 128 }),
+                  h('span', null, state),
+                ),
               ),
             ]),
           ),

@@ -59,52 +59,22 @@
     <script>
       const movie = document.getElementById('movie');
       const status = document.getElementById('status');
-      document.getElementById('replay').onclick =
-        /**
-         * 将视频回到起点并播放，便于重复查看装配过程。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
-        () => {
-          movie.currentTime = 0;
-          movie.play();
-        };
-      document.getElementById('pause').onclick =
-        /**
-         * 暂停视频，保留当前画面供观察。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
-        () => movie.pause();
+      document.getElementById('replay').onclick = () => {
+        movie.currentTime = 0;
+        movie.play();
+      };
+      document.getElementById('pause').onclick = () => movie.pause();
       document.querySelectorAll('[data-time]').forEach(
-        /**
-         * 暂停并定位到选定时间，便于逐阶段检查动画画面。
-         * @param button - 当前预览条目或交互事件。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
         (button) =>
-          (button.onclick =
-            /**
-             * 暂停并定位到选定时间，便于逐阶段检查动画画面。
-             * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-             */
-            () => {
-              movie.pause();
-              movie.currentTime = Number(button.dataset.time);
-            }),
+          (button.onclick = () => {
+            movie.pause();
+            movie.currentTime = Number(button.dataset.time);
+          }),
       );
-      document.getElementById('dark').onchange =
-        /**
-         * 切换深色背景，观察素材在不同底色上的边缘效果。
-         * @param event - 当前预览条目或交互事件。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
-        (event) => document.getElementById('stage').classList.toggle('dark', event.target.checked);
-      document.getElementById('character').onchange =
-        /**
-         * 切换角色叠加层的显示，便于比较场景构图。
-         * @param event - 当前预览条目或交互事件。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
-        (event) => (document.getElementById('rin').hidden = !event.target.checked);
+      document.getElementById('dark').onchange = (event) =>
+        document.getElementById('stage').classList.toggle('dark', event.target.checked);
+      document.getElementById('character').onchange = (event) =>
+        (document.getElementById('rin').hidden = !event.target.checked);
 
       /**
        * 同步播放进度和暂停状态，让预览工具栏显示视频当前状态。
@@ -113,13 +83,8 @@
       const update = () => {
         status.value = `${movie.currentTime.toFixed(2)} / ${Number.isFinite(movie.duration) ? movie.duration.toFixed(2) : '6.00'} 秒 · ${movie.ended ? '完成，已停稳' : movie.paused ? '暂停' : '播放中'}`;
       };
-      ['timeupdate', 'loadedmetadata', 'play', 'pause', 'ended'].forEach(
-        /**
-         * 订阅播放状态变化，保持进度说明与视频同步。
-         * @param event - 当前预览条目或交互事件。
-         * @returns 当前交互的处理结果；界面通过状态或 DOM 更新。
-         */
-        (event) => movie.addEventListener(event, update),
+      ['timeupdate', 'loadedmetadata', 'play', 'pause', 'ended'].forEach((event) =>
+        movie.addEventListener(event, update),
       );
     </script>
   </body>

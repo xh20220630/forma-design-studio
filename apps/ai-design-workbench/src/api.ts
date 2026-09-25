@@ -15,10 +15,7 @@ import type {
  */
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
-  const result = await response.json().catch(
-    /** 处理 request 中的异步失败，按当前流程决定回退或继续抛出。 @returns 当前步骤的处理结果。 */
-    () => ({ error: `请求失败 (${response.status})` }),
-  );
+  const result = await response.json().catch(() => ({ error: `请求失败 (${response.status})` }));
   if (!response.ok) throw new Error(result.error || `请求失败 (${response.status})`);
   return result as T;
 }

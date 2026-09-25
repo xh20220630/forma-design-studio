@@ -39,16 +39,8 @@ const geometry = (entry) => [entry.x, entry.y, entry.width, entry.height];
  * @param id - 唯一标识，用于查找、更新和建立引用。
  * @returns 当前步骤的处理结果。
  */
-const get = (nodes, id) =>
-  nodes.find(
-    /** 检查条目的标识是否与目标标识一致，供集合筛选或定位使用。 @param item - 当前遍历的条目。 @returns 用于判断条件的值；真值表示该条目符合条件。 */
-    (item) => item.id === id,
-  );
+const get = (nodes, id) => nodes.find((item) => item.id === id);
 
-/**
- * 验证nested frame resizing preserves constraints and unrelated nodes without mutating input。
- * @returns 完成当前检查或生命周期操作。
- */
 test('nested frame resizing preserves constraints and unrelated nodes without mutating input', () => {
   const nodes = [
     node('root', { type: 'frame', x: 100, y: 100, width: 200, height: 200 }),
@@ -88,10 +80,6 @@ test('nested frame resizing preserves constraints and unrelated nodes without mu
   assert.deepEqual(nodes, original);
 });
 
-/**
- * 验证horizontal and vertical auto-layout apply padding, gaps and cross-axis alignment。
- * @returns 完成当前检查或生命周期操作。
- */
 test('horizontal and vertical auto-layout apply padding, gaps and cross-axis alignment', () => {
   const horizontal = [
     node('frame', {
@@ -135,10 +123,6 @@ test('horizontal and vertical auto-layout apply padding, gaps and cross-axis ali
   assert.deepEqual(geometry(get(column, 'b')), [130, 65, 80, 30]);
 });
 
-/**
- * 验证wrap layout moves overflowing children to rows using the previous row height。
- * @returns 完成当前检查或生命周期操作。
- */
 test('wrap layout moves overflowing children to rows using the previous row height', () => {
   const result = applyAutoLayout(
     [
@@ -161,10 +145,6 @@ test('wrap layout moves overflowing children to rows using the previous row heig
   assert.deepEqual(geometry(get(result, 'c')), [80, 40, 30, 10]);
 });
 
-/**
- * 验证hug layout measures visible content and keeps padding around empty containers。
- * @returns 完成当前检查或生命周期操作。
- */
 test('hug layout measures visible content and keeps padding around empty containers', () => {
   const frame = node('frame', {
     type: 'frame',
@@ -196,10 +176,6 @@ test('hug layout measures visible content and keeps padding around empty contain
   assert.deepEqual(geometry(applyAutoLayout([frame], 'frame')[0]), [0, 0, 16, 16]);
 });
 
-/**
- * 验证fill shares the remaining main-axis space and independently fills the cross-axis。
- * @returns 完成当前检查或生命周期操作。
- */
 test('fill shares the remaining main-axis space and independently fills the cross-axis', () => {
   const row = applyAutoLayout(
     [
@@ -249,10 +225,6 @@ test('fill shares the remaining main-axis space and independently fills the cros
   assert.deepEqual(geometry(get(column, 'fill')), [10, 60, 180, 230]);
 });
 
-/**
- * 验证group resizing scales geometry while frame resizing honors child constraints。
- * @returns 完成当前检查或生命周期操作。
- */
 test('group resizing scales geometry while frame resizing honors child constraints', () => {
   const child = node('child', { parentId: 'container', x: 30, y: 40, width: 30, height: 20 });
   const container = node('container', { type: 'group', x: 10, y: 20, width: 100, height: 80 });
@@ -276,10 +248,6 @@ test('group resizing scales geometry while frame resizing honors child constrain
   );
 });
 
-/**
- * 验证resizing vector paths scales local points and closed linear path coordinates。
- * @returns 完成当前检查或生命周期操作。
- */
 test('resizing vector paths scales local points and closed linear path coordinates', () => {
   const path = node('path', {
     type: 'path',
@@ -314,10 +282,6 @@ test('resizing vector paths scales local points and closed linear path coordinat
   ]);
 });
 
-/**
- * 验证cloning a selection remaps its entire parent graph and isolates mutable overrides。
- * @returns 完成当前检查或生命周期操作。
- */
 test('cloning a selection remaps its entire parent graph and isolates mutable overrides', () => {
   const nodes = [
     node('parent', { type: 'group', parentId: 'external' }),
@@ -340,16 +304,7 @@ test('cloning a selection remaps its entire parent graph and isolates mutable ov
   assert.equal(leaf.parentId, child.id);
   assert.equal(child.componentId, 'master');
   assert.equal(
-    new Set([
-      ...nodes.map(
-        /** 提取条目的标识，供后续计算或展示使用。 @param item - 当前遍历的条目。 @returns 条目的标识。 */
-        (item) => item.id,
-      ),
-      ...result.nodes.map(
-        /** 提取条目的标识，供后续计算或展示使用。 @param item - 当前遍历的条目。 @returns 条目的标识。 */
-        (item) => item.id,
-      ),
-    ]).size,
+    new Set([...nodes.map((item) => item.id), ...result.nodes.map((item) => item.id)]).size,
     7,
   );
   assert.deepEqual(geometry(child), [24, 24, 40, 20]);
@@ -357,10 +312,6 @@ test('cloning a selection remaps its entire parent graph and isolates mutable ov
   assert.equal(nodes[1].overrides.label.text, 'Original');
 });
 
-/**
- * 验证path scaling preserves relative commands and transforms rotated arc geometry。
- * @returns 完成当前检查或生命周期操作。
- */
 test('path scaling preserves relative commands and transforms rotated arc geometry', () => {
   const scaled = scalePath('m1 2 c3 4 5 6 7 8 h9 v10 z', 2, 3);
   assert.equal(scaled, 'm 2 6 c 6 12 10 18 14 24 h 18 v 30 z');
@@ -377,10 +328,6 @@ test('path scaling preserves relative commands and transforms rotated arc geomet
   assert.deepEqual([large, sweep, x, y], [0, 1, 80, 20]);
 });
 
-/**
- * 验证nested auto-layout fill remains stable when the outer frame is resized。
- * @returns 完成当前检查或生命周期操作。
- */
 test('nested auto-layout fill remains stable when the outer frame is resized', () => {
   const nodes = [
     node('outer', { type: 'frame', width: 500, height: 300, layout: 'vertical', padding: 10 }),

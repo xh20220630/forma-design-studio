@@ -37,17 +37,9 @@ export function ReferenceImagePreview({
   return (
     <Dialog
       open={!!image}
-      onOpenChange={
-        /**
-         * 响应 onOpenChange 交互，将用户操作应用到参考图查看器。
-         *
-         * @param open - 弹层或面板当前是否打开。
-         * @returns 无返回值；通过副作用完成当前操作。
-         */
-        (open) => {
-          if (!open) onClose();
-        }
-      }
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
       <DialogContent className="reference-image-dialog">
         <DialogHeader>
@@ -82,14 +74,7 @@ function ImageView({
   return (
     <>
       <div className="reference-image-tools">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={
-            /** 响应 onClick 交互，将用户操作应用到图片查看区域。 @returns 当前步骤的处理结果。 */
-            () => setFit(!fit)
-          }
-        >
+        <Button variant="outline" size="sm" onClick={() => setFit(!fit)}>
           {fit ? '按宽度查看' : '显示全图'}
         </Button>
         <a href={image.url} target="_blank" rel="noreferrer">
