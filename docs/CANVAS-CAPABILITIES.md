@@ -22,7 +22,7 @@ Forma 采用 Figma 风格的工作台组织方式，并使用 shadcn/ui 基础�
 
 ## 场景和导出的共同语义
 
-设计画布使用 `packages/renderer/src/CanvasRenderer.tsx` 与 `canvas/` 内的 Canvas 2D 引擎；项目预览、原型预览、缩略图和导出保留 `SceneRenderer.tsx` 的 DOM/SVG 后端。二者共享 `scene-values.ts` 解析主题与变量，绘制后端不同，不能保证逐像素一致。Canvas 文字换行、抗锯齿、渐变边缘与阴影可能与浏览器 CSS/SVG 有差异。矢量阴影的扩散范围目前采用近似绘制。
+设计画布使用 `packages/renderer/src/canvas/CanvasRenderer.tsx` 与同目录的 Canvas 2D 引擎；项目预览、原型预览、缩略图和导出保留 `dom/SceneRenderer.tsx` 的 DOM/SVG 后端。二者共享 `shared/scene-values.ts` 解析主题与变量，绘制后端不同，不能保证逐像素一致。Canvas 文字换行、抗锯齿、渐变边缘与阴影可能与浏览器 CSS/SVG 有差异。矢量阴影的扩散范围目前采用近似绘制。
 
 - 节点数组顺序决定叠放，节点位置保存在所在页面或组件的绝对坐标系中。
 - 父节点的隐藏、透明度、旋转、翻转会传播到后代。Canvas 绘制与点击命中使用变换后的祖先圆角裁剪路径；框选使用保守边界相交。DOM/SVG 导出仍使用祖先的轴对齐矩形裁剪。

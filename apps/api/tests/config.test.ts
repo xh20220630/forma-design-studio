@@ -7,7 +7,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 const root = fileURLToPath(new URL('../../../', import.meta.url));
-const configUrl = new URL('../src/config.ts', import.meta.url).href;
+const configUrl = new URL('../src/config/runtime.ts', import.meta.url).href;
 
 test('API paths stay rooted in the repository when pnpm changes the working directory', async () => {
   for (const cwd of [root, path.join(root, 'apps/api'), os.tmpdir()]) {

@@ -20,12 +20,12 @@ await writeFile(
 );
 const { createApp } = await import('../src/index.ts');
 const { resolveModel, getPrivateProvider, validateProvider } = await import(
-  '../src/provider-settings.ts'
+  '../src/infrastructure/providers/settings.ts'
 );
 const { requestText, requestImage, listProviderModels } = await import(
-  '../src/provider-transport.ts'
+  '../src/infrastructure/providers/transport.ts'
 );
-const { generateJson, generateImage } = await import('../src/provider.ts');
+const { generateJson, generateImage } = await import('../src/services/generation.ts');
 const requests: {
   /** 资源或服务的访问地址。 */
   url: string;

@@ -17,7 +17,7 @@
     "build": "node tooling/build.ts",
     "prepack": "pnpm --filter @forma/ai-design-workbench-ui build && pnpm run build",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.ts"
+    "test": "node --test tests/integration/*.test.ts"
   },
   "devDependencies": {
     "@forma/ai-ui-designer-plugin": "workspace:*",

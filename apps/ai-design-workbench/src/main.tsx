@@ -6,8 +6,8 @@ import '@forma/ui/styles.css';
 import '@forma/ui/studio-tokens.css';
 import '@forma/ui/canvas.css';
 import { StudioThemeProvider } from '@forma/ui/studio-theme';
-import App from './App.tsx';
-import './styles.css';
+import App from './app/App.tsx';
+import './app/styles/styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

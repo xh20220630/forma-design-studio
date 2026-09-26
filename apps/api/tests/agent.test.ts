@@ -162,7 +162,7 @@ test('provider errors and real conversation history persist across a new process
     [
       '--input-type=module',
       '-e',
-      "import {getAgentSession} from './src/agent.ts'; process.stdout.write(JSON.stringify(await getAgentSession(process.argv[1])));",
+      "import {getAgentSession} from './src/services/agent.ts'; process.stdout.write(JSON.stringify(await getAgentSession(process.argv[1])));",
       session.id,
     ],
     { cwd: fileURLToPath(new URL('../', import.meta.url)), env: process.env },

@@ -23,9 +23,9 @@ flowchart LR
   Workspace --> App[实际 Web 应用]
 ```
 
-`packages/schema/src/design.ts` 是编辑器的数据契约；服务端在 `apps/api/src/validate.ts` 验证同一契约。节点与组件通过稳定 ID 引用，节点可以绑定类型匹配的主题 token 与集合变量。页面坐标始终是绝对坐标；`parentId` 表达图层归属，编辑器和导出渲染器都按扁平数组顺序绘制，并继承祖先的隐藏、透明度、旋转和翻转。组件内节点使用组件画布坐标；`type: component` 实例运行时引用主组件，因此主组件变化会传播到这些实例。组件和父子图层的循环引用会被拒绝。
+`packages/schema/src/design.ts` 是编辑器的数据契约；服务端在 `apps/api/src/services/validation.ts` 验证同一契约。节点与组件通过稳定 ID 引用，节点可以绑定类型匹配的主题 token 与集合变量。页面坐标始终是绝对坐标；`parentId` 表达图层归属，编辑器和导出渲染器都按扁平数组顺序绘制，并继承祖先的隐藏、透明度、旋转和翻转。组件内节点使用组件画布坐标；`type: component` 实例运行时引用主组件，因此主组件变化会传播到这些实例。组件和父子图层的循环引用会被拒绝。
 
-设计画布通过 `@forma/renderer/canvas` 使用 Canvas 2D 场景层与交互覆盖层；场景编译、空间索引、可见区域裁剪和有上限的位图缓存位于 `packages/renderer/src/canvas/`。项目预览、原型与导出 React 使用 `SceneRenderer.tsx`，两种渲染后端共享 `scene-values.ts` 的主题、变量和形状参数解析。导出器组合 DOM 渲染源码与共享解析源码，生成独立 React 代码。拖拽只更新编辑器内部预览，结束后再保存并记录一次历史；左侧图层列表使用可见行虚拟化。自动布局和尺寸约束由编辑器计算并保存为节点坐标；导出代码呈现这些坐标，不自动生成响应式应用布局。主题模式、变量集合、评论和手动版本快照均可持久化。详细能力与限制见 [画布能力清单](./CANVAS-CAPABILITIES.md)。
+设计画布通过 `@forma/renderer/canvas` 使用 Canvas 2D 场景层与交互覆盖层；场景编译、空间索引、可见区域裁剪和有上限的位图缓存位于 `packages/renderer/src/canvas/`。项目预览、原型与导出 React 使用 `dom/SceneRenderer.tsx`，两种渲染后端共享 `shared/scene-values.ts` 的主题、变量和形状参数解析。Node 导出适配器 `node/standalone-source.ts` 组合 DOM 渲染源码与共享解析源码，生成独立 React 代码。拖拽只更新编辑器内部预览，结束后再保存并记录一次历史；左侧图层列表使用可见行虚拟化。自动布局和尺寸约束由编辑器计算并保存为节点坐标；导出代码呈现这些坐标，不自动生成响应式应用布局。主题模式、变量集合、评论和手动版本快照均可持久化。详细能力与限制见 [画布能力清单](./CANVAS-CAPABILITIES.md)。
 
 ## 图片优先的生成流程
 
@@ -87,30 +87,42 @@ export function Dashboard() {
 
 ```text
 apps/web/
-  src/                    工作台页面、编辑器交互和应用状态
+  src/main.tsx            React 挂载入口
+  src/app/                应用状态、路由、Provider 与全局样式
+  src/features/           项目、编辑器、Agent、供应商、还原、工作流、素材库与外观
+  src/entities/project/   项目种子数据、标记与预览
+  src/shared/             请求、主题、类型、品牌和动效
   public/                 品牌素材、图片与视频
   tooling/                Vite 开发预览支持
   vite.config.ts          前端构建、API 代理与共享包解析
+apps/ai-design-workbench/
+  src/main.tsx            React 挂载入口
+  src/app/                工作空间事件、跨功能状态与应用装配
+  src/features/           流程画布、设计系统、检查器与文档编辑
+  src/shared/             HTTP 客户端、素材地址与视图类型
+  vite.config.ts          CLI 工作台构建与开发代理
 apps/api/
-  src/index.ts           HTTP 路由与本地访问限制
-  src/config.ts          根目录环境变量、数据目录与 Web 产物路径
-  src/store.ts           JSON 持久化及串行事务
-  src/validate.ts        场景图、Token 与批准门槛校验
-  src/provider.ts        图片、视觉还原与主题生成
-  src/exporter.ts        React 导出、路径边界与冲突保护
-  src/agent.ts           会话、模型计划与操作执行
-  src/sync.ts            普通编辑与聊天共用的同步协调
-  src/workspaces.ts      本地绑定与 GitHub 克隆
+  src/index.ts            服务启动入口
+  src/app.ts              Express 应用装配与静态文件
+  src/config/             根目录环境变量、数据目录与 Web 产物路径
+  src/http/               资源路由、访问限制、正文校验和错误映射
+  src/services/           Agent、生成、还原、导出、同步、绑定与输入校验
+  src/domain/             设计上下文与生成结果归一化
+  src/infrastructure/     JSON 存储、素材文件、模型配置与协议传输
+  src/shared/             错误与内部契约
   tests/                  API、Agent 与运行路径测试
 packages/
   schema/                 设计和 Agent 类型；Node 类型源码入口
   renderer/               共享场景渲染器；Node 独立导出源码入口
   editor-core/            几何、布尔与视口算法及相应测试
   ui/                     Radix 基础组件、Tailwind 样式与工具
-  typescript-config/      基础配置及 React 配置
+  design-workspace-sdk/    工作空间文档、变更服务与本地 HTTP 适配
+  workbench-cli/           工作台命令、初始化与发行打包
+  forma-ai-ui-designer/    设计技能资源与插件元数据
+  typescript-config/      基础、React 与 Node 配置
 ```
 
-包依赖为：Web → UI / editor-core / renderer / schema；API → renderer；renderer 和 editor-core → schema。共享包不得反向依赖应用，跨包引用必须使用公开的包名与子路径，不能穿透 `src` 目录。
+包依赖为：Web → UI / editor-core / renderer / schema；API → renderer / schema；AI 设计工作台前端 → UI / schema；CLI → design-workspace-sdk / schema / forma-ai-ui-designer；renderer、editor-core 和 SDK → schema。共享包不得导入应用源码；CLI 发行打包会复制 AI 设计工作台前端的构建产物。跨包引用必须使用公开的包名与子路径，不能穿透 `src` 目录。
 
 内部包是私有源码包：前端通过 Vite 消费 TypeScript/TSX，服务端仅加载 `@forma/renderer/source` 的 Node 入口。该入口在包内部组合渲染器与设计类型，使导出的 React 代码不依赖工作区包，也不读取 Web 应用源码。
 

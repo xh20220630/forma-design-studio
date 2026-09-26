@@ -10,7 +10,8 @@
     "./source": "./src/source.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/integration/*.test.ts"
   },
   "devDependencies": {
     "@forma/typescript-config": "workspace:*",

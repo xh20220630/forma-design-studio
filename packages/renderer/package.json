@@ -4,13 +4,13 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/SceneRenderer.tsx",
+    ".": "./src/index.ts",
     "./source": "./src/source.ts",
-    "./canvas": "./src/CanvasRenderer.tsx"
+    "./canvas": "./src/canvas.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.ts"
+    "test": "node --test tests/unit/*.test.ts tests/integration/*.test.ts"
   },
   "dependencies": {
     "@forma/schema": "workspace:*"

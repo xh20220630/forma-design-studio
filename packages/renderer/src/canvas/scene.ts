@@ -1,5 +1,5 @@
 import type { DesignNode, DesignPage, Project } from '@forma/schema';
-import { resolveNode } from '../scene-values.ts';
+import { resolveNode } from '../shared/scene-values.ts';
 import {
   identity,
   inverse,

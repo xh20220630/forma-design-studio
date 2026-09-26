@@ -11,3 +11,16 @@ Canvas 引擎将场景与编辑覆盖层分开，使用视口尺寸位图、空�
 实现位于 `src/canvas/`：`scene.ts` 编译层级、变换、组件实例；`geometry.ts` 管理空间索引和坐标；`painter.ts` 负责绘制及缓存；`engine.ts` 管理帧调度、命中和覆盖层。能力边界见 [画布能力清单](../../docs/CANVAS-CAPABILITIES.md)。
 
 仓库约定见 [CONTRIBUTING.md](../../CONTRIBUTING.md)。
+
+## 目录与依赖
+
+`src/index.ts`、`src/canvas.ts`、`src/source.ts` 分别承载 DOM 渲染、Canvas 渲染和 Node 源码导出，包级导入路径保持兼容。
+
+- `shared/`：主题、变量和组件实例的共享取值。
+- `dom/`：样式、SVG 图形内容和递归节点渲染。
+- `canvas/`：场景编译、空间索引、路径缓存、绘制引擎及 React 接口。
+- `node/`：独立 TSX 源码组装，只能在 Node 环境使用。
+- `tests/unit/`：几何和场景编译测试。
+- `tests/integration/`：独立源码的编译与导出契约测试。
+
+两种渲染后端共享数据解析，不互相依赖。相互递归的 `NodeContent` 与 `NodeView` 放在同一模块，避免循环导入。调整 DOM 模块时，同步维护 `node/standalone-source.ts` 的源码清单；导出结果只依赖 React，并内嵌设计类型。

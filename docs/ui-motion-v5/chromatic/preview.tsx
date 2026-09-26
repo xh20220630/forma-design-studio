@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChromaticLoom } from '@/components/motion/ChromaticLoom';
+import { ChromaticLoom } from '@/shared/ui/motion/ChromaticLoom';
 import '@fontsource-variable/geist';
 import './preview.css';
 

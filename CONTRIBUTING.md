@@ -26,7 +26,7 @@ pnpm build
 pnpm start
 ```
 
-`pnpm start` 启动 API 并提供 `apps/web/dist/`。共享包采用源码消费，API 使用 TypeScript ESM 和 Node.js 原生类型擦除，只有 Web 产生构建目录；不需要为内部包维护额外编译和监听进程。
+`pnpm start` 启动 API 并提供 `apps/web/dist/`。共享运行时包采用源码消费，API 使用 TypeScript ESM 和 Node.js 原生类型擦除；两个前端应用和 CLI 生成发行产物，其余内部源码包不需要额外编译和监听进程。
 
 AI 设计工作台使用 `pnpm design open ./examples/ai-design-workbench-demo/design` 启动。根目录的 `pnpm design` 会先执行 `build:design`，依次构建工作台前端和包含 SDK、前端副本的 CLI，再执行传入的命令，避免使用旧的打包内容。单独构建前端不会更新 `packages/workbench-cli/dist/web` 或已经运行的 CLI 服务；更新后需要重启服务并刷新浏览器。
 
@@ -44,7 +44,7 @@ AI 设计工作台使用 `pnpm design open ./examples/ai-design-workbench-demo/d
 
 API 和共享 Node 入口统一使用 `.ts`。API 复用 `@forma/typescript-config/node.json`，启用 strict、NodeNext、verbatimModuleSyntax 和 erasableSyntaxOnly。相对模块导入必须带 `.ts` 扩展名，类型依赖使用 `import type`；不使用依赖编译转换的 enum 或构造器参数属性。
 
-包内实现放 `src/`，包级测试放 `tests/`，包配置留在包根目录。Web 独有业务组件继续留在 `apps/web/src/components`，不为了复用而把应用逻辑放进基础 UI 包。文档和素材制作工程放根目录 `docs/`，上线资源放 `apps/web/public/`。
+包内实现放 `src/`，包级测试放 `tests/`，包配置留在包根目录。React 应用按 `app/`、`features/`、`shared/` 组织，跨功能的项目对象放在 `entities/`；API 按 HTTP、业务服务、领域规则和基础设施组织。应用业务逻辑留在所属应用，不为了复用而放进基础 UI 包。详细边界见 [apps/README.md](apps/README.md)。文档和素材制作工程放根目录 `docs/`，上线资源放 `apps/web/public/`。
 
 ## 依赖边界
 

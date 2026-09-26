@@ -21,9 +21,9 @@
 - [首页分镜](home/home-storyboard.jpg)、[Blender源场景](home/home-idea-foundry.blend)、[场景脚本与验证记录](home/README.md)。
 - [模板分镜](atlas/atlas-contact-sheet.jpg)、[Blender源场景](atlas/atlas-scene.blend)、[场景脚本与验证记录](atlas/README.md)。
 - [色彩织机组件说明](chromatic/README.md)。
-- 前端播放组件：`apps/web/src/components/motion/StudioSequence.tsx`，样式 `studio-sequence.css`。
-- 主题交互组件：`apps/web/src/components/motion/ChromaticLoom.tsx`，样式 `chromatic-loom.css`。
-- 页面整合样式：`apps/web/src/studio-motion-v5.css`。
+- 前端播放组件：`apps/web/src/shared/ui/motion/StudioSequence.tsx`，样式 `studio-sequence.css`。
+- 主题交互组件：`apps/web/src/shared/ui/motion/ChromaticLoom.tsx`，样式 `chromatic-loom.css`。
+- 页面整合样式：`apps/web/src/app/styles/studio-motion-v5.css`。
 - 视频与海报：`apps/web/public/brand/rin/v5/motion/`。原v4文件保留作为历史素材，正式页面已使用新版。
 
 ## 播放与交互

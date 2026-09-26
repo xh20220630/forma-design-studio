@@ -61,7 +61,7 @@ import { RinAvatar, RinIllustration, RinIcon, RinAssembly, RinStudioScene } from
 - `RinIllustration` 在可见、前台时进入；`thinking` 仅在真实执行时循环三个细小信号。成功和错误只有一次进入反馈。减少动态效果时直接展示静态状态。
 - `RinAssembly` 只有 active、进入视口、页面前台、用户未减少动态效果时播放。inactive 或减少动态效果恢复静帧，视口外或后台暂停。
 - `RinStudioScene` 默认静态，用户手动启动/停止，不自动声称有任务在运行。减少动态效果时显示静态演示和禁用的播放控件。
-- `apps/web/src/lib/motion.ts` 导出 `motionTiming`、`motionEase` 和 `enterMotion(reduced)`，供界面复用统一的进入与反馈曲线。
+- `apps/web/src/shared/lib/motion.ts` 导出 `motionTiming`、`motionEase` 和 `enterMotion(reduced)`，供界面复用统一的进入与反馈曲线。
 
 ## 官方参考
 

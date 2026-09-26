@@ -9,10 +9,13 @@
     "./*": "./src/components/*.tsx",
     "./studio-theme": "./src/theme/StudioTheme.tsx",
     "./studio-tokens.css": "./src/theme/studio-tokens.css",
-    "./canvas.css": "./src/canvas.css"
+    "./canvas.css": "./src/canvas.css",
+    "./brand": "./src/components/composites/brand.tsx",
+    "./canvas-rulers": "./src/components/composites/canvas-rulers.tsx"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/unit/*.test.ts"
   },
   "dependencies": {
     "class-variance-authority": "catalog:",

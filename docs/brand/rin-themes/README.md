@@ -20,11 +20,11 @@
 
 ## 架构
 
-- `apps/web/src/theme/StudioTheme.tsx`：类型、默认值、预设、输入归一化、主题变量、持久化、跨标签同步和 Provider。
-- `apps/web/src/theme/StudioRuntime.tsx`：根据外观偏好配置 Motion 和 Tooltip。独立于启动入口，避免热更新重复创建 React root。
-- `apps/web/src/theme/studio-tokens.css`：首屏默认变量和系统偏好处理。
-- `apps/web/src/components/ThemeStudio.tsx`：预设选择、外观编辑与可交互的即时预览。
-- `apps/web/src/lib/motion.ts`：`useStudioMotion()` 合并用户交互节奏与系统减少动态效果设置。
+- `apps/web/src/shared/theme/StudioTheme.tsx`：类型、默认值、预设、输入归一化、主题变量、持久化、跨标签同步和 Provider。
+- `apps/web/src/app/providers/StudioRuntime.tsx`：根据外观偏好配置 Motion 和 Tooltip。独立于启动入口，避免热更新重复创建 React root。
+- `apps/web/src/shared/theme/studio-tokens.css`：首屏默认变量和系统偏好处理。
+- `apps/web/src/features/appearance/components/ThemeStudio.tsx`：预设选择、外观编辑与可交互的即时预览。
+- `apps/web/src/shared/lib/motion.ts`：`useStudioMotion()` 合并用户交互节奏与系统减少动态效果设置。
 - 持久化键：`forma-studio-theme-v1`，内容为 version 1 envelope。未知枚举、非法色值和损坏缓存回退；Storage 不可用时仍可在当前页面修改。
 
 主题 Provider 只修改文档根节点的主题变量和外观属性，不修改用户项目数据。主要变量包括 surface、text、border、accent、card-bg、card-radius、card-shadow、control-radius、density spacing 和 motion duration。

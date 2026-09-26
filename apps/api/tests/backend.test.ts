@@ -15,10 +15,10 @@ process.env.FORMA_DATA_DIR = path.join(testRoot, 'data');
 delete process.env.FORMA_AGENT_TOKEN;
 const { createApp } = await import('../src/index.ts');
 const { generateFiles, previewSync, applySync, validateWorkspacePath } = await import(
-  '../src/exporter.ts'
+  '../src/services/exporter.ts'
 );
-const { validateProject } = await import('../src/validate.ts');
-const { bindWorkspace } = await import('../src/workspaces.ts');
+const { validateProject } = await import('../src/services/validation.ts');
+const { bindWorkspace } = await import('../src/services/workspaces.ts');
 const tokens = {
   primary: '#8b5cf6',
   background: '#f5f5fa',

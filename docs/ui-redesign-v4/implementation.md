@@ -28,7 +28,7 @@
 
 ## 实现选择
 
-主体是珍珠白工作台、墨色导航与冰蓝品牌场景。正式配色以 `apps/web/src/theme/StudioTheme.tsx` 和 `apps/web/src/studio-tokens.css` 为准：背景 `#f6f8fc`、导航 `#191f29`、正文 `#172134`、品牌浅蓝 `#38bdf8`。主要按钮采用更深的 `#0875e1` 配白字，替代设计图中的高亮蓝以改善可读性。字体沿用项目 Geist 和中文系统字体。
+主体是珍珠白工作台、墨色导航与冰蓝品牌场景。正式配色以 `apps/web/src/shared/theme/StudioTheme.tsx` 和 `apps/web/src/shared/theme/studio-tokens.css` 为准：背景 `#f6f8fc`、导航 `#191f29`、正文 `#172134`、品牌浅蓝 `#38bdf8`。主要按钮采用更深的 `#0875e1` 配白字，替代设计图中的高亮蓝以改善可读性。字体沿用项目 Geist 和中文系统字体。
 
 原 Logo、原版凛的银白短发、蓝瞳、黑白外套和蓝色发饰保持不变。透明化沿用原图像素与轮廓，不把生成设计图里的角色变化带入正式页面。原始素材保留，新文件放在 `apps/web/public/brand/rin/v4/`。
 
