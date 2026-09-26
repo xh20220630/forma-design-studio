@@ -244,7 +244,7 @@ export function SettingsView({
             </button>
           ))}
           <div className="settings-rin-note">
-            <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛 Rin" loading="lazy" />
+            <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛" loading="lazy" />
             <span>
               连接就绪，
               <br />
@@ -388,7 +388,7 @@ export function AgentsView({
       <div className="wf-integration-grid">
         <section className="wf-panel wf-rin-panel">
           <PanelHeader
-            title="凛 Rin · 设计 Agent"
+            title="凛 · 设计助手"
             description="图片生成与视觉还原"
             icon={<RinAvatar size={32} />}
           >
@@ -397,7 +397,7 @@ export function AgentsView({
           <div className="wf-rin-profile">
             <img
               src="/brand/rin/v4/rin-full-body-640.webp"
-              alt="凛 Rin，原版设计伙伴"
+              alt="凛，原版设计伙伴"
               decoding="async"
             />
             <div className="wf-detail-list">

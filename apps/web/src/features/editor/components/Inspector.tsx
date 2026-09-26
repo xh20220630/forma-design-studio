@@ -1465,7 +1465,7 @@ export default function Inspector({
                   <div className="ed-rin-collaborator">
                     <RinAvatar size={28} />
                     <div>
-                      <strong>Rin / 设计搭档</strong>
+                      <strong>凛 · 设计搭档</strong>
                       <span>从想法，到可编辑的界面。</span>
                     </div>
                   </div>

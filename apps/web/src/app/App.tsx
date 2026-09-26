@@ -686,10 +686,10 @@ export default function App() {
                 <span>帮助与快捷键</span>
               </Button>
               <Separator />
-              <button className="account-row" onClick={openAgent} aria-label="与凛 Rin 对话">
+              <button className="account-row" onClick={openAgent} aria-label="与凛对话">
                 <RinAvatar size={36} />
                 <span>
-                  <strong>凛 Rin</strong>
+                  <strong>凛</strong>
                   <small>
                     <span className={`connection-dot ${online ? 'online' : ''}`} />
                     {online ? '你的设计伙伴' : '服务离线'}
@@ -737,7 +737,7 @@ export default function App() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      aria-label="切换 Rin 主题"
+                      aria-label="切换凛的主题"
                       className="theme-quick-trigger"
                     >
                       <Palette size={16} />
@@ -747,7 +747,7 @@ export default function App() {
                     <div className="theme-quick-heading">
                       <RinAvatar size={32} />
                       <span>
-                        <strong>Rin 主题</strong>
+                        <strong>凛的主题</strong>
                         <small>选择适合你的显示模式</small>
                       </span>
                     </div>
@@ -781,7 +781,7 @@ export default function App() {
                         navigate('theme');
                       }}
                     >
-                      打开 Rin 主题工作室 <ArrowUpRight size={14} />
+                      打开凛的主题工作室 <ArrowUpRight size={14} />
                     </Button>
                   </PopoverContent>
                 </Popover>
@@ -794,7 +794,7 @@ export default function App() {
                   aria-pressed={agentOpen}
                 >
                   <RinIcon kind="agent" size={15} />
-                  Rin
+                  凛
                 </Button>
                 <span className="topbar-local">
                   <span className={`connection-dot ${online ? 'online' : ''}`} />

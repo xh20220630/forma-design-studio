@@ -238,7 +238,7 @@ export default function ProjectOverview({
           <Button
             variant="outline"
             className="project-rin-button"
-            aria-label="与凛 Rin 讨论当前项目"
+            aria-label="与凛讨论当前项目"
             onClick={() => onAgent('请分析当前项目的页面、组件和主题，给出下一步设计建议。')}
           >
             <RinAvatar size={24} />
@@ -433,9 +433,8 @@ export default function ProjectOverview({
               onAgent('请检查当前项目的视觉一致性，分析颜色、排版和组件使用，并提出改进建议。')
             }
           >
-            <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛 Rin" decoding="async" />
+            <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛" decoding="async" />
             <span>
-              <small>RIN’S DESIGN NOTE</small>
               <strong>
                 下一步，
                 <br />
@@ -506,7 +505,7 @@ export default function ProjectOverview({
           {onTheme && (
             <button className="project-appearance-link" onClick={onTheme}>
               <RinIcon kind="theme" size={16} />
-              Rin 工作室外观
+              凛的工作室外观
               <ArrowUpRight size={13} />
             </button>
           )}

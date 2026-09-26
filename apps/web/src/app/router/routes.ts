@@ -9,7 +9,7 @@ export const labels: Record<View, string> = {
   agents: '助手与接入',
   sync: '设计同步',
   settings: '设置',
-  theme: 'Rin 主题工作室',
+  theme: '凛的主题工作室',
   editor: '设计画布',
 };
 

@@ -1123,9 +1123,7 @@ export default function AgentChatPanel({
         <div className="ac-agent-brand">
           <RinAvatar size={36} />
           <div className="ac-brand-copy">
-            <strong>
-              凛 <span>Rin</span>
-            </strong>
+            <strong>凛</strong>
             <RinTaskActivity running={busy} label={busy ? '正在处理你的设计' : '你的设计搭档'} />
           </div>
         </div>

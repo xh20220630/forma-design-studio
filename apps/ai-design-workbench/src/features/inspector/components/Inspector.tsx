@@ -205,7 +205,7 @@ export function Inspector({
               <dt>转场</dt>
               <dd>{flow.edges.length}</dd>
               <dt>版本</dt>
-              <dd>revision {document.revision}</dd>
+              <dd>{document.revision}</dd>
             </dl>
           </section>
           <FlowDocumentCard flow={flow} onOpenDocument={onOpenDocument} />

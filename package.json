@@ -10,7 +10,7 @@
   },
   "scripts": {
     "preinstall": "node scripts/check-package-manager.ts",
-    "dev": "pnpm --parallel --filter './apps/*' run dev",
+    "dev": "pnpm --parallel --filter \"./apps/*\" run dev",
     "dev:web": "pnpm --filter @forma/web dev",
     "dev:api": "pnpm --filter @forma/api dev",
     "design": "pnpm run build:design && forma-design",

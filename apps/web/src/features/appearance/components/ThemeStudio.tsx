@@ -254,7 +254,6 @@ export function ThemeStudio() {
         <div className="theme-studio__settings">
           <div className="theme-atmosphere theme-atmosphere--kinetic">
             <div className="theme-atmosphere-copy">
-              <span className="pearl-eyebrow">CHROMATIC LOOM</span>
               <h2>
                 让色彩，
                 <br />
@@ -285,7 +284,7 @@ export function ThemeStudio() {
                 >
                   <PresetPreview preset={preset} accent={settings.accent} />
                   <span className="theme-preset__description">
-                    <strong>{preset.name.split(' / ').pop()}</strong>
+                    <strong>{preset.name}</strong>
                     <span className="theme-preset__check" aria-hidden="true">
                       {settings.preset === preset.id && <Check size={12} />}
                     </span>
@@ -449,7 +448,7 @@ export function ThemeStudio() {
           <div className="theme-preview-window">
             <header>
               <RinAvatar size={24} />
-              <strong>Rin 工作空间</strong>
+              <strong>凛的工作空间</strong>
               <Search size={13} />
               <SlidersHorizontal size={13} />
             </header>
@@ -467,7 +466,7 @@ export function ThemeStudio() {
                     都值得成形。
                   </strong>
                   <span>和凛一起，开始创作。</span>
-                  <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛 Rin" />
+                  <img src="/brand/rin/v4/rin-full-body-640.webp" alt="凛" />
                 </div>
                 <div className="theme-preview-title">
                   <strong>我的项目</strong>
@@ -525,7 +524,7 @@ export function ThemeStudio() {
             </div>
           </div>
           <div className="theme-preview-summary">
-            <span>{currentPreset.name.split(' / ').pop()}</span>
+            <span>{currentPreset.name}</span>
             <code>
               <i style={{ background: settings.accent }} />
               {settings.accent.toUpperCase()}

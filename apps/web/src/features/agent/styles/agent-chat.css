@@ -160,12 +160,6 @@
   display: flex;
   margin: 0 0 12px;
 }
-.ac-brand-copy strong span {
-  color: var(--studio-text-muted);
-  font-weight: 400;
-  margin-left: 4px;
-  font-size: 12px;
-}
 .ac-welcome-intro > svg {
   color: var(--studio-text-muted);
   margin-bottom: 16px;

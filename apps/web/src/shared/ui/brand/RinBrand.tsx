@@ -45,12 +45,12 @@ const illustrations: Record<RinState, string> = {
   theme: '/brand/rin/v4/rin-theme-640.webp',
 };
 const descriptions: Record<RinState, string> = {
-  idle: 'Rin，设计助手',
-  empty: 'Rin 正在等待新的设计',
-  thinking: 'Rin 正在处理设计',
-  success: 'Rin 已完成这次操作',
-  error: 'Rin 提醒你检查当前操作',
-  theme: 'Rin 和她的主题材质收藏',
+  idle: '凛，设计助手',
+  empty: '凛正在等待新的设计',
+  thinking: '凛正在处理设计',
+  success: '凛已完成这次操作',
+  error: '凛提醒你检查当前操作',
+  theme: '凛和她的主题材质收藏',
 };
 /**
  * 为品牌素材选取备用表现，避免资源缺失时显示空白。
@@ -111,13 +111,13 @@ export function RinAvatar({
     >
       <img
         src="/brand/rin/v4/rin-avatar-128.webp"
-        alt="Rin"
+        alt="凛"
         width={size}
         height={size}
         onError={fallback}
         draggable={false}
       />
-      {ready && <span className="rin-avatar__ready" aria-label="Rin 已就绪" />}
+      {ready && <span className="rin-avatar__ready" aria-label="凛已就绪" />}
     </motion.span>
   );
 }
@@ -386,7 +386,7 @@ export function RinThemeCompanion({
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 250, damping: 19 }}
       >
         <RinIcon kind="materials" size={16} />
-        <span>YOUR STYLE</span>
+        <span>我的风格</span>
       </motion.span>
       <motion.span
         className="rin-theme-companion__chip rin-theme-companion__chip--motion"
@@ -398,7 +398,7 @@ export function RinThemeCompanion({
         transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 250, damping: 19 }}
       >
         <RinIcon kind="motion" size={16} />
-        <span>WITH RIN</span>
+        <span>与凛同行</span>
       </motion.span>
     </motion.figure>
   );
@@ -461,7 +461,7 @@ function StudioVideo({
       playsInline
       preload="none"
       poster="/brand/rin/rin-studio-poster.png"
-      aria-label="Rin 工作室，设计变量、组件与界面归位演示"
+      aria-label="凛的工作室，设计变量、组件与界面归位演示"
       onPlay={() => onPlayback?.(true)}
       onPause={() => onPlayback?.(false)}
     >
@@ -521,7 +521,7 @@ export function RinStudioScene({
         <span className="rin-studio-scene__label">
           <span aria-hidden="true">R</span>
           <span>
-            RIN STUDIO<small>Token · Component · Canvas</small>
+            凛的工作室<small>设计变量 · 组件 · 画布</small>
           </span>
         </span>
         <button

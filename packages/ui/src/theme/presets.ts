@@ -3,7 +3,7 @@ import type { StudioThemeSettings, StudioThemePreset } from './types.ts';
 export const studioThemePresets: StudioThemePreset[] = [
   {
     id: 'paper',
-    name: 'Paper / 素白',
+    name: '素白',
     description: '珍珠白与冰蓝，让灵感轻盈落下。',
     colors: {
       background: '#f6f8fc',
@@ -16,7 +16,7 @@ export const studioThemePresets: StudioThemePreset[] = [
   },
   {
     id: 'glacier',
-    name: 'Glacier / 冰川',
+    name: '冰川',
     description: '清爽的冷灰工作界面。',
     colors: {
       background: '#f5f6f8',
@@ -29,7 +29,7 @@ export const studioThemePresets: StudioThemePreset[] = [
   },
   {
     id: 'midnight',
-    name: 'Midnight / 夜航',
+    name: '夜航',
     description: '柔和的深灰背景，适合暗光环境。',
     colors: {
       background: '#141b27',

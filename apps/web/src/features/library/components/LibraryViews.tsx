@@ -367,7 +367,6 @@ export function TemplatesView({
       </Heading>
       <section className="template-editorial template-editorial--cinematic">
         <div className="template-editorial-copy">
-          <span className="pearl-eyebrow">RIN’S CURATION / 02</span>
           <h2>让灵感，翻开新的一页。</h2>
           <p>
             颜色、字体与组件，相互呼应。
@@ -387,7 +386,7 @@ export function TemplatesView({
             探索精选 <ArrowUpRight size={14} />
           </Button>
           <span className="template-curator-signature">
-            <img src="/brand/rin/v4/rin-avatar-128.webp" alt="凛 Rin" />
+            <img src="/brand/rin/v4/rin-avatar-128.webp" alt="凛" />
             凛的灵感选集
           </span>
         </div>
@@ -1041,8 +1040,8 @@ export function ComponentsView({ project, onChange }: ProjectViewProps) {
                     onChange={(value) => setForm({ ...form, kind: value as 'button' | 'card' })}
                     label="初始组件内容"
                     options={[
-                      { value: 'button', label: '按钮 Button' },
-                      { value: 'card', label: '卡片 Card' },
+                      { value: 'button', label: '按钮' },
+                      { value: 'card', label: '卡片' },
                     ]}
                   />
                 </label>
@@ -1603,7 +1602,7 @@ export function TokensView({
                 </dd>
               </dl>
               <div className="wk-preview-note">
-                <img src="/brand/rin/v4/rin-avatar-128.webp" alt="凛 Rin" loading="lazy" />
+                <img src="/brand/rin/v4/rin-avatar-128.webp" alt="凛" loading="lazy" />
                 <span>
                   <strong>变量改变，设计随之更新。</strong>已绑定 Token 的图层与主组件会同步应用。
                 </span>
@@ -2010,10 +2009,10 @@ export function TokensView({
                   onChange={(value) => setNewType(value as DesignVariable['type'])}
                   label="变量类型"
                   options={[
-                    { value: 'color', label: 'Color · 颜色' },
-                    { value: 'number', label: 'Number · 数值' },
-                    { value: 'string', label: 'String · 文本' },
-                    { value: 'boolean', label: 'Boolean · 布尔' },
+                    { value: 'color', label: '颜色' },
+                    { value: 'number', label: '数值' },
+                    { value: 'string', label: '文本' },
+                    { value: 'boolean', label: '布尔' },
                   ]}
                 />
               </label>

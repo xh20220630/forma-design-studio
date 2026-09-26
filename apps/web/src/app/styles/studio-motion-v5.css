@@ -15,9 +15,6 @@
 .workspace-root .workspace-hero--cinematic h2 {
   text-wrap: balance;
 }
-.workspace-root .workspace-hero--cinematic .workspace-hero-caption {
-  margin-top: 24px;
-}
 .workspace-foundry {
   min-width: 0;
   align-self: stretch;
@@ -165,9 +162,6 @@ html[data-studio-theme='midnight'] .template-editorial--cinematic p {
   .workspace-root .workspace-hero--cinematic .workspace-hero-actions {
     max-width: none;
     gap: 9px;
-  }
-  .workspace-root .workspace-hero--cinematic .workspace-hero-caption {
-    display: none;
   }
   .workspace-foundry .studio-sequence__stage {
     height: 205px;

@@ -198,7 +198,6 @@ export default function WorkspaceHome(props: Props) {
     >
       <header className="files-page-header">
         <div>
-          <span className="pearl-eyebrow">YOUR CREATIVE SPACE</span>
           <h1>每一个想法，都值得成形。</h1>
           <p>和凛一起，开始今天的创作。</p>
         </div>
@@ -251,7 +250,6 @@ export default function WorkspaceHome(props: Props) {
               与凛对话
             </Button>
           </div>
-          <span className="workspace-hero-caption">RIN × FORMA · IDEAS TAKE SHAPE</span>
         </div>
         <StudioSequence variant="foundry" showRin className="workspace-foundry" />
       </section>
@@ -534,7 +532,7 @@ export default function WorkspaceHome(props: Props) {
           {props.onTheme && (
             <button onClick={props.onTheme}>
               <RinIcon kind="theme" size={14} />
-              Rin 工作室外观
+              凛的工作室外观
             </button>
           )}
         </div>
