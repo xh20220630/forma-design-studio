@@ -1,15 +1,47 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { request } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import type { AddressInfo } from 'node:net';
 import { LocalAgentBridge, LocalAgentRequestError } from '../../src/index.ts';
 import { createBridgeServer } from '../../src/server.ts';
+import { findExecutable } from '../../src/discovery.ts';
 
 const executable = fileURLToPath(new URL('../helpers/agent.mjs', import.meta.url));
 const executables = { codex: executable, claude: executable, kimi: executable };
 const message = (text: string) => [{ role: 'user', content: text }];
+
+test('discovery accepts readable JavaScript entries without execute permission', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'forma-agent-discovery-'));
+  try {
+    for (const extension of ['.js', '.cjs', '.mjs']) {
+      const script = path.join(root, 'agent' + extension);
+      await writeFile(script, "console.log('fixture-agent 1.0');\n", { mode: 0o644 });
+      assert.equal(await findExecutable('codex', script), script);
+      const agents = await new LocalAgentBridge({
+        executables: { codex: script, claude: script, kimi: script },
+      }).discover();
+      const agent = agents.find((item) => item.id === 'codex')!;
+      assert.equal(agent.available, true);
+      assert.equal(agent.version, 'fixture-agent 1.0');
+    }
+    assert.equal(await findExecutable('codex', path.join(root, 'missing.mjs')), undefined);
+    if (process.platform !== 'win32') {
+      const launcher = path.join(root, 'codex');
+      await writeFile(launcher, '#!/bin/sh\n', { mode: 0o644 });
+      assert.equal(await findExecutable('codex', launcher), undefined);
+      const executableLauncher = path.join(root, 'executable-codex');
+      await writeFile(executableLauncher, '#!/bin/sh\n', { mode: 0o755 });
+      assert.equal(await findExecutable('codex', executableLauncher), executableLauncher);
+    }
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 test('model catalogs use public model IDs, paginate, exclude hidden entries, and preserve upstream errors', async () => {
   assert.equal(

@@ -26,7 +26,13 @@ export async function findExecutable(id: LocalAgentId, override?: string) {
     : directories.flatMap((directory) => extensions.map((ext) => path.join(directory, id + ext)));
   for (const candidate of candidates) {
     try {
-      await access(candidate, process.platform === 'win32' ? constants.F_OK : constants.X_OK);
+      // Node reads JavaScript entries directly, so they do not need a POSIX execute bit.
+      const mode = /\.[cm]?js$/i.test(candidate)
+        ? constants.R_OK
+        : process.platform === 'win32'
+          ? constants.F_OK
+          : constants.X_OK;
+      await access(candidate, mode);
       return candidate;
     } catch {
       continue;
