@@ -7,10 +7,38 @@ import {
   saveModelBindings,
 } from '../../infrastructure/providers/settings.ts';
 import { listProviderModels } from '../../infrastructure/providers/transport.ts';
+import {
+  discoverLocalAgents,
+  requestLocalAgent,
+} from '../../infrastructure/providers/local-agent.ts';
+import { requireValue } from '../../shared/errors.ts';
 import { Router } from 'express';
 import type { ApiRequest } from '../types.ts';
 
 export const providersRouter = Router();
+
+providersRouter.get('/api/local-agents', async (_req, res) =>
+  res.json({ agents: await discoverLocalAgents() }),
+);
+
+providersRouter.post('/api/providers/local-test', async (req: ApiRequest, res) => {
+  const provider = await getPrivateProvider(String(req.body.id || ''));
+  requireValue(provider.textProtocol === 'local-agent', '请选择本地 Agent 连接。');
+  const controller = new AbortController();
+  res.once('close', () => {
+    if (!res.writableEnded) controller.abort(new Error('测试对话已取消。'));
+  });
+  const start = Date.now();
+  const settings = await getProviderSettings();
+  const model = settings.text.providerId === provider.id ? settings.text.model : 'default';
+  const text = await requestLocalAgent(
+    provider,
+    model,
+    [{ role: 'user', content: 'Reply with exactly: Forma local agent bridge connected.' }],
+    controller.signal,
+  );
+  res.json({ text, latencyMs: Date.now() - start });
+});
 
 providersRouter.get('/api/settings', async (_req, res) => res.json(await getProviderSettings()));
 

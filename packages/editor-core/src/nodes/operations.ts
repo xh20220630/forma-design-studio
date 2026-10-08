@@ -14,7 +14,7 @@ import { descendants } from './hierarchy.ts';
 export function moveNodes(nodes: DesignNode[], ids: string[], dx: number, dy: number) {
   const all = new Set(descendants(nodes, ids));
   return nodes.map((node) =>
-    all.has(node.id) ? { ...node, x: Math.round(node.x + dx), y: Math.round(node.y + dy) } : node,
+    all.has(node.id) ? { ...node, x: node.x + Math.round(dx), y: node.y + Math.round(dy) } : node,
   );
 }
 

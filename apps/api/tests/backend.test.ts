@@ -780,7 +780,14 @@ test('provider image approval to vision graph and safe automatic synchronization
         );
       const output = Array.isArray(input.messages[1].content)
         ? { pages: fixture('provider').pages, components: [], assets: [] }
-        : { name: 'Violet', description: 'Test theme', tokens };
+        : input.messages[0].content.startsWith('Split application')
+          ? {
+              styleGuide: '',
+              pages: [
+                { name: 'Home', prompt: input.messages[1].content, width: 1440, height: 1000 },
+              ],
+            }
+          : { name: 'Violet', description: 'Test theme', tokens };
       res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
     })
     .listen(0, '127.0.0.1');
@@ -841,10 +848,14 @@ test('provider image approval to vision graph and safe automatic synchronization
     assert.equal(design.status, 200);
     project = design.body.project;
     assert.equal(design.body.pages[0].nodes.length, 2);
-    assert.ok(calls[0].input.prompt.includes('#8b5cf6'));
     assert.ok(
       calls
-        .find((call) => call.route === '/v1/chat/completions')
+        .find((call) => call.route === '/v1/images/generations')
+        .input.prompt.includes('#8b5cf6'),
+    );
+    assert.ok(
+      calls
+        .find((call) => Array.isArray(call.input.messages?.[1]?.content))
         .input.messages[1].content[1].image_url.url.startsWith('data:image/png;base64,'),
     );
     assert.equal(

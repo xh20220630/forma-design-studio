@@ -1,20 +1,14 @@
-import {
-  memo,
-  useImperativeHandle,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-  type Ref,
-} from 'react';
+import { memo, useImperativeHandle, useLayoutEffect, useRef, type Ref } from 'react';
 import type { DesignNode, DesignPage, Project } from '@forma/schema';
-import { getProjectTokens } from '../shared/scene-values.ts';
-import { CanvasEngine, type CanvasOverlay, type CanvasView } from './engine';
-import { SceneCompiler, type SceneEntry } from './scene';
-import type { Bounds, Point } from './geometry';
+import { CanvasEngine, type CanvasOverlay, type CanvasView } from './engine.ts';
+import type { SceneEntry } from './scene.ts';
+import type { Bounds, Point } from './geometry.ts';
 
 /** 通过引用暴露的命中与区域查询接口，避免交互层直接依赖渲染器内部状态。 */
 export interface CanvasRendererHandle {
+  beginTranslation(ids: string[]): boolean;
+  translate(x: number, y: number, guides: CanvasOverlay['guides']): void;
+  endTranslation(): void;
   /**
    * 从上层节点向下检查局部路径和裁剪范围，找出指针实际命中的图层。
    *
@@ -47,51 +41,42 @@ interface Props {
   page: DesignPage;
   /** 当前视图或画布相机参数。 */
   view: CanvasView;
+  /** 随原生滚动移动，同时以未缩放的视口尺寸绘制。 */
+  scrollOffset?: Point;
   /** 本帧需要绘制的选择和辅助信息。 */
   overlay: CanvasOverlay;
   /** 正在通过文本编辑框修改的节点 ID。 */
   editingText?: string;
 }
 
-/** 界面状态：暴露给调用方的 Canvas 渲染组件引用。通过状态更新驱动界面刷新。 */
 export const CanvasRenderer = memo(function CanvasRenderer({
   ref,
   project,
   page,
   view,
+  scrollOffset,
   overlay,
   editingText,
 }: Props) {
   const canvas = useRef<HTMLCanvasElement>(null),
+    gpuCanvas = useRef<HTMLCanvasElement>(null),
     overlayCanvas = useRef<HTMLCanvasElement>(null);
   const engine = useRef<CanvasEngine | null>(null);
-  /** 界面状态：将设计节点转换为场景的编译器。通过状态更新驱动界面刷新。 */
-  const [compiler] = useState(() => new SceneCompiler());
-  const scene = useMemo(
-    () => compiler.compile(page, project),
-    [
-      compiler,
-      page.nodes,
-      project.components,
-      project.tokens,
-      project.themeModes,
-      project.activeMode,
-      project.variableCollections,
-      project.activeVariableModes,
-    ],
-  );
-  const tokens = getProjectTokens(project);
+  const scrollsWithContent = scrollOffset !== undefined;
   useImperativeHandle(
     ref,
     () => ({
+      beginTranslation: (ids) => engine.current?.beginTranslation(ids) ?? false,
+      translate: (x, y, guides) => engine.current?.translate(x, y, guides),
+      endTranslation: () => engine.current?.endTranslation(),
       hitTest: (point) => engine.current?.hitTest(point),
       query: (bounds) => engine.current?.query(bounds) ?? [],
-      entry: (id) => scene.nodes.get(id),
+      entry: (id) => engine.current?.entry(id),
     }),
-    [scene],
+    [],
   );
   useLayoutEffect(() => {
-    const renderer = new CanvasEngine(canvas.current!, overlayCanvas.current!);
+    const renderer = new CanvasEngine(canvas.current!, overlayCanvas.current!, gpuCanvas.current!);
     engine.current = renderer;
     return () => {
       renderer.dispose();
@@ -99,20 +84,20 @@ export const CanvasRenderer = memo(function CanvasRenderer({
     };
   }, []);
   useLayoutEffect(() => {
-    engine.current?.setScene(scene, page, tokens, editingText);
-  }, [scene, page.background, page.width, page.height, page.grid, tokens, editingText]);
-  useLayoutEffect(() => {
-    engine.current?.setView(view);
-  }, [view.width, view.height, view.zoom, view.x, view.y]);
+    engine.current?.setDocument(page, project, editingText);
+  }, [page, project, editingText]);
   useLayoutEffect(() => {
     engine.current?.setOverlay(overlay);
   }, [overlay]);
-  // Keep canvases outside the transformed artboard to avoid browser resampling of text.
+  useLayoutEffect(() => {
+    engine.current?.setView(view, scrollsWithContent);
+  }, [view.width, view.height, view.zoom, view.x, view.y, scrollsWithContent]);
+  // 随画板一起原生滚动，但不继承画板的 scale，保持文字清晰。
   const style = {
     position: 'absolute' as const,
     pointerEvents: 'none' as const,
-    left: 0,
-    top: 0,
+    left: scrollOffset?.x ?? 0,
+    top: scrollOffset?.y ?? 0,
     width: view.width,
     height: view.height,
   };
@@ -124,6 +109,12 @@ export const CanvasRenderer = memo(function CanvasRenderer({
         style={style}
         aria-label="设计画布；使用图层面板或画布选择与编辑元素"
         role="img"
+      />
+      <canvas
+        ref={gpuCanvas}
+        className="ed-scene-canvas ed-gpu-canvas"
+        style={style}
+        aria-hidden="true"
       />
       <canvas ref={overlayCanvas} className="ed-overlay-canvas" style={style} aria-hidden="true" />
     </>

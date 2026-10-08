@@ -14,6 +14,7 @@ import {
   Github,
   Link2,
   Pencil,
+  PenTool,
   Plus,
   Trash2,
 } from 'lucide-react';
@@ -235,6 +236,10 @@ export default function ProjectOverview({
           </div>
         </div>
         <div className="project-overview-actions">
+          <Button variant="outline" onClick={() => onNavigate('brand')}>
+            <PenTool size={15} />
+            品牌 Logo
+          </Button>
           <Button
             variant="outline"
             className="project-rin-button"

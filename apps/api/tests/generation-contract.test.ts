@@ -49,9 +49,9 @@ let output: unknown = {
 };
 const upstream = http
   .createServer(async (req, res) => {
-    for await (const _ of req) {
-      /* consume request */
-    }
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    const input = JSON.parse(body);
     res.setHeader('content-type', 'application/json');
     res.end(
       JSON.stringify(
@@ -64,7 +64,24 @@ const upstream = http
                 },
               ],
             }
-          : { choices: [{ message: { content: JSON.stringify(output) } }] },
+          : {
+              choices: [
+                {
+                  message: {
+                    content: JSON.stringify(
+                      input.messages?.[0]?.content.startsWith('Split application')
+                        ? {
+                            styleGuide: '',
+                            pages: [
+                              { name: 'Home', prompt: 'A landing page', width: 1440, height: 1000 },
+                            ],
+                          }
+                        : output,
+                    ),
+                  },
+                },
+              ],
+            },
       ),
     );
   })

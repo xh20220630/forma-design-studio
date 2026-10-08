@@ -2,6 +2,7 @@ import type { ThemeTokens } from './theme.ts';
 import type { DesignPage, DesignComponent } from './nodes.ts';
 import type { DesignComment, DesignSnapshot } from './collaboration.ts';
 import type { VariableCollection } from './variables.ts';
+import type { BrandDesign } from './brand.ts';
 
 /** 项目与代码目录的关联信息，用于预览和应用设计代码同步。 */
 export interface WorkspaceBinding {
@@ -19,6 +20,7 @@ export interface WorkspaceBinding {
 
 /** 参考图生成记录，保留确认状态和上下文摘要以识别过期图片。 */
 export interface GenerationState {
+  pageId?: string;
   /** 发送给模型的生成要求。 */
   prompt: string;
   /** 生成图片的访问地址。 */
@@ -33,6 +35,24 @@ export interface GenerationState {
   generatedAt?: string;
   /** 生成时的设计上下文摘要，用于判断参考图是否仍有效。 */
   contextHash?: string;
+}
+
+export interface PageGenerationTask {
+  id: string;
+  name: string;
+  prompt: string;
+  width: number;
+  height: number;
+  generation?: GenerationState;
+  reconstructedImageUrl?: string;
+}
+
+/** 各页独立生成和确认，共享同一套视觉规范。 */
+export interface PageGenerationPlan {
+  id: string;
+  prompt: string;
+  styleGuide: string;
+  pages: PageGenerationTask[];
 }
 
 /** 项目持久化的完整设计数据，也是保存、生成、导出和同步的共同输入。 */
@@ -67,6 +87,8 @@ export interface Project {
   cover: 'dashboard' | 'commerce' | 'travel' | 'finance' | 'blank';
   /** 当前项目的参考图生成及确认记录。 */
   generation?: GenerationState;
+  generationPlan?: PageGenerationPlan;
+  brandDesign?: BrandDesign;
   /** 页面上的定位评论集合。 */
   comments?: DesignComment[];
   /** 可供恢复的历史设计快照。 */

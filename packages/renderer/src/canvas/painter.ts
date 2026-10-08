@@ -1,7 +1,7 @@
 import type { DesignNode, ThemeTokens } from '@forma/schema';
-import { PathCache, vectorTypes } from './paths';
+import { PathCache, vectorTypes } from './paths.ts';
 import type { SceneEntry } from './scene';
-import { multiply, type Matrix } from './geometry';
+import { multiply, type Matrix } from './geometry.ts';
 
 /** 文本测量和换行的缓存结果，减少重复排版开销。 */
 interface TextLayout {
@@ -28,6 +28,27 @@ interface Raster {
 const rasterBudget = 64 * 1024 * 1024;
 const wordSegmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+const placementFields = new Set([
+  'x',
+  'y',
+  'rotation',
+  'flipX',
+  'flipY',
+  'opacity',
+  'parentId',
+  'locked',
+  'visible',
+  'name',
+  'prototype',
+]);
+
+function sameAppearance(a: DesignNode, b: DesignNode) {
+  const left = a as unknown as Record<string, unknown>,
+    right = b as unknown as Record<string, unknown>;
+  return [...new Set([...Object.keys(a), ...Object.keys(b)])].every(
+    (key) => placementFields.has(key) || left[key] === right[key],
+  );
+}
 
 /** 负责节点绘制及图片、文字、路径缓存，隔离具体绘制细节。 */
 export class CanvasPainter {
@@ -41,18 +62,14 @@ export class CanvasPainter {
   private rasters = new Map<DesignNode, Raster>();
   /** 已使用的位图缓存体积，供内存上限管理。 */
   private rasterBytes = 0;
+  private references = new Map<DesignNode, number>();
+  private sources = new Map<string, number>();
   /** 资源是否已释放，用于拒绝之后的异步刷新。 */
   private disposed = false;
-  /**
-   * 建立 CanvasPainter 实例并保存其依赖，让后续操作共用同一份资源或状态。
-   *
-   * @param invalidate - 资源变化后通知外层重新绘制的回调。
-   * @returns 构造完成的实例；构造函数不显式返回业务数据。
-   */
-  constructor(
-    /** 资源变化后通知外层重新绘制的回调。 */
-    private invalidate: () => void,
-  ) {}
+  private invalidate: (source?: string) => void;
+  constructor(invalidate: (source?: string) => void) {
+    this.invalidate = invalidate;
+  }
 
   /**
    * 使路径、文字或栅格缓存失效，避免字体等外部资源变化后继续使用旧结果。
@@ -72,6 +89,12 @@ export class CanvasPainter {
    * @returns 无返回值；释放不再使用的缓存。
    */
   retain(entries: SceneEntry[]) {
+    this.references.clear();
+    this.sources.clear();
+    for (const { node } of entries) {
+      this.references.set(node, (this.references.get(node) ?? 0) + 1);
+      if (node.src) this.sources.set(node.src, (this.sources.get(node.src) ?? 0) + 1);
+    }
     const nodes = new Set(entries.map((entry) => entry.node));
     const sources = new Set(entries.map((entry) => entry.node.src));
     for (const [node, raster] of this.rasters)
@@ -87,6 +110,53 @@ export class CanvasPainter {
       }
   }
 
+  sync(added: SceneEntry[], removed: SceneEntry[]) {
+    const previous = new Map(
+      removed.map((entry) => [`${entry.target.id}/${entry.node.id}`, entry.node]),
+    );
+    for (const entry of added) {
+      const old = previous.get(`${entry.target.id}/${entry.node.id}`),
+        node = entry.node;
+      if (!old || old === node || !sameAppearance(old, node)) continue;
+      const layout = this.layouts.get(old);
+      if (layout) this.layouts.set(node, layout);
+      const raster = this.rasters.get(old);
+      if (raster && this.references.get(old) === 1 && !this.rasters.has(node)) {
+        this.rasters.delete(old);
+        this.rasters.set(node, raster);
+      }
+    }
+    // 先增加引用，避免同一资源换位置或更换祖先时短暂归零并被释放。
+    for (const { node } of added) {
+      this.references.set(node, (this.references.get(node) ?? 0) + 1);
+      if (node.src) this.sources.set(node.src, (this.sources.get(node.src) ?? 0) + 1);
+    }
+    for (const { node } of removed) {
+      const count = (this.references.get(node) ?? 1) - 1;
+      if (count) this.references.set(node, count);
+      else {
+        this.references.delete(node);
+        const raster = this.rasters.get(node);
+        if (raster) {
+          this.rasterBytes -= raster.bytes;
+          this.rasters.delete(node);
+        }
+      }
+      if (!node.src) continue;
+      const sourceCount = (this.sources.get(node.src) ?? 1) - 1;
+      if (sourceCount) this.sources.set(node.src, sourceCount);
+      else {
+        this.sources.delete(node.src);
+        const image = this.images.get(node.src);
+        if (image) {
+          image.onload = image.onerror = null;
+          image.src = '';
+          this.images.delete(node.src);
+        }
+      }
+    }
+  }
+
   /**
    * 释放监听器、计时器或渲染缓存，防止对象停用后仍占用资源。
    * @returns 无返回值；清理完成后结束。
@@ -98,6 +168,8 @@ export class CanvasPainter {
       image.src = '';
     }
     this.images.clear();
+    this.references.clear();
+    this.sources.clear();
     this.rasters.clear();
     this.rasterBytes = 0;
   }
@@ -160,7 +232,7 @@ export class CanvasPainter {
     tokens: ThemeTokens,
     requestedScale: number,
   ): Raster | undefined {
-    const scale = Math.min(8, Math.max(0.25, 2 ** Math.ceil(Math.log2(requestedScale))));
+    const scale = Math.max(1 / 32, 2 ** Math.ceil(Math.log2(requestedScale)));
     const shadow = node.shadow;
     const padding = Math.ceil(
       (node.strokeWidth ?? 0) +
@@ -216,10 +288,16 @@ export class CanvasPainter {
       image = new Image();
       image.decoding = 'async';
       image.onload = () => {
-        if (!this.disposed) this.clearCaches();
+        if (this.disposed) return;
+        for (const [node, raster] of this.rasters) {
+          if (node.src !== src) continue;
+          this.rasterBytes -= raster.bytes;
+          this.rasters.delete(node);
+        }
+        this.invalidate(src);
       };
       image.onerror = () => {
-        if (!this.disposed) this.invalidate();
+        if (!this.disposed) this.invalidate(src);
       };
       this.images.set(src, image);
       image.src = src;

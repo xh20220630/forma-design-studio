@@ -1,0 +1,14 @@
+{
+  "brand": "多聊",
+  "version": "v1",
+  "colors": {
+    "primary": "#008A8A",
+    "ink": "#143B3C",
+    "mint": "#D7F2E9",
+    "paper": "#F4F8F6",
+    "white": "#FFFFFF"
+  },
+  "wordmarkFont": "Noto Sans CJK SC Bold",
+  "pinyin": "DUOLIAO",
+  "pinyinStatus": "辅助拼音，不代表已确定的英文商标"
+}

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>2D renderer regression and performance checks</title>
+    <style>
+      body { margin: 24px; background: #f4f5f7; color: #15202b; font: 14px system-ui; }
+      button { padding: 10px 16px; margin: 0 8px 12px 0; cursor: pointer; }
+      pre { white-space: pre-wrap; padding: 16px; background: white; border: 1px solid #ddd; }
+      .surface { position: relative; width: 900px; height: 640px; margin-bottom: 20px; background: #ddd; }
+      .surface canvas { position: absolute; inset: 0; width: 900px; height: 640px; }
+    </style>
+  </head>
+  <body>
+    <h1>2D renderer regression and performance checks</h1>
+    <p>
+      Real Canvas 2D rasterization and WebGL2 composition. Timings measure CPU submission, not GPU
+      completion or FPS.
+    </p>
+    <button id="checks">Run rendering checks</button>
+    <button id="benchmark">Run 10,000-node benchmark</button>
+    <pre id="results">Ready</pre>
+    <div id="surfaces"></div>
+    <script type="module" src="./renderer.ts"></script>
+  </body>
+</html>

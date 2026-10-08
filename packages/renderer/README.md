@@ -1,14 +1,18 @@
 # @forma/renderer · 场景渲染器
 
-设计画布的 Canvas 2D 引擎，以及缩略图、原型与导出 React 使用的 DOM/SVG 渲染器，依赖 `@forma/schema`。两种后端共享主题、变量解析与设计数据。
+设计画布的保留场景与分块 2D 引擎，以及缩略图、原型与导出 React 使用的 DOM/SVG 渲染器，依赖 `@forma/schema`。两种后端共享主题、变量解析与设计数据。
 
 TSX 由消费应用的 Vite 编译，React 由消费方提供。无需单独构建。
 
 `@forma/renderer`：DOM/SVG 渲染函数和组件；`@forma/renderer/canvas`：`CanvasRenderer` 与命中/框选句柄；`@forma/renderer/source`：仅限 Node 的 `getStandaloneRendererSource()`，返回含类型的独立 TSX 源码，不依赖工作区包。
 
-Canvas 引擎将场景与编辑覆盖层分开，使用视口尺寸位图、空间索引、按需帧调度、路径/文字缓存和 64 MiB LRU 位图缓存。React 负责文档和控件；连续交互在编辑器内预览，手势结束才发布文档。Canvas 节点没有对应 DOM，文本编辑时临时创建输入框。
+主画布采用保留场景、增量空间索引、256 像素分块和按需帧调度。Canvas 2D 栅格化文字、路径与效果，WebGL2 复用纹理并合成可见块；GPU 初始化失败、纹理上传失败或上下文丢失时回退到 Canvas 2D 合成。平移命中缓存时不重新绘制节点或上传纹理；编辑只失效新旧边界涉及的块。分块缓存按 CPU 位图加 GPU 纹理估算限制为 128 MiB，节点位图另有 64 MiB LRU 预算。
 
-实现位于 `src/canvas/`：`scene.ts` 编译层级、变换、组件实例；`geometry.ts` 管理空间索引和坐标；`painter.ts` 负责绘制及缓存；`engine.ts` 管理帧调度、命中和覆盖层。能力边界见 [画布能力清单](../../docs/CANVAS-CAPABILITIES.md)。
+React 只提交文档、相机和覆盖层状态，场景编译发生在 layout effect 后的引擎内部；相机独立订阅，平移缩放不更新整个编辑器。拖动通过 `beginTranslation/translate/endTranslation` 复用有序的静止层与移动层，手势结束才提交文档；不适合分层的裁剪和混合模式保持普通场景更新。Canvas 节点没有对应 DOM，文本编辑时临时创建输入框。
+
+栅格任务按约 6 ms 的软预算渐进完成，缩放时复用已有低分辨率块。`data-pending-tiles` 归零表示当前可见块绘制结束；同步绘制耗时不等于整幅画面完成时间。GPU 错误检查在上传 fence 完成后进行，避免每帧同步等待。
+
+实现位于 `src/canvas/`：`scene.ts` 保留层级、变换与组件实例；`geometry.ts` 管理可增删的空间索引；`painter.ts` 栅格化节点；`tiles.ts` 管理分块、损伤范围和预算；`compositor.ts` 提供 WebGL2/Canvas 2D 后端；`overlay.ts` 绘制编辑辅助；`engine.ts` 协调帧调度、命中和资源生命周期。实现与验证方式见 [2D 渲染架构](../../docs/RENDERING-ARCHITECTURE.md)，功能边界见 [画布能力清单](../../docs/CANVAS-CAPABILITIES.md)。
 
 仓库约定见 [CONTRIBUTING.md](../../CONTRIBUTING.md)。
 

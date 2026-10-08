@@ -4,6 +4,7 @@ import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { ApiError, errorProperty } from '../../shared/errors.ts';
 import type { Project } from '@forma/schema';
+import { migrateBrandDesign } from '../../domain/brand-design.ts';
 
 export { dataRoot };
 /** 集中维护 queue 的串行写入顺序，防止多个请求覆盖同一状态。 */
@@ -56,10 +57,15 @@ export function transact<T>(operation: () => Promise<T>): Promise<T> {
  * @returns 包含所有项目的持久化状态。
  */
 export async function getState() {
-  return readJson<{
+  const state = await readJson<{
     /** 当前保存或展示的项目集合。 */
     projects: Project[];
   }>(path.join(dataRoot, 'projects.json'), { projects: [] });
+  for (const project of state.projects) {
+    if (project.brandDesign && !Array.isArray(project.brandDesign.artifacts))
+      project.brandDesign = migrateBrandDesign(project.brandDesign);
+  }
+  return state;
 }
 /**
  * 按 ID 查找项目，统一把不存在的项目转换为 404 错误。

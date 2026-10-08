@@ -6,6 +6,9 @@ export const handleError: ErrorRequestHandler = (error: unknown, _req, res, _nex
     errorStatus(error) || (errorProperty(error, 'type') === 'entity.parse.failed' ? 400 : 500);
   if (status >= 500 && !(error instanceof ApiError)) console.error(errorMessage(error));
   res.status(status).json({
+    ...(error instanceof ApiError && error.errorDetails
+      ? { errorDetails: error.errorDetails }
+      : {}),
     error:
       error instanceof ApiError
         ? error.message

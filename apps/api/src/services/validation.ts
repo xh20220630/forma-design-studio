@@ -8,6 +8,7 @@ import type {
 } from '@forma/schema';
 import { isRecord, requireValue } from '../shared/errors.ts';
 import { designContextHash } from '../domain/design-context.ts';
+import { validateBrandDesign } from '../domain/brand-design.ts';
 import { localAssetFilename, validateSafeSvg } from '../infrastructure/assets/assets.ts';
 
 /** 集中维护 tokenKeys 的约定值或当前状态，供相关分支保持一致。 */
@@ -376,6 +377,7 @@ export function validateProject(input: unknown, { historicalSnapshot = false } =
   requireValue(record(input), '无效的项目数据。');
   // Keep assertions local to the validator; callers supply unknown and receive the checked model.
   const project = input as unknown as Project;
+  if (project.brandDesign !== undefined) project.brandDesign = validateBrandDesign(project.brandDesign);
   requireValue(project && typeof project === 'object', '无效的项目数据。');
   validateId(project.id);
   requireValue(

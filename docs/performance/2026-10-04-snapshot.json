@@ -1,0 +1,5147 @@
+{
+  "environment": {
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "hardwareConcurrency": 16,
+    "deviceMemory": 32,
+    "devicePixelRatio": 1,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "production": true,
+    "supportedObservers": [
+      "element",
+      "event",
+      "first-input",
+      "interaction-contentful-paint",
+      "largest-contentful-paint",
+      "layout-shift",
+      "long-animation-frame",
+      "longtask",
+      "mark",
+      "measure",
+      "navigation",
+      "paint",
+      "resource",
+      "soft-navigation",
+      "visibility-state"
+    ],
+    "startedAt": "2026-10-04T10:46:49.775Z",
+    "editor/empty/0/run1/checks": {
+      "commits": 0,
+      "sceneNodes": 0,
+      "backend": "webgl2",
+      "layerDomRows": 0,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/empty/0/run2/checks": {
+      "commits": 0,
+      "sceneNodes": 0,
+      "backend": "webgl2",
+      "layerDomRows": 0,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/empty/0/run3/checks": {
+      "commits": 0,
+      "sceneNodes": 0,
+      "backend": "webgl2",
+      "layerDomRows": 0,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/local/40/checks": {
+      "commits": 7,
+      "sceneNodes": 40,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/mixed-url/100/checks": {
+      "commits": 6,
+      "sceneNodes": 100,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/mixed-url/1000/checks": {
+      "commits": 6,
+      "sceneNodes": 1000,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/mixed-url/5000/checks": {
+      "commits": 6,
+      "sceneNodes": 5000,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/mixed-url/10000/checks": {
+      "commits": 6,
+      "sceneNodes": 10000,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/dense/1000/checks": {
+      "commits": 6,
+      "sceneNodes": 1000,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/dense/10000/checks": {
+      "commits": 6,
+      "sceneNodes": 10000,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/group/1000/checks": {
+      "commits": 5,
+      "sceneNodes": 1001,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    },
+    "editor/group/5000/checks": {
+      "commits": 5,
+      "sceneNodes": 5001,
+      "backend": "webgl2",
+      "layerDomRows": 30,
+      "canvasCss": [
+        785,
+        606
+      ],
+      "canvasPixels": [
+        785,
+        606
+      ]
+    }
+  },
+  "records": [
+    {
+      "name": "snapshot/mixed-url/1000/run1/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1102.7,
+        "p95": 1102.7,
+        "max": 1102.7,
+        "total": 1102.7
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1122.2,
+        "p95": 1122.2,
+        "max": 1122.2,
+        "total": 1122.2
+      },
+      "rafHz": 0.89,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 2724.1,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 20.5,
+          "p95": 20.5,
+          "max": 20.5,
+          "total": 20.5
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 21.3,
+          "p95": 21.3,
+          "max": 21.3,
+          "total": 21.3
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 331.7,
+          "p95": 1051.2,
+          "max": 1051.2,
+          "total": 2204
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 17.5,
+          "p95": 805.8,
+          "max": 805.8,
+          "total": 826.9
+        },
+        "spatial.query": {
+          "n": 74,
+          "median": 0.1,
+          "p95": 0.7,
+          "max": 4.4,
+          "total": 14.4
+        },
+        "engine.tile": {
+          "n": 70,
+          "median": 0.2,
+          "p95": 128.5,
+          "max": 266.2,
+          "total": 1552
+        },
+        "gpu.tile": {
+          "n": 110,
+          "median": 0,
+          "p95": 0.6,
+          "max": 3.7,
+          "total": 16.8
+        },
+        "gpu.end": {
+          "n": 4,
+          "median": 219.4,
+          "p95": 268.4,
+          "max": 268.4,
+          "total": 627.9
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "rasterizedNodes": {
+          "n": 4,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 3324
+        },
+        "textureUploads": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "visibleNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "sceneNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "tileCacheBytes": {
+          "n": 4,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 65977600
+        }
+      },
+      "heapBefore": 45562207,
+      "heapAfter": 48094327,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1136,
+          "offset": 4.2
+        },
+        {
+          "duration": 1072,
+          "offset": 1196.3
+        },
+        {
+          "duration": 350,
+          "offset": 2361.8
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 391364.6999999881,
+          "duration": 1114.300000011921,
+          "navigationId": 4188,
+          "paintTime": 392479,
+          "presentationTime": 392500,
+          "renderStart": 391364.6999999881,
+          "styleAndLayoutStart": 392475.59999999404,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 1064.5,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 391364.6999999881,
+              "duration": 1110.9000000059605,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 391364.6999999881,
+              "forcedStyleAndLayoutDuration": 59.8,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 392502.5,
+          "duration": 1118.699999988079,
+          "navigationId": 4188,
+          "paintTime": 393621.1999999881,
+          "presentationTime": 393684,
+          "renderStart": 392556.59999999404,
+          "styleAndLayoutStart": 393617.09999999404,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 1017,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 392565.7999999821,
+              "duration": 1051.300000011921,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 392565.7999999821,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          1102.7
+        ],
+        "intervalMs": [
+          1122.2
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run1/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 3.4,
+        "p95": 3.4,
+        "max": 3.4,
+        "total": 3.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 83.3,
+        "p95": 83.3,
+        "max": 83.3,
+        "total": 83.3
+      },
+      "rafHz": 12,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 108.6,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 2.6,
+          "p95": 2.6,
+          "max": 2.6,
+          "total": 2.6
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 53225695,
+      "heapAfter": 51507820,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 88,
+          "offset": 1.9
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          3.4
+        ],
+        "intervalMs": [
+          83.3
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run1/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.3,
+        "max": 0.8,
+        "total": 6.7
+      },
+      "intervals": {
+        "n": 60,
+        "median": 33.4,
+        "p95": 44.5,
+        "max": 50,
+        "total": 2005.5
+      },
+      "rafHz": 29.92,
+      "over20ms": 57,
+      "over33ms": 28,
+      "elapsedMs": 2072.3,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 0.8,
+          "max": 2,
+          "total": 19.5
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 0.9,
+          "max": 2.4,
+          "total": 24.2
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.2,
+          "total": 4.8
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.5,
+          "max": 1.4,
+          "total": 16.9
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.2,
+          "max": 5.2,
+          "total": 35.7
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.1,
+          "p95": 1.9,
+          "max": 2.9,
+          "total": 73.7
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 2,
+          "p95": 3.9,
+          "max": 6.5,
+          "total": 148.5
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 56095016,
+      "heapAfter": 58100763,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.2,
+          0,
+          0.2,
+          0,
+          0.1,
+          0.2,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.8,
+          0,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.2,
+          0,
+          0.4,
+          0.2,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.2,
+          0.3,
+          0,
+          0.6,
+          0.1,
+          0.1
+        ],
+        "intervalMs": [
+          5.6,
+          5.6,
+          16.6,
+          44.5,
+          33.3,
+          33.4,
+          33.2,
+          38.9,
+          44.4,
+          33.4,
+          33.3,
+          33.4,
+          44.5,
+          38.8,
+          33.3,
+          38.9,
+          50,
+          33.3,
+          44.5,
+          38.9,
+          38.8,
+          33.4,
+          33.3,
+          33.4,
+          38.8,
+          38.9,
+          38.9,
+          38.9,
+          22.3,
+          27.7,
+          33.4,
+          27.7,
+          22.2,
+          44.5,
+          33.2,
+          33.4,
+          33.4,
+          38.8,
+          33.4,
+          27.7,
+          27.8,
+          38.9,
+          33.3,
+          27.8,
+          27.8,
+          33.3,
+          44.5,
+          33.4,
+          27.7,
+          27.7,
+          39,
+          33.3,
+          33.3,
+          33.3,
+          33.4,
+          38.9,
+          33.3,
+          27.8,
+          27.7,
+          33.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run1/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 2.9,
+        "p95": 2.9,
+        "max": 2.9,
+        "total": 2.9
+      },
+      "intervals": {
+        "n": 1,
+        "median": 27.8,
+        "p95": 27.8,
+        "max": 27.8,
+        "total": 27.8
+      },
+      "rafHz": 35.97,
+      "over20ms": 1,
+      "over33ms": 0,
+      "elapsedMs": 51.6,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 1.7,
+          "p95": 1.7,
+          "max": 1.7,
+          "total": 2.4
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 2.6,
+          "p95": 2.6,
+          "max": 2.6,
+          "total": 2.6
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0.2,
+          "p95": 0.2,
+          "max": 0.2,
+          "total": 0.2
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 62874435,
+      "heapAfter": 65495852,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          2.9
+        ],
+        "intervalMs": [
+          27.8
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run1/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 71.5,
+        "p95": 71.5,
+        "max": 71.5,
+        "total": 71.5
+      },
+      "intervals": {
+        "n": 1,
+        "median": 72.2,
+        "p95": 72.2,
+        "max": 72.2,
+        "total": 72.2
+      },
+      "rafHz": 13.85,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 93.9,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 70284580,
+      "heapAfter": 70922077,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 73,
+          "offset": 3.4
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          71.5
+        ],
+        "intervalMs": [
+          72.2
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run1/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1162.4,
+        "p95": 1162.4,
+        "max": 1162.4,
+        "total": 1162.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1183.4,
+        "p95": 1183.4,
+        "max": 1183.4,
+        "total": 1183.4
+      },
+      "rafHz": 0.85,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 2375.9,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 11,
+          "p95": 11,
+          "max": 11,
+          "total": 11
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 11.5,
+          "p95": 11.5,
+          "max": 11.5,
+          "total": 11.5
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 27.4,
+          "p95": 1078.2,
+          "max": 1078.2,
+          "total": 2051.3
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 27.5,
+          "p95": 947.1,
+          "max": 947.1,
+          "total": 990.4
+        },
+        "spatial.query": {
+          "n": 67,
+          "median": 0.1,
+          "p95": 0.6,
+          "max": 4.2,
+          "total": 13.4
+        },
+        "engine.tile": {
+          "n": 64,
+          "median": 0.2,
+          "p95": 155.1,
+          "max": 186.9,
+          "total": 1448
+        },
+        "gpu.tile": {
+          "n": 80,
+          "median": 0,
+          "p95": 0.8,
+          "max": 3.6,
+          "total": 17.3
+        },
+        "gpu.end": {
+          "n": 3,
+          "median": 195.7,
+          "p95": 366.6,
+          "max": 366.6,
+          "total": 575.3
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "rasterizedNodes": {
+          "n": 3,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 2220
+        },
+        "textureUploads": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "visibleNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "sceneNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "tileCacheBytes": {
+          "n": 3,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 47590400
+        }
+      },
+      "heapBefore": 76239385,
+      "heapAfter": 69000638,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1198,
+          "offset": 4.8
+        },
+        {
+          "duration": 1097,
+          "offset": 1217.6
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 397720.2999999821,
+          "duration": 1176.2000000178814,
+          "navigationId": 4188,
+          "paintTime": 398896.5,
+          "presentationTime": 398916,
+          "renderStart": 397720.2999999821,
+          "styleAndLayoutStart": 398893.09999999404,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 1126.6,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 397720.2999999821,
+              "duration": 1172.800000011921,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 397720.2999999821,
+              "forcedStyleAndLayoutDuration": 60.4,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 398918.09999999404,
+          "duration": 1103.4000000059605,
+          "navigationId": 4188,
+          "paintTime": 400021.5,
+          "presentationTime": 400064,
+          "renderStart": 398932.7999999821,
+          "styleAndLayoutStart": 400017.2999999821,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 1040.7,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 398938.89999997616,
+              "duration": 1078.2000000178814,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 398938.89999997616,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          1162.4
+        ],
+        "intervalMs": [
+          1183.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run1/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 690.4,
+        "p95": 690.4,
+        "max": 690.4,
+        "total": 690.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 761.1,
+        "p95": 761.1,
+        "max": 761.1,
+        "total": 761.1
+      },
+      "rafHz": 1.31,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 800.3,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 354.6,
+          "p95": 354.6,
+          "max": 354.6,
+          "total": 354.6
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 65455435,
+      "heapAfter": 135749482,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 767,
+          "offset": 4.8
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 400675.2999999821,
+          "duration": 755.2000000178814,
+          "navigationId": 4188,
+          "paintTime": 401430.5,
+          "presentationTime": 401460,
+          "renderStart": 400675.2999999821,
+          "styleAndLayoutStart": 401429.09999999404,
+          "firstUIEventTimestamp": 400675.59999999404,
+          "blockingDuration": 705.2,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 400675.39999997616,
+              "duration": 753.7000000178814,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 400675.39999997616,
+              "forcedStyleAndLayoutDuration": 10.7,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          690.4
+        ],
+        "intervalMs": [
+          761.1
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run1/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 0.3,
+        "total": 5.5
+      },
+      "intervals": {
+        "n": 60,
+        "median": 33.2,
+        "p95": 39,
+        "max": 50,
+        "total": 1827.7
+      },
+      "rafHz": 32.83,
+      "over20ms": 58,
+      "over33ms": 15,
+      "elapsedMs": 1900.4,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 1.2,
+          "max": 2.3,
+          "total": 24.8
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 1.3,
+          "max": 2.4,
+          "total": 29
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 3.8
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.4,
+          "max": 2.3,
+          "total": 14.9
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.1,
+          "max": 1.7,
+          "total": 16.7
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.1,
+          "p95": 2,
+          "max": 2.8,
+          "total": 73
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 1.9,
+          "p95": 3.4,
+          "max": 3.6,
+          "total": 128.2
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 140556970,
+      "heapAfter": 145934275,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          0.1,
+          0.1,
+          0.1,
+          0.2,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.1,
+          0,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.2,
+          0,
+          0.2,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.2,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.2,
+          0.3,
+          0.1,
+          0.2,
+          0,
+          0,
+          0.2,
+          0.1,
+          0.1,
+          0.3,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0
+        ],
+        "intervalMs": [
+          5.6,
+          5.6,
+          22.2,
+          22.2,
+          22.2,
+          27.8,
+          33.4,
+          27.7,
+          38.9,
+          33.3,
+          38.9,
+          33.3,
+          27.8,
+          33.4,
+          38.8,
+          50,
+          33.3,
+          39,
+          27.7,
+          33.4,
+          33.5,
+          44.3,
+          33.2,
+          27.8,
+          27.8,
+          33.3,
+          33.3,
+          22.3,
+          38.8,
+          27.8,
+          27.9,
+          27.7,
+          27.8,
+          27.8,
+          22.2,
+          33.3,
+          33.3,
+          39,
+          33.3,
+          33.2,
+          33.5,
+          22.1,
+          27.8,
+          33.3,
+          27.8,
+          27.8,
+          33.4,
+          22.2,
+          27.8,
+          33.2,
+          33.4,
+          33.3,
+          27.8,
+          33.4,
+          27.7,
+          22.2,
+          44.5,
+          33.3,
+          33.4,
+          27.7
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run1/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 998,
+        "p95": 998,
+        "max": 998,
+        "total": 998
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1455.4,
+        "p95": 1455.4,
+        "max": 1455.4,
+        "total": 1455.4
+      },
+      "rafHz": 0.69,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 1492.3,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 502.9,
+          "p95": 502.9,
+          "max": 502.9,
+          "total": 997.8
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 425.3,
+          "p95": 425.3,
+          "max": 425.3,
+          "total": 425.3
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 150741007,
+      "heapAfter": 417995238,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1462,
+          "offset": 3.3
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          998
+        ],
+        "intervalMs": [
+          1455.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run1/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 71,
+        "p95": 71,
+        "max": 71,
+        "total": 71
+      },
+      "intervals": {
+        "n": 1,
+        "median": 72.3,
+        "p95": 72.3,
+        "max": 72.3,
+        "total": 72.3
+      },
+      "rafHz": 13.83,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 93.5,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 422799330,
+      "heapAfter": 423424779,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 75,
+          "offset": 3.9
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          71
+        ],
+        "intervalMs": [
+          72.3
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run2/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 841.4,
+        "p95": 841.4,
+        "max": 841.4,
+        "total": 841.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 855.4,
+        "p95": 855.4,
+        "max": 855.4,
+        "total": 855.4
+      },
+      "rafHz": 1.17,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 2285.3,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 11.9,
+          "p95": 11.9,
+          "max": 11.9,
+          "total": 11.9
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 12.6,
+          "p95": 12.6,
+          "max": 12.6,
+          "total": 12.6
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 331,
+          "p95": 985.2,
+          "max": 985.2,
+          "total": 1998.2
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 13,
+          "p95": 673,
+          "max": 673,
+          "total": 690.5
+        },
+        "spatial.query": {
+          "n": 74,
+          "median": 0.1,
+          "p95": 0.9,
+          "max": 3.8,
+          "total": 16.2
+        },
+        "engine.tile": {
+          "n": 70,
+          "median": 0.1,
+          "p95": 126.1,
+          "max": 161.8,
+          "total": 1350.7
+        },
+        "gpu.tile": {
+          "n": 110,
+          "median": 0,
+          "p95": 0.6,
+          "max": 2.1,
+          "total": 16.8
+        },
+        "gpu.end": {
+          "n": 4,
+          "median": 200.5,
+          "p95": 345.3,
+          "max": 345.3,
+          "total": 624
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "rasterizedNodes": {
+          "n": 4,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 3324
+        },
+        "textureUploads": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "visibleNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "sceneNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "tileCacheBytes": {
+          "n": 4,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 65977600
+        }
+      },
+      "heapBefore": 428787899,
+      "heapAfter": 443137889,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 870,
+          "offset": 4.9
+        },
+        {
+          "duration": 1002,
+          "offset": 891.4
+        },
+        {
+          "duration": 355,
+          "offset": 1916.5
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 405447,
+          "duration": 853.0999999940395,
+          "navigationId": 4188,
+          "paintTime": 406300.09999999404,
+          "presentationTime": 406320,
+          "renderStart": 405447,
+          "styleAndLayoutStart": 406296.89999997616,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 803.1,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 405447.09999999404,
+              "duration": 849.5999999940395,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 405447.09999999404,
+              "forcedStyleAndLayoutDuration": 52.4,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 406317.6999999881,
+          "duration": 1010.3000000119209,
+          "navigationId": 4188,
+          "paintTime": 407328,
+          "presentationTime": 407372,
+          "renderStart": 406333.59999999404,
+          "styleAndLayoutStart": 407324.6999999881,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 949.3,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 406339.2999999821,
+              "duration": 985.3000000119209,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 406339.2999999821,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          841.4
+        ],
+        "intervalMs": [
+          855.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run2/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 3.1,
+        "p95": 3.1,
+        "max": 3.1,
+        "total": 3.1
+      },
+      "intervals": {
+        "n": 1,
+        "median": 50.1,
+        "p95": 50.1,
+        "max": 50.1,
+        "total": 50.1
+      },
+      "rafHz": 19.96,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 86.7,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 2.1,
+          "p95": 2.1,
+          "max": 2.1,
+          "total": 2.1
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 453019633,
+      "heapAfter": 425679880,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 60,
+          "offset": 2.9
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          3.1
+        ],
+        "intervalMs": [
+          50.1
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run2/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 3.3,
+        "total": 9.7
+      },
+      "intervals": {
+        "n": 60,
+        "median": 33.3,
+        "p95": 44.5,
+        "max": 55.6,
+        "total": 1888.8
+      },
+      "rafHz": 31.77,
+      "over20ms": 57,
+      "over33ms": 19,
+      "elapsedMs": 1959.7,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.6,
+          "max": 2.3,
+          "total": 18.2
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 0.7,
+          "max": 2.4,
+          "total": 20.6
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.4,
+          "total": 4.8
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.4,
+          "max": 1,
+          "total": 15.6
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.8,
+          "total": 13.2
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.1,
+          "p95": 1.9,
+          "max": 7.8,
+          "total": 81.2
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 1.9,
+          "p95": 3.2,
+          "max": 8.5,
+          "total": 135.6
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 430503548,
+      "heapAfter": 436108212,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          0.1,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.2,
+          0.1,
+          0.1,
+          3.3,
+          0.2,
+          0.2,
+          0.5,
+          0.1,
+          0.2,
+          1.8,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.1
+        ],
+        "intervalMs": [
+          5.6,
+          5.5,
+          16.7,
+          22.1,
+          27.9,
+          22.2,
+          33.3,
+          38.9,
+          44.5,
+          27.7,
+          33.4,
+          27.8,
+          38.9,
+          33.2,
+          27.8,
+          27.8,
+          38.9,
+          33.4,
+          55.6,
+          33.2,
+          27.8,
+          27.8,
+          33.3,
+          38.8,
+          33.4,
+          27.8,
+          33.3,
+          38.9,
+          27.8,
+          33.4,
+          33.2,
+          44.5,
+          27.7,
+          33.4,
+          33.3,
+          33.4,
+          33.3,
+          44.4,
+          27.8,
+          27.8,
+          44.4,
+          38.9,
+          27.7,
+          27.8,
+          33.4,
+          27.8,
+          33.3,
+          22.3,
+          33.3,
+          27.8,
+          27.7,
+          27.7,
+          44.5,
+          27.8,
+          33.3,
+          27.8,
+          33.3,
+          33.4,
+          33.3,
+          27.8
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run2/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 2,
+        "p95": 2,
+        "max": 2,
+        "total": 2
+      },
+      "intervals": {
+        "n": 1,
+        "median": 55.7,
+        "p95": 55.7,
+        "max": 55.7,
+        "total": 55.7
+      },
+      "rafHz": 17.95,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 77.6,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 1.7
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 3.5,
+          "p95": 3.5,
+          "max": 3.5,
+          "total": 3.5
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 133926126,
+      "heapAfter": 136580059,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          2
+        ],
+        "intervalMs": [
+          55.7
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run2/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 63,
+        "p95": 63,
+        "max": 63,
+        "total": 63
+      },
+      "intervals": {
+        "n": 1,
+        "median": 72.3,
+        "p95": 72.3,
+        "max": 72.3,
+        "total": 72.3
+      },
+      "rafHz": 13.83,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 92.4,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 141428096,
+      "heapAfter": 142048858,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 67,
+          "offset": 6.2
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          63
+        ],
+        "intervalMs": [
+          72.3
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run2/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 847.2,
+        "p95": 847.2,
+        "max": 847.2,
+        "total": 847.2
+      },
+      "intervals": {
+        "n": 1,
+        "median": 866.6,
+        "p95": 866.6,
+        "max": 866.6,
+        "total": 866.6
+      },
+      "rafHz": 1.15,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 1757.2,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 10.3,
+          "p95": 10.3,
+          "max": 10.3,
+          "total": 10.3
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 10.8,
+          "p95": 10.8,
+          "max": 10.8,
+          "total": 10.8
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 13,
+          "p95": 801,
+          "max": 801,
+          "total": 1490.2
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 13.1,
+          "p95": 678.1,
+          "max": 678.1,
+          "total": 694.6
+        },
+        "spatial.query": {
+          "n": 67,
+          "median": 0,
+          "p95": 0.7,
+          "max": 1.8,
+          "total": 9.3
+        },
+        "engine.tile": {
+          "n": 64,
+          "median": 0.1,
+          "p95": 116.1,
+          "max": 188.4,
+          "total": 1167.5
+        },
+        "gpu.tile": {
+          "n": 80,
+          "median": 0,
+          "p95": 0.7,
+          "max": 2.7,
+          "total": 14.2
+        },
+        "gpu.end": {
+          "n": 3,
+          "median": 57.1,
+          "p95": 240,
+          "max": 240,
+          "total": 303.4
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "rasterizedNodes": {
+          "n": 3,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 2220
+        },
+        "textureUploads": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "visibleNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "sceneNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "tileCacheBytes": {
+          "n": 3,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 47590400
+        }
+      },
+      "heapBefore": 147448178,
+      "heapAfter": 160919107,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 879,
+          "offset": 1.2
+        },
+        {
+          "duration": 817,
+          "offset": 893
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 411257.6999999881,
+          "duration": 860.1999999880791,
+          "navigationId": 4188,
+          "paintTime": 412117.89999997616,
+          "presentationTime": 412136,
+          "renderStart": 411257.6999999881,
+          "styleAndLayoutStart": 412114.5,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 810.3,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 411257.6999999881,
+              "duration": 856.8000000119209,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 411257.6999999881,
+              "forcedStyleAndLayoutDuration": 54.7,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 412137.09999999404,
+          "duration": 823.1999999880791,
+          "navigationId": 4188,
+          "paintTime": 412960.2999999821,
+          "presentationTime": 413000,
+          "renderStart": 412149.5,
+          "styleAndLayoutStart": 412956.59999999404,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 764.1,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 412155.39999997616,
+              "duration": 801,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 412155.39999997616,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          847.2
+        ],
+        "intervalMs": [
+          866.6
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run2/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 290.9,
+        "p95": 290.9,
+        "max": 290.9,
+        "total": 290.9
+      },
+      "intervals": {
+        "n": 1,
+        "median": 344.4,
+        "p95": 344.4,
+        "max": 344.4,
+        "total": 344.4
+      },
+      "rafHz": 2.9,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 386.2,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 289.7,
+          "p95": 289.7,
+          "max": 289.7,
+          "total": 289.7
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.7,
+          "p95": 0.7,
+          "max": 0.7,
+          "total": 0.7
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 170915266,
+      "heapAfter": 235728161,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 354,
+          "offset": 4.7
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          290.9
+        ],
+        "intervalMs": [
+          344.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run2/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 2.2,
+        "total": 6
+      },
+      "intervals": {
+        "n": 60,
+        "median": 33.3,
+        "p95": 44.3,
+        "max": 44.5,
+        "total": 1861.1
+      },
+      "rafHz": 32.24,
+      "over20ms": 57,
+      "over33ms": 14,
+      "elapsedMs": 1931.3,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.4,
+          "max": 0.9,
+          "total": 15.3
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 0.4,
+          "max": 1,
+          "total": 17.9
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.2,
+          "max": 1.5,
+          "total": 6.8
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.8,
+          "max": 2,
+          "total": 20.1
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.1,
+          "max": 2.4,
+          "total": 21.5
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.1,
+          "p95": 2,
+          "max": 2.9,
+          "total": 72.1
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 1.9,
+          "p95": 3.7,
+          "max": 4,
+          "total": 135.7
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 240579345,
+      "heapAfter": 247958139,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          0.2,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.2,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.3,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0,
+          0,
+          0.1,
+          0.1,
+          0,
+          0,
+          0,
+          0.1,
+          0.3,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          2.2,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0,
+          0
+        ],
+        "intervalMs": [
+          5.5,
+          5.6,
+          16.7,
+          27.8,
+          27.7,
+          22.3,
+          33.3,
+          33.4,
+          27.7,
+          33.4,
+          27.8,
+          33.3,
+          27.7,
+          33.4,
+          33.3,
+          33.3,
+          28,
+          44.3,
+          33.3,
+          33.3,
+          27.8,
+          44.5,
+          38.8,
+          33.3,
+          33.4,
+          27.8,
+          33.3,
+          33.3,
+          22.3,
+          27.7,
+          27.8,
+          27.7,
+          27.9,
+          38.8,
+          22.3,
+          33.3,
+          44.5,
+          33.2,
+          33.4,
+          27.7,
+          27.9,
+          38.8,
+          38.9,
+          27.8,
+          33.3,
+          27.8,
+          27.8,
+          33.3,
+          33.4,
+          33.3,
+          33.4,
+          33.2,
+          22.3,
+          33.3,
+          33.3,
+          27.8,
+          44.5,
+          38.9,
+          38.8,
+          33.4
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run2/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1026.1,
+        "p95": 1026.1,
+        "max": 1026.1,
+        "total": 1026.1
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1777.8,
+        "p95": 1777.8,
+        "max": 1777.8,
+        "total": 1777.8
+      },
+      "rafHz": 0.56,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 1838.3,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 615.7,
+          "p95": 615.7,
+          "max": 615.7,
+          "total": 1026
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 434.3,
+          "p95": 434.3,
+          "max": 434.3,
+          "total": 434.3
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 252821995,
+      "heapAfter": 228030990,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1785,
+          "offset": 3.9
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 416080.1999999881,
+          "duration": 1776.9000000059605,
+          "navigationId": 4188,
+          "paintTime": 417857.09999999404,
+          "presentationTime": 417880,
+          "renderStart": 416080.1999999881,
+          "styleAndLayoutStart": 417856.59999999404,
+          "firstUIEventTimestamp": 416080.39999997616,
+          "blockingDuration": 1727,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 416080.2999999821,
+              "duration": 1776.300000011921,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 416080.2999999821,
+              "forcedStyleAndLayoutDuration": 1.1,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          1026.1
+        ],
+        "intervalMs": [
+          1777.8
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run2/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 66,
+        "p95": 66,
+        "max": 66,
+        "total": 66
+      },
+      "intervals": {
+        "n": 1,
+        "median": 66.5,
+        "p95": 66.5,
+        "max": 66.5,
+        "total": 66.5
+      },
+      "rafHz": 15.04,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 88.2,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 232913751,
+      "heapAfter": 233534173,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 68,
+          "offset": 5
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          66
+        ],
+        "intervalMs": [
+          66.5
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run3/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 764.9,
+        "p95": 764.9,
+        "max": 764.9,
+        "total": 764.9
+      },
+      "intervals": {
+        "n": 1,
+        "median": 783.3,
+        "p95": 783.3,
+        "max": 783.3,
+        "total": 783.3
+      },
+      "rafHz": 1.28,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 2133.1,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 11.3,
+          "p95": 11.3,
+          "max": 11.3,
+          "total": 11.3
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 11.8,
+          "p95": 11.8,
+          "max": 11.8,
+          "total": 11.8
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 297.9,
+          "p95": 956.8,
+          "max": 956.8,
+          "total": 1871.3
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 13.7,
+          "p95": 604.8,
+          "max": 604.8,
+          "total": 621.3
+        },
+        "spatial.query": {
+          "n": 74,
+          "median": 0.1,
+          "p95": 0.7,
+          "max": 2.2,
+          "total": 11
+        },
+        "engine.tile": {
+          "n": 70,
+          "median": 0.1,
+          "p95": 98.4,
+          "max": 170.2,
+          "total": 1190.9
+        },
+        "gpu.tile": {
+          "n": 110,
+          "median": 0,
+          "p95": 0.6,
+          "max": 2.5,
+          "total": 15.4
+        },
+        "gpu.end": {
+          "n": 4,
+          "median": 179.3,
+          "p95": 371.8,
+          "max": 371.8,
+          "total": 656
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "rasterizedNodes": {
+          "n": 4,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 3324
+        },
+        "textureUploads": {
+          "n": 4,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 70
+        },
+        "visibleNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "sceneNodes": {
+          "n": 4,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 4000
+        },
+        "tileCacheBytes": {
+          "n": 4,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 65977600
+        }
+      },
+      "heapBefore": 238959969,
+      "heapAfter": 253557796,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 793,
+          "offset": 5
+        },
+        {
+          "duration": 974,
+          "offset": 811.7
+        },
+        {
+          "duration": 316,
+          "offset": 1808.1
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 419557.59999999404,
+          "duration": 776.5,
+          "navigationId": 4188,
+          "paintTime": 420334.09999999404,
+          "presentationTime": 420360,
+          "renderStart": 419557.59999999404,
+          "styleAndLayoutStart": 420330.89999997616,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 726.6,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 419557.7999999821,
+              "duration": 773,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 419557.7999999821,
+              "forcedStyleAndLayoutDuration": 50.7,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 420350.7999999821,
+          "duration": 980.8000000119209,
+          "navigationId": 4188,
+          "paintTime": 421331.59999999404,
+          "presentationTime": 421368,
+          "renderStart": 420364.39999997616,
+          "styleAndLayoutStart": 421327.1999999881,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 921.1,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 420370.2999999821,
+              "duration": 956.8000000119209,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 420370.2999999821,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          764.9
+        ],
+        "intervalMs": [
+          783.3
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run3/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 3.4,
+        "p95": 3.4,
+        "max": 3.4,
+        "total": 3.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 61,
+        "p95": 61,
+        "max": 61,
+        "total": 61
+      },
+      "rafHz": 16.39,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 94.6,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 2.4,
+          "p95": 2.4,
+          "max": 2.4,
+          "total": 2.4
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.2,
+          "p95": 0.2,
+          "max": 0.2,
+          "total": 0.2
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 263581558,
+      "heapAfter": 235642814,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 68,
+          "offset": 3.2
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          3.4
+        ],
+        "intervalMs": [
+          61
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run3/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.2,
+        "max": 1,
+        "total": 6.5
+      },
+      "intervals": {
+        "n": 60,
+        "median": 33.3,
+        "p95": 39,
+        "max": 50,
+        "total": 1872.1
+      },
+      "rafHz": 32.05,
+      "over20ms": 57,
+      "over33ms": 19,
+      "elapsedMs": 1947.2,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 1,
+          "max": 6.3,
+          "total": 26.3
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 1.1,
+          "max": 6.3,
+          "total": 31.3
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.1,
+          "max": 0.2,
+          "total": 3.3
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 0.6,
+          "max": 1,
+          "total": 14.8
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.1,
+          "max": 1,
+          "total": 13.8
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.2,
+          "p95": 2.3,
+          "max": 13.9,
+          "total": 91.8
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 1.9,
+          "p95": 3.4,
+          "max": 14.3,
+          "total": 141.8
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 240526002,
+      "heapAfter": 247502763,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          0.2,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0,
+          0.2,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.5,
+          0,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.4,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.2,
+          0,
+          1,
+          0.1,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.2,
+          0.1,
+          0.1,
+          0,
+          0
+        ],
+        "intervalMs": [
+          5.5,
+          5.6,
+          16.7,
+          22.2,
+          22.2,
+          22.3,
+          27.7,
+          38.9,
+          27.8,
+          27.8,
+          27.7,
+          33.3,
+          27.8,
+          27.8,
+          33.3,
+          38.9,
+          33.4,
+          38.8,
+          39,
+          27.7,
+          33.4,
+          33.3,
+          33.3,
+          33.3,
+          27.8,
+          33.3,
+          33.4,
+          38.9,
+          27.8,
+          44.4,
+          50,
+          33.4,
+          22.1,
+          33.4,
+          22.2,
+          33.4,
+          38.8,
+          38.9,
+          44.5,
+          27.8,
+          33.3,
+          38.9,
+          27.8,
+          33.3,
+          27.7,
+          38.9,
+          33.3,
+          33.3,
+          27.9,
+          27.7,
+          33.4,
+          27.7,
+          27.8,
+          33.3,
+          38.9,
+          33.3,
+          39,
+          27.7,
+          33.4,
+          27.7
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run3/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1.5,
+        "p95": 1.5,
+        "max": 1.5,
+        "total": 1.5
+      },
+      "intervals": {
+        "n": 1,
+        "median": 22.2,
+        "p95": 22.2,
+        "max": 22.2,
+        "total": 22.2
+      },
+      "rafHz": 45.05,
+      "over20ms": 1,
+      "over33ms": 0,
+      "elapsedMs": 43.3,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 0.9,
+          "p95": 0.9,
+          "max": 0.9,
+          "total": 1.2
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 2.2,
+          "p95": 2.2,
+          "max": 2.2,
+          "total": 2.2
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 252397187,
+      "heapAfter": 252397187,
+      "visibility": "visible",
+      "longTasks": [],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          1.5
+        ],
+        "intervalMs": [
+          22.2
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed-url/1000/run3/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 0,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 47.3,
+        "p95": 47.3,
+        "max": 47.3,
+        "total": 47.3
+      },
+      "intervals": {
+        "n": 1,
+        "median": 50,
+        "p95": 50,
+        "max": 50,
+        "total": 50
+      },
+      "rafHz": 20,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 70.3,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 259852604,
+      "heapAfter": 260470540,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 51,
+          "offset": 5.1
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          47.3
+        ],
+        "intervalMs": [
+          50
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run3/mount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1058.4,
+        "p95": 1058.4,
+        "max": 1058.4,
+        "total": 1058.4
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1072.1,
+        "p95": 1072.1,
+        "max": 1072.1,
+        "total": 1072.1
+      },
+      "rafHz": 0.93,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 2107.4,
+      "timings": {
+        "scene.compile": {
+          "n": 1,
+          "median": 9.2,
+          "p95": 9.2,
+          "max": 9.2,
+          "total": 9.2
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 9.6,
+          "p95": 9.6,
+          "max": 9.6,
+          "total": 9.6
+        },
+        "engine.draw": {
+          "n": 5,
+          "median": 16.6,
+          "p95": 922.2,
+          "max": 922.2,
+          "total": 1832.3
+        },
+        "engine.view": {
+          "n": 3,
+          "median": 16.8,
+          "p95": 895.4,
+          "max": 895.4,
+          "total": 914.3
+        },
+        "spatial.query": {
+          "n": 67,
+          "median": 0,
+          "p95": 0.3,
+          "max": 1,
+          "total": 6.3
+        },
+        "engine.tile": {
+          "n": 64,
+          "median": 0.1,
+          "p95": 115.3,
+          "max": 146.1,
+          "total": 1150.1
+        },
+        "gpu.tile": {
+          "n": 80,
+          "median": 0,
+          "p95": 0.7,
+          "max": 1.1,
+          "total": 10.3
+        },
+        "gpu.end": {
+          "n": 3,
+          "median": 310.9,
+          "p95": 344.1,
+          "max": 344.1,
+          "total": 666.7
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "rasterizedNodes": {
+          "n": 3,
+          "median": 1104,
+          "p95": 1110,
+          "max": 1110,
+          "total": 2220
+        },
+        "textureUploads": {
+          "n": 3,
+          "median": 20,
+          "p95": 30,
+          "max": 30,
+          "total": 64
+        },
+        "visibleNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "sceneNodes": {
+          "n": 3,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 3000
+        },
+        "tileCacheBytes": {
+          "n": 3,
+          "median": 18387200,
+          "p95": 18387200,
+          "max": 18387200,
+          "total": 47590400
+        }
+      },
+      "heapBefore": 265862856,
+      "heapAfter": 245414322,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1084,
+          "offset": 5.1
+        },
+        {
+          "duration": 936,
+          "offset": 1104
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 424796.1999999881,
+          "duration": 1068.699999988079,
+          "navigationId": 4188,
+          "paintTime": 425864.89999997616,
+          "presentationTime": 425880,
+          "renderStart": 424796.1999999881,
+          "styleAndLayoutStart": 425861.09999999404,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 1018.7,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 424796.39999997616,
+              "duration": 1064.7000000178814,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 424796.39999997616,
+              "forcedStyleAndLayoutDuration": 47.1,
+              "pauseDuration": 0,
+              "sourceURL": "",
+              "sourceFunctionName": "",
+              "sourceCharPosition": -1
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 425880.6999999881,
+          "duration": 944.4000000059605,
+          "navigationId": 4188,
+          "paintTime": 426825.09999999404,
+          "presentationTime": 426864,
+          "renderStart": 425895.1999999881,
+          "styleAndLayoutStart": 426821.5,
+          "firstUIEventTimestamp": 0,
+          "blockingDuration": 883.1,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 425899.1999999881,
+              "duration": 922.1999999880791,
+              "navigationId": 4188,
+              "invoker": "FrameRequestCallback",
+              "invokerType": "user-callback",
+              "windowAttribution": "self",
+              "executionStart": 425899.1999999881,
+              "forcedStyleAndLayoutDuration": 0,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "f",
+              "sourceCharPosition": 38366
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          1058.4
+        ],
+        "intervalMs": [
+          1072.1
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run3/pointerdown",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 313.1,
+        "p95": 313.1,
+        "max": 313.1,
+        "total": 313.1
+      },
+      "intervals": {
+        "n": 1,
+        "median": 388.9,
+        "p95": 388.9,
+        "max": 388.9,
+        "total": 388.9
+      },
+      "rafHz": 2.57,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 415.4,
+      "timings": {
+        "spatial.query": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.hitTest": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 312.4,
+          "p95": 312.4,
+          "max": 312.4,
+          "total": 312.4
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 255340101,
+      "heapAfter": 350368600,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 397,
+          "offset": 4.3
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          313.1
+        ],
+        "intervalMs": [
+          388.9
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run3/drag-with-snap",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 60,
+      "action": {
+        "n": 60,
+        "median": 0.1,
+        "p95": 0.5,
+        "max": 1.6,
+        "total": 8.4
+      },
+      "intervals": {
+        "n": 60,
+        "median": 38.8,
+        "p95": 50,
+        "max": 483.3,
+        "total": 2605.4
+      },
+      "rafHz": 23.03,
+      "over20ms": 57,
+      "over33ms": 37,
+      "elapsedMs": 2679.5,
+      "timings": {
+        "scene.compile": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 1,
+          "max": 1.9,
+          "total": 21.6
+        },
+        "engine.document": {
+          "n": 60,
+          "median": 0.3,
+          "p95": 1.1,
+          "max": 2.2,
+          "total": 24.8
+        },
+        "spatial.query": {
+          "n": 120,
+          "median": 0,
+          "p95": 0.2,
+          "max": 1.7,
+          "total": 6.6
+        },
+        "engine.tile": {
+          "n": 60,
+          "median": 0.2,
+          "p95": 1.2,
+          "max": 2.2,
+          "total": 20.3
+        },
+        "gpu.tile": {
+          "n": 960,
+          "median": 0,
+          "p95": 0.1,
+          "max": 5.5,
+          "total": 25.7
+        },
+        "gpu.end": {
+          "n": 60,
+          "median": 1.2,
+          "p95": 2.2,
+          "max": 3.2,
+          "total": 78.5
+        },
+        "engine.draw": {
+          "n": 60,
+          "median": 2.2,
+          "p95": 4.2,
+          "max": 7.9,
+          "total": 152.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "rasterizedNodes": {
+          "n": 60,
+          "median": 6,
+          "p95": 6,
+          "max": 6,
+          "total": 360
+        },
+        "textureUploads": {
+          "n": 60,
+          "median": 1,
+          "p95": 1,
+          "max": 1,
+          "total": 60
+        },
+        "visibleNodes": {
+          "n": 60,
+          "median": 30,
+          "p95": 30,
+          "max": 30,
+          "total": 1800
+        },
+        "sceneNodes": {
+          "n": 60,
+          "median": 1000,
+          "p95": 1000,
+          "max": 1000,
+          "total": 60000
+        },
+        "tileCacheBytes": {
+          "n": 60,
+          "median": 33529600,
+          "p95": 33529600,
+          "max": 33529600,
+          "total": 2011776000
+        }
+      },
+      "heapBefore": 355281188,
+      "heapAfter": 152469977,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 70,
+          "offset": 389.3
+        },
+        {
+          "duration": 468,
+          "offset": 474.4
+        }
+      ],
+      "longFrames": [
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 428407.89999997616,
+          "duration": 74.2000000178814,
+          "navigationId": 4188,
+          "paintTime": 428482.09999999404,
+          "presentationTime": 428508,
+          "renderStart": 428478.39999997616,
+          "styleAndLayoutStart": 428482,
+          "firstUIEventTimestamp": 428480.2999999821,
+          "blockingDuration": 24,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 428408.09999999404,
+              "duration": 70.19999998807907,
+              "navigationId": 4188,
+              "invoker": "MessagePort.onmessage",
+              "invokerType": "event-listener",
+              "windowAttribution": "self",
+              "executionStart": 428408.09999999404,
+              "forcedStyleAndLayoutDuration": 0.8,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "ie",
+              "sourceCharPosition": 58358
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 428493.1999999881,
+          "duration": 475,
+          "navigationId": 4188,
+          "paintTime": 428968.1999999881,
+          "presentationTime": 428992,
+          "renderStart": 428962.2999999821,
+          "styleAndLayoutStart": 428968,
+          "firstUIEventTimestamp": 428964.5,
+          "blockingDuration": 424.8,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 428493.2999999821,
+              "duration": 468.80000001192093,
+              "navigationId": 4188,
+              "invoker": "MessagePort.onmessage",
+              "invokerType": "event-listener",
+              "windowAttribution": "self",
+              "executionStart": 428493.2999999821,
+              "forcedStyleAndLayoutDuration": 0.7,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "ie",
+              "sourceCharPosition": 58358
+            }
+          ]
+        },
+        {
+          "name": "long-animation-frame",
+          "entryType": "long-animation-frame",
+          "startTime": 428979.6999999881,
+          "duration": 55.599999994039536,
+          "navigationId": 4188,
+          "paintTime": 429035.2999999821,
+          "presentationTime": 429052,
+          "renderStart": 429031.39999997616,
+          "styleAndLayoutStart": 429035.09999999404,
+          "firstUIEventTimestamp": 429032.2999999821,
+          "blockingDuration": 0,
+          "scripts": [
+            {
+              "name": "script",
+              "entryType": "script",
+              "startTime": 429007.6999999881,
+              "duration": 22.599999994039536,
+              "navigationId": 4188,
+              "invoker": "MessagePort.onmessage",
+              "invokerType": "event-listener",
+              "windowAttribution": "self",
+              "executionStart": 429007.6999999881,
+              "forcedStyleAndLayoutDuration": 0.7,
+              "pauseDuration": 0,
+              "sourceURL": "http://127.0.0.1:5188/assets/index-XOi-MziN.js",
+              "sourceFunctionName": "ie",
+              "sourceCharPosition": 58358
+            }
+          ]
+        }
+      ],
+      "samples": {
+        "actionMs": [
+          0.1,
+          0.2,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0,
+          0.1,
+          0,
+          0,
+          0.1,
+          0.1,
+          0.1,
+          0.5,
+          0.1,
+          0.2,
+          0,
+          0.1,
+          0.2,
+          0,
+          0,
+          1.6,
+          0.1,
+          0.1,
+          0.1,
+          0.1,
+          0.3,
+          0,
+          0.1,
+          0,
+          0.1,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0.1,
+          0.7,
+          0.1,
+          0.4,
+          0.1,
+          0,
+          0.1,
+          0.2,
+          0,
+          0.7,
+          0.1,
+          0,
+          0,
+          0,
+          0,
+          0.1,
+          0,
+          0.2,
+          0.1,
+          0
+        ],
+        "intervalMs": [
+          5.6,
+          5.6,
+          11.1,
+          33.3,
+          27.8,
+          50,
+          33.3,
+          33.4,
+          33.3,
+          38.9,
+          38.8,
+          33.4,
+          38.9,
+          83.3,
+          483.3,
+          66.7,
+          22.2,
+          33.3,
+          38.9,
+          38.9,
+          38.9,
+          33.3,
+          33.3,
+          38.9,
+          39,
+          27.7,
+          44.4,
+          44.4,
+          22.3,
+          44.4,
+          38.9,
+          38.9,
+          33.4,
+          38.9,
+          22.2,
+          33.3,
+          38.9,
+          27.8,
+          33.3,
+          50,
+          38.9,
+          38.9,
+          38.9,
+          38.9,
+          38.8,
+          33.3,
+          27.7,
+          44.6,
+          33.3,
+          27.8,
+          33.3,
+          33.4,
+          38.9,
+          38.8,
+          38.9,
+          38.9,
+          27.7,
+          38.9,
+          44.5,
+          38.8
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run3/drag-commit",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 1092.2,
+        "p95": 1092.2,
+        "max": 1092.2,
+        "total": 1092.2
+      },
+      "intervals": {
+        "n": 1,
+        "median": 1499.9,
+        "p95": 1499.9,
+        "max": 1499.9,
+        "total": 1499.9
+      },
+      "rafHz": 0.67,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 1523.4,
+      "timings": {
+        "document.compare-json": {
+          "n": 2,
+          "median": 555.4,
+          "p95": 555.4,
+          "max": 555.4,
+          "total": 1092
+        },
+        "document.clone": {
+          "n": 1,
+          "median": 376.7,
+          "p95": 376.7,
+          "max": 376.7,
+          "total": 376.7
+        },
+        "scene.compile": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.document": {
+          "n": 1,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "engine.draw": {
+          "n": 1,
+          "median": 0.1,
+          "p95": 0.1,
+          "max": 0.1,
+          "total": 0.1
+        }
+      },
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 157421370,
+      "heapAfter": 602751817,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 1503,
+          "offset": 3.6
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          1092.2
+        ],
+        "intervalMs": [
+          1499.9
+        ]
+      }
+    },
+    {
+      "name": "snapshot/mixed/1000/run3/unmount",
+      "suite": "editor",
+      "nodes": 1000,
+      "syntheticInput": true,
+      "inlineImageChars": 92279528,
+      "steps": 1,
+      "action": {
+        "n": 1,
+        "median": 62.2,
+        "p95": 62.2,
+        "max": 62.2,
+        "total": 62.2
+      },
+      "intervals": {
+        "n": 1,
+        "median": 61.2,
+        "p95": 61.2,
+        "max": 61.2,
+        "total": 61.2
+      },
+      "rafHz": 16.34,
+      "over20ms": 1,
+      "over33ms": 1,
+      "elapsedMs": 81.2,
+      "timings": {},
+      "rendering": {
+        "rasterizedTiles": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "rasterizedNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "textureUploads": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "visibleNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "sceneNodes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        },
+        "tileCacheBytes": {
+          "n": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "total": 0
+        }
+      },
+      "heapBefore": 420678465,
+      "heapAfter": 421313376,
+      "visibility": "visible",
+      "longTasks": [
+        {
+          "duration": 64,
+          "offset": 5.1
+        }
+      ],
+      "longFrames": [],
+      "samples": {
+        "actionMs": [
+          62.2
+        ],
+        "intervalMs": [
+          61.2
+        ]
+      }
+    }
+  ]
+}

@@ -45,4 +45,6 @@ export interface ReconstructionStatus {
   error?: string;
   /** 最近更新时间，用于排序和展示。 */
   updatedAt: string;
+  /** 每次重试重新计时，已缓存的素材仍保留。 */
+  startedAt?: string;
 }

@@ -1,18 +1,17 @@
+import type { ModelRequestDiagnostic } from '@forma/schema';
+
 /** 携带 HTTP 状态码的业务错误，供路由统一转换为响应。 */
 export class ApiError extends Error {
   /** 返回给客户端的 HTTP 状态码。 */
   readonly status: number;
+  readonly errorDetails?: ModelRequestDiagnostic;
+  upstreamStatus?: number;
+  upstreamCode?: string;
 
-  /**
-   * 建立 ApiError 实例并保存其依赖，让后续操作共用同一份资源或状态。
-   *
-   * @param status - 应返回的 HTTP 状态码。
-   * @param message - 面向用户或调用方的说明消息。
-   * @returns 构造完成的实例；构造函数不显式返回业务数据。
-   */
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, errorDetails?: ModelRequestDiagnostic) {
     super(message);
     this.status = status;
+    this.errorDetails = errorDetails;
   }
 }
 

@@ -2,6 +2,8 @@ import type { ProviderModel } from '@forma/schema';
 import type { ChatMessage } from '../../shared/types.ts';
 import type { PrivateProvider } from './settings.ts';
 import { ApiError, isRecord, requireValue } from '../../shared/errors.ts';
+import { localAgentModels, requestLocalAgent, requestLocalAgentImage } from './local-agent.ts';
+import { modelRequestError } from './diagnostics.ts';
 
 /**
  * 从上游错误文本中移除密钥等敏感内容，避免错误提示泄露凭据。
@@ -121,10 +123,14 @@ export async function providerRequest(
     const message = isRecord(payload)
       ? (isRecord(payload.error) ? payload.error.message : payload.error) || payload.message
       : undefined;
-    throw new ApiError(
+    const error = new ApiError(
       502,
       `模型服务请求失败（HTTP ${response.status}）：${redact(provider, String(message || '未知错误')).slice(0, 700)}`,
     );
+    error.upstreamStatus = response.status;
+    if (isRecord(payload) && isRecord(payload.error) && typeof payload.error.code === 'string')
+      error.upstreamCode = payload.error.code;
+    throw error;
   }
   requireValue(isRecord(payload), '模型服务返回的数据结构无效。', 502);
   return payload;
@@ -140,6 +146,7 @@ export async function listProviderModels(provider: PrivateProvider): Promise<{
   /** 供应商提供的模型选项。 */
   models: ProviderModel[];
 }> {
+  if (provider.textProtocol === 'local-agent') return localAgentModels(provider);
   const protocol =
     provider.textProtocol !== 'none' ? provider.textProtocol : provider.imageProtocol;
   const results = new Map<string, ProviderModel>();
@@ -287,13 +294,16 @@ function geminiParts(response: Record<string, unknown>) {
  * @param messages - 按会话顺序保存的消息列表。
  * @returns 模型回复的文字内容。
  */
-export async function requestText(
+async function requestTextImpl(
   provider: PrivateProvider,
   model: string,
   messages: ChatMessage[],
+  purpose?: 'reconstruction',
 ): Promise<string> {
   const protocol = provider.textProtocol;
   requireValue(protocol !== 'none', '此供应商不支持文本请求。');
+  if (protocol === 'local-agent')
+    return requestLocalAgent(provider, model, messages, undefined, purpose);
   let response: Record<string, unknown>;
   if (protocol === 'anthropic') {
     response = await providerRequest(
@@ -420,7 +430,7 @@ export async function requestText(
  * @param reference - 供模型参考的图片内容及背景要求。
  * @returns Base64 图片内容或上游图片地址。
  */
-export async function requestImage(
+async function requestImageImpl(
   provider: PrivateProvider,
   model: string,
   prompt: string,
@@ -440,6 +450,7 @@ export async function requestImage(
 }> {
   const protocol = provider.imageProtocol;
   requireValue(protocol !== 'none', '此供应商未启用图片生成。');
+  if (protocol === 'local-agent') return requestLocalAgentImage(provider, model, prompt, reference);
   if (protocol === 'gemini') {
     const response = await providerRequest(
       provider,
@@ -540,4 +551,48 @@ export async function requestImage(
     ...(typeof result.b64_json === 'string' ? { b64_json: result.b64_json } : {}),
     ...(typeof result.url === 'string' ? { url: result.url } : {}),
   };
+}
+
+export async function requestText(
+  provider: PrivateProvider,
+  model: string,
+  messages: ChatMessage[],
+  purpose?: 'reconstruction',
+) {
+  try {
+    return await requestTextImpl(provider, model, messages, purpose);
+  } catch (error) {
+    if (error instanceof ApiError && error.upstreamStatus && !error.errorDetails)
+      throw await modelRequestError(
+        provider,
+        model,
+        'text',
+        error.message,
+        error.upstreamStatus,
+        error.upstreamCode,
+      );
+    throw error;
+  }
+}
+
+export async function requestImage(
+  provider: PrivateProvider,
+  model: string,
+  prompt: string,
+  reference?: Parameters<typeof requestImageImpl>[3],
+) {
+  try {
+    return await requestImageImpl(provider, model, prompt, reference);
+  } catch (error) {
+    if (error instanceof ApiError && error.upstreamStatus && !error.errorDetails)
+      throw await modelRequestError(
+        provider,
+        model,
+        'image',
+        error.message,
+        error.upstreamStatus,
+        error.upstreamCode,
+      );
+    throw error;
+  }
 }

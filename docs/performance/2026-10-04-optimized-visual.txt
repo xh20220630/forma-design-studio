@@ -1,0 +1,41 @@
+PASS canvas2d visual parity at 1x: mean channel error 0.127, >32 error 0.064%
+PASS canvas2d visual parity at 0.625x: mean channel error 0.054, >32 error 0.033%
+PASS canvas2d visual parity at 1.25x: mean channel error 0.081, >32 error 0.036%
+PASS unchanged view performs no node rasterization
+PASS unchanged view performs no texture uploads
+PASS selection redraws only the overlay
+PASS deleted node leaves no stale pixels: mean channel error 0.014, >32 error 0.000%
+PASS webgl2 visual parity at 1x: mean channel error 0.127, >32 error 0.064%
+PASS webgl2 visual parity at 0.625x: mean channel error 0.054, >32 error 0.033%
+PASS webgl2 visual parity at 1.25x: mean channel error 0.081, >32 error 0.036%
+PASS real WebGL2 path is active
+PASS unchanged view performs no node rasterization
+PASS unchanged view performs no texture uploads
+PASS selection redraws only the overlay
+PASS deleted node leaves no stale pixels: mean channel error 0.014, >32 error 0.000%
+PASS context loss switches to Canvas 2D
+PASS fallback preserves the scene: mean channel error 0.014, >32 error 0.000%
+PASS transparent blocks preserve premultiplied alpha across tile seams: mean channel error 0.002, >32 error 0.000%
+PASS loaded image invalidates its previously cached block
+PASS moving an image preserves its decoded resource
+PASS moving across tiles clears the old position
+PASS entering inline editing invalidates cached text: mean channel error 0.000, >32 error 0.000%
+PASS leaving inline editing restores cached text: mean channel error 0.000, >32 error 0.000%
+Rendering checks complete.
+PASS group uses retained translation layers
+PASS translation 15,20 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation 15,20 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS translation -200,0 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation -200,0 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS translation 0,0 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation 0,0 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS cancelled translation restores original pixels: mean channel error 0.000, >32 error 0.000%
+PASS group uses retained translation layers
+PASS translation 15,20 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation 15,20 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS translation -200,0 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation -200,0 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS translation 0,0 keeps stacking, alpha and newly visible nodes: mean channel error 0.000, >32 error 0.000%
+PASS translation 0,0 keeps selection and prototype indicators aligned: mean channel error 0.000, >32 error 0.000%
+PASS cancelled translation restores original pixels: mean channel error 0.000, >32 error 0.000%
+Translation checks complete.

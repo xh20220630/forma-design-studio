@@ -2,6 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { Check, Plus, RefreshCw, Settings2, Trash2 } from 'lucide-react';
 import type {
   ImageProtocol,
+  LocalAgentId,
   ModelBinding,
   ModelProvider,
   ProviderModel,
@@ -14,6 +15,7 @@ import { Textarea } from '@forma/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@forma/ui/select';
 import { api } from '../../../shared/api/client';
 import Modal from '../../../shared/ui/Modal';
+import { LocalAgentEditor, LocalAgentsPanel } from './LocalAgentConnections';
 import '../styles/provider-connections.css';
 
 /** 集中维护 textProtocols 的约定值或当前状态，供相关分支保持一致。 */
@@ -22,6 +24,7 @@ const textProtocols: [TextProtocol, string][] = [
   ['openai-responses', 'OpenAI Responses'],
   ['anthropic', 'Claude / Anthropic'],
   ['gemini', 'Google Gemini'],
+  ['local-agent', '本地 Agent CLI'],
   ['none', '不提供文本服务'],
 ];
 /** 集中维护 imageProtocols 的约定值或当前状态，供相关分支保持一致。 */
@@ -29,6 +32,7 @@ const imageProtocols: [ImageProtocol, string][] = [
   ['openai-images', 'OpenAI 兼容 · Images'],
   ['gemini', 'Gemini 生图'],
   ['imagen', 'Google Imagen'],
+  ['local-agent', 'Codex 内置生图'],
   ['none', '不提供生图服务'],
 ];
 const presets = [
@@ -197,13 +201,24 @@ function ModelField({
     }
   };
   const models = catalogs[value.providerId] || [];
+  const isLocal =
+    providers.find((provider) => provider.id === value.providerId)?.textProtocol === 'local-agent';
+  const automaticCodex =
+    channel === 'image'
+      ? settings.providers.find(
+          (provider) =>
+            provider.id === settings.text.providerId && provider.imageProtocol === 'local-agent',
+        )
+      : undefined;
+  const isBuiltinImage =
+    channel === 'image' && (isLocal || (!!automaticCodex && !value.providerId));
   return (
     <section className="pc-model-field">
       <h3>{title}</h3>
       <p>
         {channel === 'text'
           ? '用于对话、主题生成与设计图还原；还原需要视觉能力。'
-          : '用于生成 UI 设计图，可使用独立的供应商。'}
+          : '用于生成 UI 设计图和素材。Codex 可直接调用内置生图，也可选择独立供应商。'}
       </p>
       <label>
         服务供应商
@@ -211,61 +226,98 @@ function ModelField({
           label={`${title}供应商`}
           value={value.providerId || '__none'}
           disabled={disabled || !!loading}
-          options={[['__none', '暂不配置'], ...providers.map((p) => [p.id, p.name] as const)]}
-          onChange={(id) => onChange({ providerId: id === '__none' ? '' : id, model: '' })}
-        />
-      </label>
-      <label>
-        模型 ID
-        <div className="pc-model-input">
-          <Input
-            aria-label={`${title} ID`}
-            list={listId}
-            value={value.model}
-            disabled={disabled || !value.providerId}
-            placeholder="选择或输入上游模型 ID"
-            onChange={(event) => onChange({ ...value, model: event.target.value })}
-          />
-          <Button
-            type="button"
-            variant="outline"
-            disabled={disabled || !value.providerId || !!loading}
-            onClick={() => void fetchModels()}
-            title="从上游获取模型列表"
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            获取模型
-          </Button>
-        </div>
-      </label>
-      <datalist id={listId}>
-        {models.map((model) => (
-          <option key={model.id} value={model.id}>
-            {model.name}
-          </option>
-        ))}
-      </datalist>
-      {models.length > 0 && (
-        <Choice
-          label={`${title}上游列表`}
-          value={models.some((m) => m.id === value.model) ? value.model : '__choose'}
-          disabled={disabled}
-          onChange={(model) => {
-            if (model !== '__choose') onChange({ ...value, model });
-          }}
           options={[
-            ['__choose', `从 ${models.length} 个上游模型中选择`],
-            ...models.map((m) => [m.id, m.name === m.id ? m.id : `${m.name} · ${m.id}`] as const),
+            ['__none', automaticCodex ? '自动复用当前 Codex · 内置生图' : '暂不配置'],
+            ...providers.map((p) => [p.id, p.name] as const),
           ]}
+          onChange={(id) =>
+            onChange({
+              providerId: id === '__none' ? '' : id,
+              model:
+                providers.find((provider) => provider.id === id)?.textProtocol === 'local-agent'
+                  ? channel === 'image' && id === settings.text.providerId
+                    ? settings.text.model || 'default'
+                    : 'default'
+                  : '',
+            })
+          }
         />
-      )}
-      {feedback.id === value.providerId && feedback.message && (
-        <p
-          className={feedback.error ? 'pc-error' : 'pc-hint'}
-          role={feedback.error ? 'alert' : 'status'}
-        >
-          {feedback.message}
+      </label>
+      {automaticCodex && !value.providerId && (
+        <p className="pc-builtin-image" role="status">
+          <Check size={16} aria-hidden="true" />
+          <span>
+            已自动启用 {automaticCodex.name} 的内置生图。沿用 CLI 登录与额度，无需配置生图模型或 API
+            Key。
+          </span>
         </p>
+      )}
+      {isBuiltinImage && value.providerId && (
+        <p className="pc-builtin-image">
+          <Check size={16} aria-hidden="true" />
+          <span>
+            使用 Codex 内置生图，无需另选生图模型。调度模型：{value.model || 'default'}
+            ；图片由内置工具生成。
+          </span>
+        </p>
+      )}
+      {!isBuiltinImage && (
+        <>
+          <label>
+            模型 ID
+            <div className="pc-model-input">
+              <Input
+                aria-label={`${title} ID`}
+                list={listId}
+                value={value.model}
+                disabled={disabled || !value.providerId}
+                placeholder={isLocal ? 'default 使用 CLI 默认模型' : '选择或输入上游模型 ID'}
+                onChange={(event) => onChange({ ...value, model: event.target.value })}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                disabled={disabled || !value.providerId || !!loading}
+                onClick={() => void fetchModels()}
+                title={isLocal ? '读取当前 CLI 的模型列表' : '从上游获取模型列表'}
+              >
+                <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+                获取模型
+              </Button>
+            </div>
+          </label>
+          <datalist id={listId}>
+            {models.map((model) => (
+              <option key={model.id} value={model.id}>
+                {model.name}
+              </option>
+            ))}
+          </datalist>
+          {models.length > 0 && (
+            <Choice
+              label={`${title}上游列表`}
+              value={models.some((m) => m.id === value.model) ? value.model : '__choose'}
+              disabled={disabled}
+              onChange={(model) => {
+                if (model !== '__choose') onChange({ ...value, model });
+              }}
+              options={[
+                ['__choose', `从 ${models.length} 个上游模型中选择`],
+                ...models.map(
+                  (m) => [m.id, m.name === m.id ? m.id : `${m.name} · ${m.id}`] as const,
+                ),
+              ]}
+            />
+          )}
+          {feedback.id === value.providerId && feedback.message && (
+            <p
+              className={feedback.error ? 'pc-error' : 'pc-hint'}
+              role={feedback.error ? 'alert' : 'status'}
+            >
+              {feedback.message}
+            </p>
+          )}
+        </>
       )}
     </section>
   );
@@ -305,7 +357,9 @@ function Bindings({
   /** 界面状态：需要展示或编辑的文字内容。通过状态更新驱动界面刷新。 */
   const [text, setText] = useState(settings.text);
   /** 界面状态：图片数据、图片模型绑定或页面图片节点。通过状态更新驱动界面刷新。 */
-  const [image, setImage] = useState(settings.image);
+  const [image, setImage] = useState(
+    settings.imageFollowsText ? { providerId: '', model: '' } : settings.image,
+  );
   /** 界面状态：是否有操作进行中，用于阻止重复提交。通过状态更新驱动界面刷新。 */
   const [busy, setBusy] = useState(false);
   /** 界面状态：连接操作的即时反馈。通过状态更新驱动界面刷新。 */
@@ -346,7 +400,7 @@ function Bindings({
         />
         <ModelField
           channel="image"
-          settings={settings}
+          settings={{ ...settings, text }}
           value={image}
           onChange={setImage}
           disabled={busy}
@@ -373,7 +427,13 @@ function Bindings({
  * @param settings - 当前生效的设置。
  * @returns 绑定的唯一选项键。
  */
-const bindingKey = (settings: ProviderSettings) => JSON.stringify([settings.text, settings.image]);
+const bindingKey = (settings: ProviderSettings) =>
+  JSON.stringify([
+    settings.text,
+    settings.image,
+    settings.effectiveImage,
+    settings.imageFollowsText,
+  ]);
 /**
  * 呈现模型切换入口，将展示与交互入口放在同一个组件中维护。
  *
@@ -412,7 +472,7 @@ export function ModelSwitcher({
   return (
     <Modal
       title="更换模型"
-      subtitle="分别选择文本与生图模型，供应商可以不同。"
+      subtitle="选择任务连接，Codex 可直接使用内置生图。"
       wide
       onClose={onClose}
     >
@@ -643,7 +703,7 @@ function ProviderEditor({
               <Choice
                 label="文本协议"
                 value={draft.textProtocol}
-                options={textProtocols}
+                options={textProtocols.filter(([id]) => id !== 'local-agent')}
                 onChange={(v) => update('textProtocol', v as TextProtocol)}
               />
             </label>
@@ -652,7 +712,7 @@ function ProviderEditor({
               <Choice
                 label="生图协议"
                 value={draft.imageProtocol}
-                options={imageProtocols}
+                options={imageProtocols.filter(([id]) => id !== 'local-agent')}
                 onChange={(v) => update('imageProtocol', v as ImageProtocol)}
               />
             </label>
@@ -798,6 +858,10 @@ export function ProviderConnections({
 }) {
   /** 界面状态：当前是否编辑或正在编辑的目标。通过状态更新驱动界面刷新。 */
   const [editing, setEditing] = useState<ModelProvider | 'new'>();
+  const [localEditing, setLocalEditing] = useState<{
+    provider?: ModelProvider;
+    agentId?: LocalAgentId;
+  }>();
   /** 界面状态：正在执行删除的目标或状态。通过状态更新驱动界面刷新。 */
   const [deleting, setDeleting] = useState<ModelProvider>();
   /** 界面状态：是否有操作进行中，用于阻止重复提交。通过状态更新驱动界面刷新。 */
@@ -808,7 +872,7 @@ export function ProviderConnections({
         <header className="pc-heading">
           <div>
             <h2>当前模型</h2>
-            <p>文本与生图独立连接，按任务选择合适的模型。</p>
+            <p>选择对话与生图能力；本地 Codex 可同时完成两类任务。</p>
           </div>
         </header>
         <Bindings
@@ -820,6 +884,7 @@ export function ProviderConnections({
           }}
         />
       </section>
+      <LocalAgentsPanel onConnect={(agentId) => setLocalEditing({ agentId })} />
       <section className="wf-panel">
         <header className="pc-heading">
           <div>
@@ -859,13 +924,19 @@ export function ProviderConnections({
                           : '未配置凭据'}
                     </span>
                     {settings.text.providerId === provider.id && <span>当前文本</span>}
-                    {settings.image.providerId === provider.id && <span>当前生图</span>}
+                    {(settings.effectiveImage || settings.image).providerId === provider.id && (
+                      <span>当前生图{settings.imageFollowsText ? ' · 自动复用' : ''}</span>
+                    )}
                   </div>
                 </div>
                 <div className="pc-actions">
                   <Button
                     variant="outline"
-                    onClick={() => setEditing(provider)}
+                    onClick={() =>
+                      provider.textProtocol === 'local-agent'
+                        ? setLocalEditing({ provider })
+                        : setEditing(provider)
+                    }
                     aria-label={`编辑 ${provider.name}`}
                   >
                     编辑
@@ -885,6 +956,14 @@ export function ProviderConnections({
           )}
         </div>
       </section>
+      {localEditing && (
+        <LocalAgentEditor
+          {...localEditing}
+          settings={settings}
+          onSettings={onSettings}
+          onClose={() => setLocalEditing(undefined)}
+        />
+      )}
       {editing && (
         <ProviderEditor
           provider={editing === 'new' ? undefined : editing}

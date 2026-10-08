@@ -141,11 +141,11 @@ export class SpatialIndex<
   },
 > {
   /** 按网格坐标分桶的空间索引。 */
-  private cells = new Map<string, T[]>();
+  private cells = new Map<string, Set<T>>();
   /** 尺寸过大的条目，单独存储以免占用过多网格。 */
-  private large: T[] = [];
+  private large = new Set<T>();
   /** 索引中的全部条目，供大范围查询回退遍历。 */
-  private items: T[] = [];
+  private items = new Map<T, string[]>();
   /** 空间索引每个网格单元的边长。 */
   private cellSize: number;
   /**
@@ -165,19 +165,45 @@ export class SpatialIndex<
    * @returns 无返回值；更新空间索引。
    */
   insert(item: T) {
-    this.items.push(item);
+    this.remove(item);
+    const keys: string[] = [];
+    this.items.set(item, keys);
     const [left, top, right, bottom] = this.range(item.bounds);
     if ((right - left + 1) * (bottom - top + 1) > 64) {
-      this.large.push(item);
+      this.large.add(item);
       return;
     }
     for (let y = top; y <= bottom; y++)
       for (let x = left; x <= right; x++) {
         const key = `${x}:${y}`,
           cell = this.cells.get(key);
-        if (cell) cell.push(item);
-        else this.cells.set(key, [item]);
+        keys.push(key);
+        if (cell) cell.add(item);
+        else this.cells.set(key, new Set([item]));
       }
+  }
+
+  // 记录插入时的桶，允许调用方在更新 bounds 后仍正确删除旧位置。
+  remove(item: T) {
+    const keys = this.items.get(item);
+    if (!keys) return;
+    for (const key of keys) {
+      const cell = this.cells.get(key)!;
+      cell.delete(item);
+      if (!cell.size) this.cells.delete(key);
+    }
+    this.large.delete(item);
+    this.items.delete(item);
+  }
+
+  clear() {
+    this.cells.clear();
+    this.large.clear();
+    this.items.clear();
+  }
+
+  get size() {
+    return this.items.size;
   }
 
   /**
@@ -189,7 +215,7 @@ export class SpatialIndex<
   query(bounds: Bounds): T[] {
     const [left, top, right, bottom] = this.range(bounds);
     if ((right - left + 1) * (bottom - top + 1) > 4096)
-      return this.items.filter((item) => intersects(item.bounds, bounds));
+      return [...this.items.keys()].filter((item) => intersects(item.bounds, bounds));
     const result = new Set<T>();
     for (const item of this.large) if (intersects(item.bounds, bounds)) result.add(item);
     for (let y = top; y <= bottom; y++)

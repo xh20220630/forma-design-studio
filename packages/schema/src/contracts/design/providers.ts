@@ -1,14 +1,41 @@
 /**
  * 文字模型协议，集中定义允许的分支以保持调用方一致。
- * 取值：openai（OpenAI 聊天协议）、openai-responses（OpenAI Responses 协议）、anthropic（Anthropic 消息协议）、gemini（Gemini 协议）、none（不启用）。
+ * 取值：openai、openai-responses、anthropic、gemini、local-agent（本机 CLI）、none（不启用）。
  */
-export type TextProtocol = 'openai' | 'openai-responses' | 'anthropic' | 'gemini' | 'none';
+export type TextProtocol =
+  | 'openai'
+  | 'openai-responses'
+  | 'anthropic'
+  | 'gemini'
+  | 'local-agent'
+  | 'none';
+
+export type LocalAgentId = 'codex' | 'claude' | 'kimi';
+
+export interface LocalAgentConnection {
+  agentId: LocalAgentId;
+  /** 网页 Codex 文本任务覆盖 CLI 配置；default 表示沿用 CLI。 */
+  reasoningEffort?: 'default' | 'low' | 'medium' | 'high' | 'xhigh';
+  /** 仅参考图分析使用此毫秒上限，普通对话与生图仍使用连接 timeoutMs。 */
+  reconstructionTimeoutMs?: number;
+}
+
+export interface LocalAgentInfo {
+  id: LocalAgentId;
+  name: string;
+  installed: boolean;
+  available: boolean;
+  executable?: string;
+  version?: string;
+  error?: string;
+  transport: 'jsonl' | 'stream-json' | 'acp';
+}
 
 /**
  * 图片模型协议，集中定义允许的分支以保持调用方一致。
- * 取值：openai-images（OpenAI 图片协议）、gemini（Gemini 协议）、imagen（Imagen 图片协议）、none（不启用）。
+ * 本地 Codex 使用内置生图，其余连接按供应商图片协议调用。
  */
-export type ImageProtocol = 'openai-images' | 'gemini' | 'imagen' | 'none';
+export type ImageProtocol = 'openai-images' | 'gemini' | 'imagen' | 'local-agent' | 'none';
 
 /**
  * 供应商认证方式，集中定义允许的分支以保持调用方一致。
@@ -34,6 +61,8 @@ export interface ModelProvider {
   baseUrl: string;
   /** 文字任务使用的请求与响应协议。 */
   textProtocol: TextProtocol;
+  /** Local CLI connections use the API host's installed agent and existing login. */
+  localAgent?: LocalAgentConnection;
   /** 图片任务使用的请求与响应协议。 */
   imageProtocol: ImageProtocol;
   /** 连接采用的认证方式。 */
@@ -66,6 +95,30 @@ export interface ProviderModel {
   id: string;
   /** 面向用户展示的名称。 */
   name: string;
+  isDefault?: boolean;
+}
+
+export interface ProviderModelCatalog {
+  models: ProviderModel[];
+  source?: 'cli' | 'default-only';
+  agent?: LocalAgentInfo;
+}
+
+/** Snapshot of the failing request; later settings changes must not rewrite this record. */
+export interface ModelRequestDiagnostic {
+  id: string;
+  code: 'model_unavailable' | 'invalid_request' | 'request_timeout' | 'request_failed';
+  providerId: string;
+  providerName: string;
+  model: string;
+  channel: 'text' | 'image';
+  upstreamStatus?: number;
+  upstreamCode?: string;
+  localAgentId?: LocalAgentId;
+  occurredAt: string;
+  detail: string;
+  operation?: 'chat' | 'reconstruction' | 'image';
+  timeoutMs?: number;
 }
 
 /** 公开的供应商列表及文字、图片任务的模型选择。 */
@@ -80,6 +133,9 @@ export interface ProviderSettings {
   text: ModelBinding;
   /** 图片数据、图片模型绑定或页面图片节点。 */
   image: ModelBinding;
+  /** 自动复用文本 Agent 时保留原始选择，并单独公开实际生图连接。 */
+  effectiveImage?: ModelBinding;
+  imageFollowsText?: boolean;
 
   /** 供应商 API 的基础地址。 */
   baseUrl: string;

@@ -68,6 +68,12 @@ docs/                  架构、API 与设计素材制作记录
 5. 使用右侧 Agent 聊天描述需求。全局会话可创建项目，项目会话读取当前项目上下文，可修改 Tokens、创建组件、生成 UI 设计图和预览代码。页面设计依次完成“生成设计图 → 对话中确认 → 分析并重建独立素材 → 还原可编辑 UI”，服务端会校验审批顺序。
 6. 绑定本地 Web 项目目录或 GitHub 仓库，查看同步差异，再同步到生成目录。首次同步完成后可开启自动同步。
 
+## 品牌 Logo 设计
+
+打开项目导航中的「品牌设计」，直接通过 AI 聊天描述品牌、Logo 需求或修改意见。系统在每轮请求时读取 [AI Logo 与品牌视觉设计指南](docs/brand/ai-logo-brand-design-guide.md) 全文作为前置提示词，结合项目介绍和对话历史完成设计，不需要填写简报或按固定步骤确认。
+
+作品直接显示在聊天中，可继续修改、下载图片，或通过聊天要求 SVG。矢量稿支持 SVG、透明 PNG 和源文件包下载；只有明确要求用作项目标志时才更新项目标识。品牌对话独立于页面设计，复用现有模型连接。详见 [品牌设计聊天](docs/BRAND-LOGO-WORKFLOW.md)。
+
 ## 配置模型服务
 
 在“设置 → 模型连接”中添加服务供应商，填写 Base URL、API Key 和协议。支持 OpenAI、Anthropic、Gemini、OpenRouter、Ollama 预设，也可以自定义供应商。本机服务可使用 HTTP 并选择“无需密钥”。
@@ -77,13 +83,19 @@ docs/                  架构、API 与设计素材制作记录
 | 能力                     | 支持的协议                                                                     |
 | ------------------------ | ------------------------------------------------------------------------------ |
 | 文本、主题生成、视觉还原 | OpenAI Chat Completions、Responses、Anthropic Messages、Gemini GenerateContent |
-| 图片生成                 | OpenAI Images、Gemini GenerateContent、Imagen Predict                          |
+| 图片生成                 | Codex 内置生图、OpenAI Images、Gemini GenerateContent、Imagen Predict          |
 
 参考图不强制指定固定尺寸，按上游实际尺寸保存；长图支持完整显示和按宽度滚动查看。还原先识别独立素材，再以原参考图为输入逐项重建，最后装配可编辑页面。素材记录来源区域、实际尺寸和进度，失败重试复用已完成文件。OpenAI Images 使用 `images/edits`（可配置 `imageEditPath`），Gemini 使用图片输入；当前 Imagen 连接不支持素材重建。
 
 视觉还原要求模型支持图片输入，文本任务要求输出 JSON。高级选项支持自定义接口路径、请求头、超时与 JSON 模式；Responses、Claude、Gemini 还可设置输出 Token 上限。“检测连接”读取模型目录并显示耗时，不会执行付费生成，也不等于验证某个模型的全部能力。上游不提供目录时仍可保存配置并手动输入模型 ID。
 
 密钥和自定义请求头值保存在本地 `.data/settings.json`，读取设置时只返回密钥是否存在以及请求头名称。编辑时留空保留密钥，可显式清除；删除供应商会清除它的模型绑定。旧单连接配置或 [.env.example](./.env.example) 的环境变量会自动导入为默认供应商，首次保存新配置后以保存内容为准。
+
+## 本地 Agent 连接
+
+“设置 → 模型连接”还支持本地 Agent 连接，可自动检测 Codex、Claude Code 和 Kimi Code，沿用本机 CLI 的登录与模型配置。添加连接后选择 `default` 使用 CLI 默认模型，或指定模型 ID，用于设计对话、主题生成及图片输入。CLI 检测不发送模型请求；已保存连接的“测试对话”可验证实际通信与账号权限。当前文本连接为 Codex 时，未配置就绪的独立生图连接会自动复用 Codex 内置生图，无需生图模型或 API Key。已有可用的独立生图选择优先使用。
+
+本地通信由独立包 [@forma/local-agent-bridge](./packages/local-agent-bridge/README.md) 提供，包含标准输入输出适配、超时取消与进程树清理，也可作为 Node 库或带 Token 的独立本机 HTTP 服务供其他指定客户端使用。
 
 ## 设计与代码如何保持一致
 

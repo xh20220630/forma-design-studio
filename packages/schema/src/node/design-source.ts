@@ -5,6 +5,7 @@ const contractFiles = [
   'nodes',
   'collaboration',
   'variables',
+  'brand',
   'project',
   'providers',
   'reconstruction',

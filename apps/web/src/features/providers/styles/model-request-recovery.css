@@ -1,0 +1,151 @@
+.mr-recovery {
+  --mr-accent: #a46715;
+  margin: 10px 0;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--mr-accent) 28%, var(--border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--mr-accent) 4%, var(--background));
+  color: var(--foreground);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.mr-header {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.mr-icon {
+  display: flex;
+  color: var(--mr-accent);
+}
+.mr-header strong {
+  font-size: 13px;
+}
+.mr-status {
+  margin-left: auto;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--mr-accent);
+  background: color-mix(in srgb, var(--mr-accent) 10%, transparent);
+  font-weight: 650;
+}
+.mr-description {
+  margin: 10px 0;
+  color: var(--muted-foreground);
+}
+.mr-context {
+  display: grid;
+  gap: 5px;
+  margin: 12px 0;
+}
+.mr-context div {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 6px;
+}
+.mr-context dt {
+  color: var(--muted-foreground);
+}
+.mr-context dd {
+  margin: 0;
+}
+.mr-catalog-heading {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+.mr-recovery button {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.mr-source {
+  margin: 4px 0 8px;
+  font-size: 10px;
+  color: var(--muted-foreground);
+}
+.mr-model-list {
+  max-height: 88px;
+  overflow-y: auto;
+  margin: 8px 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+.mr-model-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+}
+.mr-model-list li + li {
+  border-top: 1px solid var(--border);
+}
+.mr-model-list li > span {
+  min-width: 0;
+  display: grid;
+}
+.mr-model-list code {
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mr-model-list small {
+  color: var(--muted-foreground);
+  font-size: 10px;
+}
+.mr-notice {
+  margin: 8px 0;
+}
+.mr-error {
+  color: var(--destructive);
+}
+.mr-help,
+.mr-details {
+  border-top: 1px solid var(--border);
+  padding-top: 9px;
+  margin-top: 10px;
+}
+.mr-recovery summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.mr-help ol {
+  padding-left: 18px;
+  margin: 9px 0;
+}
+.mr-help li + li {
+  margin-top: 5px;
+}
+.mr-command {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: var(--background);
+}
+.mr-command code {
+  min-width: 0;
+  flex: 1;
+  font-size: 10px;
+}
+.mr-details pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 8px;
+  font-size: 10px;
+  background: var(--background);
+  border-radius: 6px;
+}

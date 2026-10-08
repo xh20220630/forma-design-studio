@@ -6,6 +6,7 @@
 | -------------------------------------------------------- | -------------- | -------------------------------------------- |
 | [design-workspace-sdk](./design-workspace-sdk/README.md) | SDK 分层       | 类型、错误、领域规则、服务、基础设施、适配器 |
 | [editor-core](./editor-core/README.md)                   | 算法能力划分   | 节点、几何、布局、布尔运算、视口、序列化     |
+| [local-agent-bridge](./local-agent-bridge/README.md)     | CLI 通信桥接   | 本地 Agent 发现、stdio 适配、流式 HTTP 与进程管理 |
 | [renderer](./renderer/README.md)                         | 渲染后端划分   | 共享取值、DOM、Canvas、Node 源码导出         |
 | [schema](./schema/README.md)                             | 业务域契约划分 | 设计、Agent、工作台契约与 Node 源码导出      |
 | [ui](./ui/README.md)                                     | 组件库结构     | 基础控件、组合组件、主题、样式和工具         |

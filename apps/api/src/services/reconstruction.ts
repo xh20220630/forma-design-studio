@@ -9,6 +9,7 @@ import { localAssetFilename } from '../infrastructure/assets/assets.ts';
 import { resolveModel } from '../infrastructure/providers/settings.ts';
 import { requestImage } from '../infrastructure/providers/transport.ts';
 import { normalizeGeneratedDesign } from '../domain/generated-design.ts';
+import { uiAlignmentGuidelines } from '../domain/design-guidelines.ts';
 import { validateProject, validateId } from './validation.ts';
 
 /** 带内部草稿的素材还原状态，公开进度时会去掉草稿。 */
@@ -167,11 +168,24 @@ function assemble(
     '请按完整参考图返回一个页面。',
     502,
   );
+  requireValue(
+    normalized.components === undefined || Array.isArray(normalized.components),
+    '还原组件清单无效。',
+    502,
+  );
   const candidate = validateProject({
     ...project,
     pages: replace(normalized.pages),
-    components:
-      normalized.components === undefined ? project.components : replace(normalized.components),
+    components: Array.isArray(normalized.components)
+      ? [
+          ...new Map(
+            [
+              ...project.components,
+              ...(replace(normalized.components) as Project['components']),
+            ].map((component) => [component.id, component]),
+          ).values(),
+        ]
+      : project.components,
   });
   requireValue(
     assets.every((a) => used.has(a.id)),
@@ -210,6 +224,7 @@ export async function reconstructWithAssets(
   };
   try {
     state = await readJson<State>(file, state);
+    state.startedAt = new Date().toISOString();
     state.phase = 'analyzing';
     delete state.error;
     const source = imageMetadata(image);
@@ -268,7 +283,7 @@ export async function reconstructWithAssets(
         const output = await requestImage(
           imageConnection.provider,
           imageConnection.model,
-          `Re-create ONE standalone production UI asset from the attached reference. Asset: ${asset.name}. Its source rectangle in the ${source.width}x${source.height} reference is ${JSON.stringify(sourceRegion)}. Use that region as the visual reference, but REGENERATE its content cleanly rather than returning a screenshot crop. ${asset.prompt}\nAsset preparation: faithfully preserve subject, arrangement, palette, perspective and internal interface details. Exclude surrounding page headings, descriptions, buttons and any red annotation boxes. Keep the complete subject and a small safe inset; no clipped shadows or edges. Match aspect ratio ${sourceRegion.width}:${sourceRegion.height}. Aim for at least 2x the region's display resolution when supported. ${asset.background === 'transparent' ? 'Use real transparent background, no checkerboard pattern or solid matte.' : 'Preserve the intended opaque panel/background inside this asset.'} Output only this single asset, not the whole landing page or an asset contact sheet.`,
+          `Re-create ONE standalone production UI asset from the attached reference. Asset: ${asset.name}. Its source rectangle in the ${source.width}x${source.height} reference is ${JSON.stringify(sourceRegion)}. Use that region as the visual reference, but REGENERATE its content cleanly rather than returning a screenshot crop. ${asset.prompt}\nAsset preparation: faithfully preserve subject, arrangement, palette, perspective and internal interface details. Exclude surrounding page headings, descriptions, buttons and any red annotation boxes. Keep the complete subject and a small safe inset; no clipped shadows or edges. Match aspect ratio ${sourceRegion.width}:${sourceRegion.height}. Aim for at least 2x the region's display resolution when supported. ${asset.background === 'transparent' ? 'Use real transparent background, no checkerboard pattern or solid matte.' : 'Preserve the intended opaque panel/background inside this asset.'} If the isolated asset contains UI controls or icon-label rows, apply these alignment rules inside that asset: ${uiAlignmentGuidelines} Output only this single asset, not the whole landing page or an asset contact sheet.`,
           { bytes: image, mime, background: asset.background },
         );
         const media = await saveGeneratedMedia(project.id, output);
@@ -286,6 +301,7 @@ export async function reconstructWithAssets(
         throw new ApiError(
           502,
           `素材「${asset.name}」重建失败：${asset.error}。已完成素材会保留，重试时继续。`,
+          error instanceof ApiError ? error.errorDetails : undefined,
         );
       }
     }

@@ -296,6 +296,10 @@ test('model planning cannot approve images and explicit image review gates recon
     409,
   );
   plans.push(plan([{ type: 'generate_image', prompt: 'Dashboard for this project' }]));
+  plans.push({
+    styleGuide: 'Use project tokens',
+    pages: [{ name: 'Home', prompt: 'Dashboard for this project', width: 1000, height: 800 }],
+  });
   const generated = await api(`/agent/sessions/${session.id}/messages`, 'POST', {
     content: '生成 UI 设计图',
   });

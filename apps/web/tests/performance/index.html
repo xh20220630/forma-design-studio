@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Forma canvas performance audit</title>
+  </head>
+  <body>
+    <header id="controls">
+      <strong>Canvas performance audit</strong>
+      <button id="engine">Run engine suite</button>
+      <button id="editor">Run editor suite</button>
+      <button id="lifecycle">Run lifecycle suite</button>
+      <button id="snapshot">Run snapshot comparison</button>
+      <button id="stress">Run repeated DPR comparison</button>
+      <button id="empty">Run empty editor</button>
+      <button id="interactive">Show interactive editor</button>
+      <button id="checks">Run interaction checks</button>
+      <span id="status">Ready</span>
+    </header>
+    <div id="preview"></div>
+    <section id="report">
+      <h2>Results</h2>
+      <pre id="summary"></pre>
+      <details>
+        <summary>Raw JSON</summary>
+        <pre id="results"></pre>
+      </details>
+    </section>
+    <script type="module" src="./main.tsx"></script>
+  </body>
+</html>

@@ -26,6 +26,8 @@
 .ed-canvas-viewport .ed-canvas-stage {
   padding: 0;
   box-sizing: border-box;
+  /* 视口位图重定位时不能扩大画布的滚动范围。 */
+  overflow: clip;
 }
 .ed-canvas-viewport .ed-artboard-space {
   margin: 0;
@@ -40,6 +42,10 @@
 }
 .ed-inline-editor-node {
   z-index: 20;
+}
+.ed-artboard .ed-selection,
+.ed-artboard .ed-multi-selection {
+  translate: var(--gesture-x, 0px) var(--gesture-y, 0px);
 }
 .workspace-root .design-editor .ed-artboard {
   box-shadow: var(--canvas-artboard-shadow);

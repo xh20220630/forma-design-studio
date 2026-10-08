@@ -13,6 +13,7 @@ import { projectsRouter } from './http/routes/projects.ts';
 import { providersRouter } from './http/routes/providers.ts';
 import { generationRouter } from './http/routes/generation.ts';
 import { workspaceRouter } from './http/routes/workspace.ts';
+import { brandRouter } from './http/routes/brand.ts';
 
 export function createApp() {
   const app = express();
@@ -25,6 +26,7 @@ export function createApp() {
   app.use(projectsRouter);
   app.use(providersRouter);
   app.use(generationRouter);
+  app.use(brandRouter);
   app.use(workspaceRouter);
   app.use(
     '/api/assets',

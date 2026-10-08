@@ -44,6 +44,8 @@ import '../styles/project-overview.css';
 interface Props {
   /** 当前保存或展示的项目集合。 */
   projects: Project[];
+  favorites: string[];
+  onToggleFavorite: (id: string) => void;
   /** 可供选择的设计模板集合。 */
   templates: DesignTemplate[];
   /** 后端服务当前是否可访问。 */
@@ -141,20 +143,21 @@ interface Props {
  * @returns 供 React 渲染的界面内容。
  */
 export default function WorkspaceHome(props: Props) {
-  const { projects, templates, query, onQuery, tab, onTab } = props;
+  const {
+    projects,
+    templates,
+    query,
+    onQuery,
+    tab,
+    onTab,
+    favorites,
+    onToggleFavorite: toggleFavorite,
+  } = props;
   const { reduced, transition } = useStudioMotion();
   /** 界面状态：项目列表当前使用的展示方式。通过状态更新驱动界面刷新。 */
   const [listMode, setListMode] = useState(false);
   /** 界面状态：当前列表的排序规则。通过状态更新驱动界面刷新。 */
   const [sort, setSort] = useState('updated');
-  /** 界面状态：用户收藏的项目标识集合。通过状态更新驱动界面刷新。 */
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      return JSON.parse(localStorage.getItem('forma-favorites') || '[]');
-    } catch {
-      return [];
-    }
-  });
   /** 界面状态：是否正在导入文件。通过状态更新驱动界面刷新。 */
   const [importing, setImporting] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -170,13 +173,6 @@ export default function WorkspaceHome(props: Props) {
         ? a.name.localeCompare(b.name, 'zh')
         : Date.parse(b.updatedAt) - Date.parse(a.updatedAt),
     );
-  const toggleFavorite = (id: string) => {
-    const next = favorites.includes(id)
-      ? favorites.filter((value) => value !== id)
-      : [...favorites, id];
-    setFavorites(next);
-    localStorage.setItem('forma-favorites', JSON.stringify(next));
-  };
   const upload = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;

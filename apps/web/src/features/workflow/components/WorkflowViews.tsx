@@ -1,4 +1,5 @@
 import { ReferenceImagePreview } from '../../reconstruction/components/ReferenceImagePreview';
+import { PageDesignQueue } from '../../generation/components/PageDesignQueue';
 import { ReconstructionProgress } from '../../reconstruction/components/ReconstructionProgress';
 import { useStudioMotion } from '../../../shared/lib/motion';
 import { motion, AnimatePresence } from 'motion/react';
@@ -957,7 +958,9 @@ export function AgentDialog({
   /** 界面状态：当前使用的模式或操作方式。通过状态更新驱动界面刷新。 */
   const [mode, setMode] = useState(initialMode);
   /** 界面状态：发送给模型的生成要求。通过状态更新驱动界面刷新。 */
-  const [prompt, setPrompt] = useState(project?.generation?.prompt ?? '');
+  const [prompt, setPrompt] = useState(
+    project?.generationPlan?.prompt ?? project?.generation?.prompt ?? '',
+  );
   /** 界面状态：是否有操作进行中，用于阻止重复提交。通过状态更新驱动界面刷新。 */
   const [busy, setBusy] = useState('');
   /** 界面状态：当前操作的失败信息，供界面反馈或重试判断。通过状态更新驱动界面刷新。 */
@@ -969,7 +972,11 @@ export function AgentDialog({
   /** 界面状态：当前参考图是否已经过用户确认；设计上下文变化后会撤销。通过状态更新驱动界面刷新。 */
   const [approved, setApproved] = useState(!!project?.generation?.approved);
   /** 界面状态：当前任务是否已经完成。通过状态更新驱动界面刷新。 */
-  const [complete, setComplete] = useState(false);
+  const [complete, setComplete] = useState(
+    !!project?.generationPlan?.pages.some(
+      (page) => page.id === project.generation?.pageId && !!page.reconstructedImageUrl,
+    ),
+  );
   /** 界面状态：项目主题及其规范路径和确认信息。通过状态更新驱动界面刷新。 */
   const [theme, setTheme] = useState<{
     /** 面向用户展示的名称。 */
@@ -980,7 +987,7 @@ export function AgentDialog({
     tokens: ThemeTokens;
   } | null>(null);
   const stage = complete ? 3 : approved ? 2 : imageUrl ? 1 : 0;
-  const run = async (action: string) => {
+  const run = async (action: string, pageId?: string) => {
     setBusy(action);
     setError('');
     try {
@@ -996,12 +1003,21 @@ export function AgentDialog({
         }>('/generate/theme', { prompt });
         setTheme(response);
       } else if (action === 'image') {
+        const latest = await api<Project>(`/projects/${project!.id}`);
+        const nextPage = latest.generationPlan?.pages.find((page) => !page.reconstructedImageUrl);
+        const targetPage =
+          pageId ??
+          (prompt.trim() === latest.generationPlan?.prompt.trim() ? nextPage?.id : undefined);
         const response = await api<
           {
             /** 生成图片的访问地址。 */
             imageUrl: string;
           } & Mutated
-        >('/generate/image', { projectId: project?.id, prompt });
+        >('/generate/image', {
+          projectId: latest.id,
+          revision: latest.revision,
+          ...(targetPage ? { pageId: targetPage, planId: latest.generationPlan!.id } : { prompt }),
+        });
         setImageUrl(response.imageUrl);
         setApproved(false);
         setComplete(false);
@@ -1009,6 +1025,7 @@ export function AgentDialog({
       } else if (action === 'approve') {
         const response = await api<Mutated>('/generate/approve', {
           projectId: project?.id,
+          imageUrl,
         });
         setApproved(true);
         await refresh(response);
@@ -1022,6 +1039,15 @@ export function AgentDialog({
       }
     } catch (err) {
       setError((err as Error).message);
+      if (project && action === 'image') {
+        const latest = await api<Project>(`/projects/${project.id}`).catch(() => undefined);
+        if (latest) {
+          setImageUrl(latest.generation?.imageUrl ?? '');
+          setApproved(!!latest.generation?.approved);
+          setComplete(false);
+          await refresh({ project: latest });
+        }
+      }
     } finally {
       setBusy('');
     }
@@ -1151,6 +1177,17 @@ export function AgentDialog({
             {!approved && <p>检查视觉方案后确认，再还原为可编辑节点。</p>}
           </div>
         )}
+        {mode === 'design' && project && (
+          <PageDesignQueue
+            project={project}
+            busy={!!busy}
+            canGenerate={!!settings.imageConfigured}
+            canReconstruct={!!settings.configured}
+            onGenerate={(pageId) => void run('image', pageId)}
+            onApprove={() => void run('approve')}
+            onReconstruct={() => void run('design')}
+          />
+        )}
         {mode === 'design' && project && imageUrl && (
           <ReconstructionProgress
             projectId={project.id}
@@ -1205,7 +1242,7 @@ export function AgentDialog({
             <div>
               <strong>
                 {busy === 'image'
-                  ? '正在生成设计图…'
+                  ? '正在拆分页面并生成独立设计图…'
                   : busy === 'design'
                     ? '正在分析参考图并重建素材…'
                     : busy === 'theme'
@@ -1251,10 +1288,26 @@ export function AgentDialog({
               </Button>
             </>
           ) : complete ? (
-            <Button onClick={onOpenCanvas}>
-              打开画布
-              <ArrowRight size={15} />
-            </Button>
+            <>
+              <Button variant="outline" onClick={onOpenCanvas}>
+                打开画布
+                <ArrowRight size={15} />
+              </Button>
+              {project?.generationPlan?.pages.some((page) => !page.reconstructedImageUrl) && (
+                <Button
+                  disabled={!!busy || !settings.imageConfigured}
+                  onClick={() =>
+                    run(
+                      'image',
+                      project.generationPlan!.pages.find((page) => !page.reconstructedImageUrl)!.id,
+                    )
+                  }
+                >
+                  <Image size={15} />
+                  生成下一页
+                </Button>
+              )}
+            </>
           ) : (
             <>
               {imageUrl && (

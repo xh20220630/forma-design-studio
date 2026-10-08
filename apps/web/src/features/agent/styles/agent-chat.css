@@ -140,6 +140,20 @@
   overflow: auto;
   padding: 0 18px 24px;
   overscroll-behavior: contain;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.ac-message-text,
+.ac-action > p,
+.ac-error p,
+.agent-chat-panel .mr-recovery :is(p, dd, code) {
+  -webkit-user-select: text;
+  user-select: text;
+  cursor: text;
+}
+.ac-scroll ::selection {
+  background: color-mix(in srgb, var(--studio-accent) 38%, var(--studio-surface-raised));
+  color: var(--studio-text);
 }
 .ac-loading {
   display: flex;

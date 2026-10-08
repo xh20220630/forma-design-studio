@@ -1,5 +1,6 @@
 import { ReferenceImagePreview } from '../../reconstruction/components/ReferenceImagePreview';
 import { ReconstructionProgress } from '../../reconstruction/components/ReconstructionProgress';
+import { PageDesignQueue } from '../../generation/components/PageDesignQueue';
 import type { View } from '../../../shared/types/navigation';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -65,10 +66,17 @@ import type {
   AgentTurnResponse,
 } from '@forma/schema/agent';
 import '../styles/agent-chat.css';
+import BrandArtifactCard from '../../brand/components/BrandArtifactCard';
 import { ModelSwitcher } from '../../providers/components/ProviderConnections';
+import {
+  ModelRequestRecovery,
+  messageModelDiagnostic,
+} from '../../providers/components/ModelRequestRecovery';
 
 /** AgentChatPanel 的输入契约，把展示数据与交互回调交给调用方控制。 */
-interface Props {
+export interface AgentChatPanelProps {
+  mode?: 'design' | 'brand';
+  layout?: 'sidebar' | 'workspace';
   /** 当前设计项目或工作空间项目元信息。 */
   project?: Project;
   /** 当前生效的设置。 */
@@ -183,6 +191,10 @@ const actionBrandIcons: Record<AgentActionResult['type'], RinIconKind> = {
   create_variables: 'tokens',
   create_component: 'components',
   generate_image: 'canvas',
+  generate_brand_image: 'canvas',
+  vectorize_brand_logo: 'canvas',
+  adopt_brand_logo: 'projects',
+  generate_page_image: 'canvas',
   approve_image: 'canvas',
   reconstruct_design: 'canvas',
   preview_sync: 'sync',
@@ -394,6 +406,8 @@ function IconButton({
 export default function AgentChatPanel({
   project,
   settings,
+  mode = 'design',
+  layout = 'sidebar',
   hidden = false,
   draftRequest,
   onClose,
@@ -404,11 +418,12 @@ export default function AgentChatPanel({
   flush,
   onNavigate,
   onBusyChange,
-}: Props) {
+}: AgentChatPanelProps) {
   const { reduced: reducedMotion, expressive, transition: uiTransition } = useStudioMotion();
   /** 界面状态：是否正在切换模型绑定。通过状态更新驱动界面刷新。 */
   const [switchingModel, setSwitchingModel] = useState(false);
-  const scope = project ? `project:${project.id}` : 'global';
+  const isBrand = mode === 'brand';
+  const scope = `${mode}:${project ? `project:${project.id}` : 'global'}`;
   /** 界面状态：按全局或项目范围分别维护的对话状态。通过状态更新驱动界面刷新。 */
   const [scopes, setScopes] = useState<Record<string, ScopeState>>({});
   /** 界面状态：当前范围内的对话会话集合。通过状态更新驱动界面刷新。 */
@@ -475,6 +490,12 @@ export default function AgentChatPanel({
       ? operation.pending
       : undefined;
   const renderedMessages = pending ? [...messages, pending] : messages;
+  const latestMessage = renderedMessages.at(-1);
+  const hasInlineError =
+    operation?.error &&
+    latestMessage &&
+    messageModelDiagnostic(latestMessage, settings) &&
+    latestMessage.content.includes(operation.error);
   // 同步维护引用，供异步回调读取最新会话状态。
   const mutateScope = (key: string, update: (state: ScopeState) => ScopeState) =>
     setScopes((states) => {
@@ -517,7 +538,9 @@ export default function AgentChatPanel({
       const response = await request<{
         /** 当前范围内的对话会话集合。 */
         sessions: AgentSessionSummary[];
-      }>(`/agent/sessions${projectId ? `?projectId=${encodeURIComponent(projectId)}` : ''}`);
+      }>(
+        `/agent/sessions?mode=${mode}${projectId ? `&projectId=${encodeURIComponent(projectId)}` : ''}`,
+      );
       if (loadIds.current[key] !== loadId) return;
       const all = mergeSummaries(scopesRef.current[key]?.sessions ?? [], response.sessions);
       const activeId = scopesRef.current[key]?.activeId ?? all[0]?.id;
@@ -539,6 +562,7 @@ export default function AgentChatPanel({
   };
   const createSession = async (key: string, projectId?: string, select = true) => {
     const value = await request<AgentSession>('/agent/sessions', {
+      mode,
       ...(projectId ? { projectId } : {}),
     });
     cacheSession(value, key);
@@ -605,7 +629,9 @@ export default function AgentChatPanel({
     },
   ) => {
     const originScope = target?.scope ?? scope,
-      originProjectId = originScope.startsWith('project:') ? originScope.slice(8) : undefined;
+      originProjectId = originScope.startsWith(`${mode}:project:`)
+        ? originScope.slice(mode.length + 9)
+        : undefined;
     const activeId = target?.sessionId ?? scopesRef.current[originScope]?.activeId;
     if (requestScopes.current.has(originScope) || (activeId && busySessions.current.has(activeId)))
       return;
@@ -618,13 +644,15 @@ export default function AgentChatPanel({
     let sentId = activeId;
     let serverReturned = false;
     const label =
-      action?.type === 'approve_image'
-        ? '正在确认设计图'
-        : action?.type === 'reconstruct_design'
-          ? '正在分析参考图并重建素材'
-          : action?.type === 'apply_sync'
-            ? '正在同步已确认的代码'
-            : 'Agent 正在处理';
+      action?.type === 'generate_page_image'
+        ? '正在生成独立页面设计图'
+        : action?.type === 'approve_image'
+          ? '正在确认设计图'
+          : action?.type === 'reconstruct_design'
+            ? '正在分析参考图并重建素材'
+            : action?.type === 'apply_sync'
+              ? '正在同步已确认的代码'
+              : 'Agent 正在处理';
     try {
       const activeSession = activeId
         ? await loadSession(activeId, originScope)
@@ -801,8 +829,9 @@ export default function AgentChatPanel({
     .flatMap((message) => message.actions ?? [])
     .filter(
       (action) =>
-        ['generate_image', 'approve_image', 'reconstruct_design'].includes(action.type) &&
-        action.status !== 'failed',
+        ['generate_image', 'generate_page_image', 'approve_image', 'reconstruct_design'].includes(
+          action.type,
+        ) && action.status !== 'failed',
     );
   // 同一项目只允许确认最新图片动作，避免使用已被替换的参考图。
   const latestImageAction = (action: AgentActionResult) =>
@@ -829,22 +858,31 @@ export default function AgentChatPanel({
   const renderAction = (action: AgentActionResult) => {
     const stale = isStale(action),
       latest = latestImageAction(action),
-      isImage = !!action.imageUrl && ['generate_image', 'approve_image'].includes(action.type);
+      isImage =
+        !!action.imageUrl &&
+        ['generate_image', 'generate_page_image', 'approve_image'].includes(action.type);
     const canApprove =
-      action.type === 'generate_image' && action.status === 'awaiting-approval' && latest;
+      ['generate_image', 'generate_page_image'].includes(action.type) &&
+      action.status === 'awaiting-approval' &&
+      latest;
     const canReconstruct =
       action.type === 'approve_image' && action.status === 'completed' && latest;
+    const brandProject = actionProject(action);
+    const brandArtifact = brandProject?.brandDesign?.artifacts.find(
+      (item) => item.id === action.brandArtifactId,
+    );
     const sync = action.syncPreview;
     const applied = !!sync && appliedPreviewIds.has(sync.previewId);
     const imageApproved =
-      action.type === 'generate_image' &&
+      ['generate_image', 'generate_page_image'].includes(action.type) &&
       imageActions.some(
         (item) =>
           item.type === 'approve_image' &&
           item.projectId === action.projectId &&
           item.imageUrl === action.imageUrl,
       );
-    const imageReplaced = action.type === 'generate_image' && !latest && !imageApproved;
+    const imageReplaced =
+      ['generate_image', 'generate_page_image'].includes(action.type) && !latest && !imageApproved;
     /** 集中维护 displayedStatus 的约定值或当前状态，供相关分支保持一致。 */
     const displayedStatus = applied || imageApproved || imageReplaced ? 'completed' : action.status;
     const displayedLabel = applied
@@ -892,6 +930,15 @@ export default function AgentChatPanel({
           </p>
         )}
         {action.error && <p className="ac-action-error">{action.error}</p>}
+        {brandArtifact && brandProject && (
+          <BrandArtifactCard
+            artifact={brandArtifact}
+            projectId={brandProject.id}
+            onPreview={() =>
+              setImagePreview({ url: brandArtifact.imageUrl, title: brandArtifact.name })
+            }
+          />
+        )}
         {isImage && (
           <button
             className="ac-generated-image"
@@ -1111,20 +1158,25 @@ export default function AgentChatPanel({
   ).length;
   return (
     <motion.aside
-      className="agent-chat-panel"
+      className={`agent-chat-panel ${layout === 'workspace' ? 'agent-chat-workspace' : ''}`}
       initial={false}
       animate={{ opacity: hidden ? 0 : 1, x: hidden && !reducedMotion ? 2 : 0 }}
       transition={uiTransition}
       hidden={hidden}
-      aria-label="AI Agent 对话侧栏"
+      aria-label={isBrand ? '品牌设计对话' : 'AI Agent 对话侧栏'}
       onKeyDown={(event) => event.stopPropagation()}
     >
       <header className="ac-header">
         <div className="ac-agent-brand">
           <RinAvatar size={36} />
           <div className="ac-brand-copy">
-            <strong>凛</strong>
-            <RinTaskActivity running={busy} label={busy ? '正在处理你的设计' : '你的设计搭档'} />
+            <strong>{isBrand ? '品牌设计' : '凛'}</strong>
+            <RinTaskActivity
+              running={busy}
+              label={
+                busy ? '正在处理你的设计' : isBrand ? '和凛一起，做出你的品牌' : '你的设计搭档'
+              }
+            />
           </div>
         </div>
         <div>
@@ -1138,9 +1190,11 @@ export default function AgentChatPanel({
           >
             <Plus size={17} />
           </IconButton>
-          <IconButton label="关闭 Agent 侧栏" onClick={onClose}>
-            <X size={17} />
-          </IconButton>
+          {layout === 'sidebar' && (
+            <IconButton label="关闭 Agent 侧栏" onClick={onClose}>
+              <X size={17} />
+            </IconButton>
+          )}
         </div>
       </header>
       <div className="ac-conversation-bar">
@@ -1182,9 +1236,11 @@ export default function AgentChatPanel({
             </div>
           </DropdownMenuContent>
         </DropdownMenu>
-        <span className="ac-scope-label">{project ? '项目对话' : '工作空间'}</span>
+        <span className="ac-scope-label">
+          {isBrand ? '品牌对话' : project ? '项目对话' : '工作空间'}
+        </span>
       </div>
-      {subject && (
+      {!isBrand && subject && (
         <button className="ac-project-context" onClick={() => void openProject(subject.id)}>
           <span className="ac-project-dot" style={{ background: subject.tokens.primary }} />
           <span>{subject.name}</span>
@@ -1231,114 +1287,146 @@ export default function AgentChatPanel({
           >
             <div className="ac-welcome-intro">
               <RinIllustration state="empty" size={104} />
-              <h2>{project ? '和凛继续设计' : '和凛一起，从想法开始'}</h2>
+              <h2>
+                {isBrand ? '聊聊你想做的品牌' : project ? '和凛继续设计' : '和凛一起，从想法开始'}
+              </h2>
               <p>
-                {project
-                  ? '描述你想修改的页面、组件或样式。'
-                  : '创建项目、设计页面，或整理设计规范。'}
+                {isBrand
+                  ? '说出你的想法，和凛一起设计、修改，直到满意。'
+                  : project
+                    ? '描述你想修改的页面、组件或样式。'
+                    : '创建项目、设计页面，或整理设计规范。'}
               </p>
             </div>
-            <div className="ac-quick-prompts">
-              {quickPrompts.map((item, index) => (
-                <motion.button
-                  key={item.title}
-                  className={pickedPrompt === item.title ? 'is-picked' : undefined}
-                  onClick={() => {
-                    setPrompt(item.prompt);
-                    setPickedPrompt(item.title);
-                  }}
-                  initial={reducedMotion ? false : { opacity: 0, y: expressive ? 10 : 2 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{
-                    ...uiTransition,
-                    delay: reducedMotion ? 0 : index * (expressive ? 0.045 : 0.02),
-                  }}
-                  whileHover={reducedMotion ? undefined : { y: expressive ? -3 : -1 }}
-                  whileTap={reducedMotion ? undefined : { scale: 0.97 }}
-                >
-                  <AnimatePresence>
-                    {pickedPrompt === item.title && (
-                      <motion.span
-                        className="ac-task-pick"
-                        initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={uiTransition}
-                      >
-                        <Check size={10} />
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                  <span className="ac-task-icon">
-                    <RinIcon kind={item.kind} size={24} />
-                  </span>
-                  <strong>{item.title}</strong>
-                  <span className="ac-task-description">{item.description}</span>
-                  <ArrowRight size={13} />
-                </motion.button>
-              ))}
-            </div>
-            <div className="ac-workflow-note">
-              <ImageIcon size={12} />
-              <span>生成设计图</span>
-              <ChevronRight size={11} />
-              <span>你来确认</span>
-              <ChevronRight size={11} />
-              <span>还原 UI</span>
-            </div>
+            {!isBrand && (
+              <div className="ac-quick-prompts">
+                {quickPrompts.map((item, index) => (
+                  <motion.button
+                    key={item.title}
+                    className={pickedPrompt === item.title ? 'is-picked' : undefined}
+                    onClick={() => {
+                      setPrompt(item.prompt);
+                      setPickedPrompt(item.title);
+                    }}
+                    initial={reducedMotion ? false : { opacity: 0, y: expressive ? 10 : 2 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      ...uiTransition,
+                      delay: reducedMotion ? 0 : index * (expressive ? 0.045 : 0.02),
+                    }}
+                    whileHover={reducedMotion ? undefined : { y: expressive ? -3 : -1 }}
+                    whileTap={reducedMotion ? undefined : { scale: 0.97 }}
+                  >
+                    <AnimatePresence>
+                      {pickedPrompt === item.title && (
+                        <motion.span
+                          className="ac-task-pick"
+                          initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={uiTransition}
+                        >
+                          <Check size={10} />
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    <span className="ac-task-icon">
+                      <RinIcon kind={item.kind} size={24} />
+                    </span>
+                    <strong>{item.title}</strong>
+                    <span className="ac-task-description">{item.description}</span>
+                    <ArrowRight size={13} />
+                  </motion.button>
+                ))}
+              </div>
+            )}
+            {!isBrand && (
+              <div className="ac-workflow-note">
+                <ImageIcon size={12} />
+                <span>生成设计图</span>
+                <ChevronRight size={11} />
+                <span>你来确认</span>
+                <ChevronRight size={11} />
+                <span>还原 UI</span>
+              </div>
+            )}
           </motion.div>
         )}
         <div className="ac-messages" aria-live="polite">
-          {renderedMessages.map((message) => (
-            <motion.article
-              key={message.id}
-              className={`ac-message ac-message-${message.role} ${message.status === 'failed' ? 'is-failed' : ''}`}
-              initial={{
-                opacity: reducedMotion ? 1 : 0,
-                y: reducedMotion ? 0 : expressive ? 10 : 2,
-              }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={uiTransition}
-            >
-              <div className="ac-message-author">
-                {message.role === 'assistant' ? (
-                  <RinAvatar size={24} className="ac-assistant-mark" />
-                ) : (
-                  <span className="ac-user-mark">我</span>
-                )}
-                <strong>{message.role === 'assistant' ? '凛' : '你'}</strong>
-                <time>
-                  {new Date(message.createdAt).toLocaleTimeString('zh-CN', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </time>
-                {message.status === 'pending' && <span className="ac-message-pending">发送中</span>}
-              </div>
-              {message.content && <MessageText content={message.content} />}
-              {!!message.actions?.length && (
-                <div className="ac-action-timeline" aria-label="执行记录">
-                  {message.actions.map(renderAction)}
+          {renderedMessages.map((message) => {
+            const diagnostic = messageModelDiagnostic(message, settings);
+            const visibleActions = message.actions?.filter(
+              (action) => !(action.status === 'failed' && diagnostic),
+            );
+            return (
+              <motion.article
+                key={message.id}
+                className={`ac-message ac-message-${message.role} ${message.status === 'failed' ? 'is-failed' : ''}`}
+                initial={{
+                  opacity: reducedMotion ? 1 : 0,
+                  y: reducedMotion ? 0 : expressive ? 10 : 2,
+                }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={uiTransition}
+              >
+                <div className="ac-message-author">
+                  {message.role === 'assistant' ? (
+                    <RinAvatar size={24} className="ac-assistant-mark" />
+                  ) : (
+                    <span className="ac-user-mark">我</span>
+                  )}
+                  <strong>{message.role === 'assistant' ? '凛' : '你'}</strong>
+                  <time>
+                    {new Date(message.createdAt).toLocaleTimeString('zh-CN', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </time>
+                  {message.status === 'pending' && (
+                    <span className="ac-message-pending">发送中</span>
+                  )}
                 </div>
-              )}
-              {message.role === 'assistant' && message.content && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="ac-message-copy"
-                  aria-label="复制回答"
-                  onClick={() =>
-                    navigator.clipboard
-                      .writeText(message.content)
-                      .then(() => setToast('回答已复制'))
-                      .catch(() => setToast('无法访问剪贴板'))
-                  }
-                >
-                  <Copy size={12} />
-                </Button>
-              )}
-            </motion.article>
-          ))}
+                {diagnostic ? (
+                  <>
+                    {message.actions?.some((action) => action.status !== 'failed') && (
+                      <MessageText content="部分操作已完成，请查看下方执行记录。" />
+                    )}
+                    <ModelRequestRecovery
+                      diagnostic={diagnostic}
+                      settings={settings}
+                      onSettings={onProviderSettings}
+                      onManage={onSettings}
+                      disabled={busy}
+                      autoLoad={message.id === renderedMessages.at(-1)?.id}
+                    />
+                  </>
+                ) : (
+                  message.content && <MessageText content={message.content} />
+                )}
+                {!!visibleActions?.length && (
+                  <div className="ac-action-timeline" aria-label="执行记录">
+                    {visibleActions.map(renderAction)}
+                  </div>
+                )}
+                {message.role === 'assistant' && message.content && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="ac-message-copy"
+                    aria-label="复制回答"
+                    onClick={() =>
+                      navigator.clipboard
+                        .writeText(message.content)
+                        .then(() => setToast('回答已复制'))
+                        .catch(() => setToast('无法访问剪贴板'))
+                    }
+                  >
+                    <Copy size={12} />
+                  </Button>
+                )}
+              </motion.article>
+            );
+          })}
         </div>
         <AnimatePresence initial={false}>
           {busy && (
@@ -1361,7 +1449,7 @@ export default function AgentChatPanel({
             </motion.div>
           )}
         </AnimatePresence>
-        {(current.error || operation?.error) && (
+        {(current.error || operation?.error) && !(!current.error && hasInlineError) && (
           <div className="ac-error" role="alert">
             <RinIllustration state="error" size={42} />
             <div>
@@ -1395,7 +1483,40 @@ export default function AgentChatPanel({
             </div>
           </div>
         )}
-        {subject?.generation?.imageUrl && (
+        {!isBrand && subject && (
+          <PageDesignQueue
+            project={subject}
+            busy={busy}
+            canGenerate={!!settings.imageConfigured}
+            canReconstruct={!!settings.configured}
+            onGenerate={(pageId) =>
+              void run(undefined, {
+                type: 'generate_page_image',
+                projectId: subject.id,
+                revision: subject.revision,
+                planId: subject.generationPlan!.id,
+                pageId,
+              })
+            }
+            onApprove={() =>
+              void run(undefined, {
+                type: 'approve_image',
+                projectId: subject.id,
+                revision: subject.revision,
+                imageUrl: subject.generation!.imageUrl!,
+              })
+            }
+            onReconstruct={() =>
+              void run(undefined, {
+                type: 'reconstruct_design',
+                projectId: subject.id,
+                revision: subject.revision,
+                imageUrl: subject.generation!.imageUrl!,
+              })
+            }
+          />
+        )}
+        {!isBrand && subject?.generation?.imageUrl && (
           <ReconstructionProgress
             projectId={subject.id}
             sourceImageUrl={subject.generation.imageUrl}
@@ -1441,7 +1562,13 @@ export default function AgentChatPanel({
           <Textarea
             ref={composerRef}
             aria-label="发送给凛的消息"
-            placeholder={project ? '描述需要修改的内容…' : '描述你的任务…'}
+            placeholder={
+              isBrand
+                ? '描述你想要的品牌或 Logo，也可以直接说要怎么改…'
+                : project
+                  ? '描述需要修改的内容…'
+                  : '描述你的任务…'
+            }
             value={current.draft}
             onChange={(event) =>
               mutateScope(scope, (state) => ({
@@ -1468,7 +1595,9 @@ export default function AgentChatPanel({
               </PopoverTrigger>
               <PopoverContent side="top" align="start" className="ac-context-popover">
                 <h4>{subject?.name ?? '工作空间上下文'}</h4>
-                {subject ? (
+                {isBrand ? (
+                  <p>结合「{subject?.name}」的项目介绍、品牌作品和当前对话继续设计。</p>
+                ) : subject ? (
                   <>
                     <p>每次请求读取当前保存的设计数据。</p>
                     <dl>
@@ -1497,7 +1626,9 @@ export default function AgentChatPanel({
                   <p>可以创建项目。创建后，这段对话会继续围绕该项目工作。</p>
                 )}
                 <div className="ac-context-help">
-                  图片生成后等待确认，代码同步前展示文件供检查。
+                  {isBrand
+                    ? '作品与修改记录自动保存在这个项目中。'
+                    : '图片生成后等待确认，代码同步前展示文件供检查。'}
                 </div>
               </PopoverContent>
             </Popover>

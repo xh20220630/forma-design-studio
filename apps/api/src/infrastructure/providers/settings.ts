@@ -52,7 +52,19 @@ const defaults = {
  */
 async function readSettings(): Promise<StoredSettings> {
   const raw = await readJson<Record<string, unknown>>(settingsPath, {});
-  if (raw.version === 2 && Array.isArray(raw.providers)) return raw as unknown as StoredSettings;
+  if (raw.version === 2 && Array.isArray(raw.providers)) {
+    const settings = raw as unknown as StoredSettings;
+    for (const provider of settings.providers)
+      if (provider.textProtocol === 'local-agent') {
+        provider.imageProtocol = provider.localAgent?.agentId === 'codex' ? 'local-agent' : 'none';
+        if (provider.localAgent) {
+          provider.localAgent.reconstructionTimeoutMs ??= 600000;
+          if (provider.localAgent.agentId === 'codex')
+            provider.localAgent.reasoningEffort ??= 'medium';
+        }
+      }
+    return settings;
+  }
   // Import the previous single connection and environment defaults only before v2 is saved.
   const provider: PrivateProvider = {
     ...defaults,
@@ -88,8 +100,18 @@ function ready(provider: PrivateProvider | undefined, model: string, channel: 't
     provider &&
       model &&
       provider[channel === 'text' ? 'textProtocol' : 'imageProtocol'] !== 'none' &&
+      (provider.textProtocol !== 'local-agent' || provider.localAgent) &&
       (provider.auth === 'none' || provider.apiKey || Object.keys(provider.headers).length),
   );
+}
+
+function effectiveImage(settings: StoredSettings): ModelBinding {
+  const selected = settings.providers.find((p) => p.id === settings.image.providerId);
+  if (ready(selected, settings.image.model, 'image')) return settings.image;
+  const text = settings.providers.find((p) => p.id === settings.text.providerId);
+  if (text?.imageProtocol === 'local-agent' && ready(text, settings.text.model, 'image'))
+    return settings.text;
+  return settings.image;
 }
 /**
  * 将供应商私有配置转换为公开摘要，隐藏 API Key 和私有请求头值。
@@ -99,7 +121,8 @@ function ready(provider: PrivateProvider | undefined, model: string, channel: 't
  */
 function publicSettings(settings: StoredSettings): ProviderSettings {
   const text = settings.providers.find((p) => p.id === settings.text.providerId);
-  const image = settings.providers.find((p) => p.id === settings.image.providerId);
+  const imageBinding = effectiveImage(settings);
+  const image = settings.providers.find((p) => p.id === imageBinding.providerId);
   return {
     providers: settings.providers.map(({ apiKey, headers, ...provider }) => ({
       ...provider,
@@ -108,11 +131,13 @@ function publicSettings(settings: StoredSettings): ProviderSettings {
     })),
     text: settings.text,
     image: settings.image,
+    effectiveImage: imageBinding,
+    imageFollowsText: imageBinding === settings.text,
     configured: ready(text, settings.text.model, 'text'),
-    imageConfigured: ready(image, settings.image.model, 'image'),
+    imageConfigured: ready(image, imageBinding.model, 'image'),
     baseUrl: text?.baseUrl || '',
     textModel: settings.text.model,
-    imageModel: settings.image.model,
+    imageModel: imageBinding.model,
   };
 }
 /**
@@ -152,26 +177,9 @@ export function validateProvider(
     requireValue(typeof input[key] === 'string' && input[key].length <= 1000, `${key} 格式无效。`);
     next[key] = input[key].trim();
   }
-  requireValue(next.name.length > 0 && next.baseUrl.length > 0, '供应商名称和服务地址不能为空。');
-  let base: URL;
-  try {
-    base = new URL(next.baseUrl);
-  } catch {
-    throw new ApiError(400, 'API Base URL 格式无效。');
-  }
-  requireValue(
-    !base.username && !base.password && !base.search && !base.hash,
-    '服务地址不能包含凭据、查询参数或片段。',
-  );
-  requireValue(
-    base.protocol === 'https:' ||
-      (base.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname)),
-    'API 服务必须使用 HTTPS，本地服务可使用 HTTP。',
-  );
-  next.baseUrl = next.baseUrl.replace(/\/+$/, '');
   for (const [key, allowed] of [
-    ['textProtocol', ['openai', 'openai-responses', 'anthropic', 'gemini', 'none']],
-    ['imageProtocol', ['openai-images', 'gemini', 'imagen', 'none']],
+    ['textProtocol', ['openai', 'openai-responses', 'anthropic', 'gemini', 'local-agent', 'none']],
+    ['imageProtocol', ['openai-images', 'gemini', 'imagen', 'local-agent', 'none']],
     ['auth', ['auto', 'bearer', 'api-key', 'none']],
   ] as const) {
     if (input[key] === undefined) continue;
@@ -180,6 +188,66 @@ export function validateProvider(
       `${key} 不受支持。`,
     );
     Object.assign(next, { [key]: input[key] });
+  }
+  requireValue(next.name.length > 0, '供应商名称不能为空。');
+  if (next.textProtocol === 'local-agent') {
+    const connection = input.localAgent ?? next.localAgent;
+    requireValue(
+      isRecord(connection) &&
+        ['codex', 'claude', 'kimi'].includes(String(connection.agentId)) &&
+        Object.keys(connection).every((key) =>
+          ['agentId', 'reasoningEffort', 'reconstructionTimeoutMs'].includes(key),
+        ),
+      '请选择支持的本地 Agent，不能传入命令、参数或工作目录。',
+    );
+    requireValue(
+      connection.reasoningEffort === undefined ||
+        (connection.agentId === 'codex' &&
+          ['default', 'low', 'medium', 'high', 'xhigh'].includes(
+            String(connection.reasoningEffort),
+          )),
+      'Codex 思考强度不受支持。',
+    );
+    requireValue(
+      connection.reconstructionTimeoutMs === undefined ||
+        (Number.isInteger(connection.reconstructionTimeoutMs) &&
+          Number(connection.reconstructionTimeoutMs) >= 1000 &&
+          Number(connection.reconstructionTimeoutMs) <= 600000),
+      '还原超时必须位于 1000–600000 毫秒。',
+    );
+    next.localAgent = {
+      agentId: connection.agentId as 'codex' | 'claude' | 'kimi',
+      reconstructionTimeoutMs: Number(connection.reconstructionTimeoutMs ?? 600000),
+      ...(connection.agentId === 'codex'
+        ? {
+            reasoningEffort: (connection.reasoningEffort ?? 'medium') as NonNullable<
+              ModelProvider['localAgent']
+            >['reasoningEffort'],
+          }
+        : {}),
+    };
+    next.baseUrl = `local-agent://${next.localAgent.agentId}`;
+    next.imageProtocol = next.localAgent.agentId === 'codex' ? 'local-agent' : 'none';
+  } else {
+    requireValue(next.imageProtocol !== 'local-agent', '内置生图仅适用于本地 Codex 连接。');
+    delete next.localAgent;
+    requireValue(next.baseUrl.length > 0, '服务地址不能为空。');
+    let base: URL;
+    try {
+      base = new URL(next.baseUrl);
+    } catch {
+      throw new ApiError(400, 'API Base URL 格式无效。');
+    }
+    requireValue(
+      !base.username && !base.password && !base.search && !base.hash,
+      '服务地址不能包含凭据、查询参数或片段。',
+    );
+    requireValue(
+      base.protocol === 'https:' ||
+        (base.protocol === 'http:' && ['127.0.0.1', 'localhost', '[::1]'].includes(base.hostname)),
+      'API 服务必须使用 HTTPS，本地服务可使用 HTTP。',
+    );
+    next.baseUrl = next.baseUrl.replace(/\/+$/, '');
   }
   requireValue(
     next.textProtocol !== 'none' || next.imageProtocol !== 'none',
@@ -245,6 +313,13 @@ export function validateProvider(
       headers[key.toLowerCase()] = value;
     }
     next.headers = headers;
+  }
+  if (next.textProtocol === 'local-agent') {
+    next.auth = 'none';
+    next.apiKey = '';
+    next.headers = {};
+    for (const key of ['modelsPath', 'textPath', 'imagePath', 'imageEditPath'] as const)
+      next[key] = '';
   }
   return next;
 }
@@ -365,7 +440,7 @@ export async function getPrivateProvider(id: string) {
  */
 export async function resolveModel(channel: 'text' | 'image') {
   const settings = await readSettings();
-  const selected = settings[channel];
+  const selected = channel === 'image' ? effectiveImage(settings) : settings.text;
   const provider = settings.providers.find((p) => p.id === selected.providerId);
   requireValue(
     ready(provider, selected.model, channel),

@@ -12,7 +12,9 @@ const { createApp } = await import('../src/index.ts');
 const { requestImage } = await import('../src/infrastructure/providers/transport.ts');
 const { resolveModel } = await import('../src/infrastructure/providers/settings.ts');
 /** 集中维护 { reconstructWithAssets, getReconstructionStatus } 的约定值或当前状态，供相关分支保持一致。 */
-const { reconstructWithAssets, getReconstructionStatus } = await import('../src/services/reconstruction.ts');
+const { reconstructWithAssets, getReconstructionStatus } = await import(
+  '../src/services/reconstruction.ts'
+);
 const { generateFiles } = await import('../src/services/exporter.ts');
 const png =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jK9sAAAAASUVORK5CYII=';
@@ -109,7 +111,27 @@ const upstream = http
     else
       res.end(
         JSON.stringify({
-          choices: [{ message: { content: JSON.stringify(textOutput) } }],
+          choices: [
+            {
+              message: {
+                content: JSON.stringify(
+                  JSON.parse(body.toString()).messages?.[0]?.content.startsWith('Split application')
+                    ? {
+                        styleGuide: '',
+                        pages: [
+                          {
+                            name: 'Home',
+                            prompt: JSON.parse(body.toString()).messages[1].content,
+                            width: 1200,
+                            height: 800,
+                          },
+                        ],
+                      }
+                    : textOutput,
+                ),
+              },
+            },
+          ],
         }),
       );
   })
@@ -216,7 +238,14 @@ test('reference-informed asset regeneration persists partial success and resumes
   assert.equal(nodes[1].src, retained);
   assert.equal(nodes[1].imageFit, 'contain');
   assert.notEqual(nodes[2].src, before.generation.imageUrl);
-  assert.equal(requests.filter((r) => r.url.endsWith('chat/completions')).length, 1);
+  assert.equal(
+    requests.filter(
+      (r) =>
+        r.url.endsWith('chat/completions') &&
+        Array.isArray(JSON.parse(r.body.toString()).messages[1].content),
+    ).length,
+    1,
+  );
   const edits = requests.filter((r) => r.url.endsWith('images/edits'));
   assert.equal(edits.length, 3);
   for (const req of edits) {

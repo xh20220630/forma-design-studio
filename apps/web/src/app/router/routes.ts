@@ -3,6 +3,7 @@ import type { View } from '../../shared/types/navigation';
 export const labels: Record<View, string> = {
   projects: '项目',
   project: '项目概览',
+  brand: '品牌 Logo 设计',
   templates: '模板库',
   components: '组件库',
   tokens: '设计变量',
@@ -13,7 +14,7 @@ export const labels: Record<View, string> = {
   editor: '设计画布',
 };
 
-export const projectViews: View[] = ['project', 'editor', 'components', 'tokens', 'sync', 'agents'];
+export const projectViews: View[] = ['project', 'brand', 'editor', 'components', 'tokens', 'sync', 'agents'];
 
 /**
  * 从浏览器地址恢复当前视图，让刷新和历史导航保留页面位置。

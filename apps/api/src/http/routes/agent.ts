@@ -10,7 +10,7 @@ import type { ApiRequest } from '../types.ts';
 export const agentRouter = Router();
 
 agentRouter.get('/api/agent/sessions', async (req: ApiRequest, res) =>
-  res.json({ sessions: await listAgentSessions(req.query.projectId) }),
+  res.json({ sessions: await listAgentSessions(req.query.projectId, req.query.mode) }),
 );
 
 agentRouter.post('/api/agent/sessions', async (req: ApiRequest, res) =>

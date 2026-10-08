@@ -1,4 +1,5 @@
 export type { ThemeTokens } from './contracts/design/theme.ts';
+export type { BrandArtifact, BrandVector, BrandDesign } from './contracts/design/brand.ts';
 export type {
   NodeType,
   DesignNode,
@@ -10,6 +11,8 @@ export type { DesignVariable, VariableCollection } from './contracts/design/vari
 export type {
   WorkspaceBinding,
   GenerationState,
+  PageGenerationTask,
+  PageGenerationPlan,
   Project,
   DesignTemplate,
 } from './contracts/design/project.ts';
@@ -20,7 +23,12 @@ export type {
   ModelBinding,
   ModelProvider,
   ProviderModel,
+  ProviderModelCatalog,
+  ModelRequestDiagnostic,
   ProviderSettings,
+  LocalAgentId,
+  LocalAgentInfo,
+  LocalAgentConnection,
 } from './contracts/design/providers.ts';
 export type {
   ReconstructionAsset,

@@ -93,7 +93,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@forma/ui/tooltip';
 import type { DesignComponent, DesignNode, DesignPage, NodeType, Project } from '@forma/schema';
 import { getNodeStyle, getProjectTokens, NodeView, resolveNode } from '@forma/renderer';
-import { CanvasRenderer, type CanvasRendererHandle } from '@forma/renderer/canvas';
+import { type CanvasRendererHandle } from '@forma/renderer/canvas';
 import { booleanNodes, type BooleanOperation } from '@forma/editor-core/boolean';
 import {
   applyAutoLayout,
@@ -101,6 +101,9 @@ import {
   cloneNodes,
   containers,
   descendants,
+  nodeIndex,
+  hasNodeChanges,
+  nearestSnap,
   moveNodes,
   scalePath,
   resizeNodes,
@@ -110,7 +113,7 @@ import {
 import Inspector from './Inspector';
 import PrototypePreview from './PrototypePreview';
 import VirtualLayerList from './VirtualLayerList';
-import CanvasRulers from './CanvasRulers';
+import { ViewportRenderer, ViewportRulers, ViewportZoom } from './ViewportSubscribers';
 import CanvasEmptyState from './CanvasEmptyState';
 import { useCanvasViewport } from '../hooks/useCanvasViewport';
 import '../styles/editor.css';
@@ -216,6 +219,8 @@ interface Interaction {
   pointIndex?: number;
   /** 本次交互中一起移动的节点标识。 */
   movingIds?: Set<string>;
+  previewTranslation?: boolean;
+  translation?: { x: number; y: number };
   /** 吸附计算使用的候选边界或坐标。 */
   snapTargets?: {
     /** 用于布局、查询或素材定位的矩形范围。 */
@@ -575,19 +580,21 @@ export default function DesignEditor({
   changeRef.current = onChange;
   useLayoutEffect(() => {
     interaction.current = undefined;
+    canvasRendererRef.current?.endTranslation();
+    artboardRef.current?.style.removeProperty('--gesture-x');
+    artboardRef.current?.style.removeProperty('--gesture-y');
     projectRef.current = persistedProject;
     setDraftProject(undefined);
   }, [persistedProject, pageId, readOnly]);
   const page = project.pages.find((item) => item.id === pageId) ?? project.pages[0];
   const {
     scrollRef,
+    stageRef,
     artboardRef,
-    zoom,
+    source: viewportSource,
+    readCamera,
     zoomTo,
     fit: fitViewport,
-    viewport,
-    origin,
-    stageStyle,
     onScroll,
   } = useCanvasViewport({
     pageKey: `${project.id}:${page?.id ?? ''}`,
@@ -597,10 +604,13 @@ export default function DesignEditor({
     canZoom: () => !interaction.current,
   });
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-  const selection = page?.nodes.filter((node) => selectedIdSet.has(node.id)) ?? [],
-    selected = selection[0],
-    selectionBounds = boundsOf(selection),
-    tokens = getProjectTokens(project);
+  const selection = useMemo(
+    () => page?.nodes.filter((node) => selectedIdSet.has(node.id)) ?? [],
+    [page?.nodes, selectedIdSet],
+  );
+  const selected = selection[0];
+  const selectionBounds = useMemo(() => boundsOf(selection), [selection]);
+  const tokens = getProjectTokens(project);
   const saveLabel =
     saveState === 'error'
       ? '保存失败'
@@ -634,7 +644,8 @@ export default function DesignEditor({
   const commit = useCallback(
     (next: Project, prior = projectRef.current) => {
       if (readOnly) return;
-      setHistory((items) => [...items.slice(-79), structuredClone(prior)]);
+      // 编辑操作只替换变化分支，历史共享未修改的节点和图片字节。
+      setHistory((items) => [...items.slice(-79), prior]);
       setFuture([]);
       publish({
         ...next,
@@ -662,15 +673,16 @@ export default function DesignEditor({
     const ids = ['rotation', 'flipX', 'flipY'].some((key) => key in patch)
       ? rootSelection(page.nodes, selectedIds)
       : selectedIds;
+    const selected = new Set(ids);
     updatePage({
-      nodes: page.nodes.map((node) => (ids.includes(node.id) ? { ...node, ...patch } : node)),
+      nodes: page.nodes.map((node) => (selected.has(node.id) ? { ...node, ...patch } : node)),
     });
   };
   const undo = () => {
     if (readOnly) return;
     const previous = history[history.length - 1];
     if (!previous) return;
-    setFuture((items) => [...items, structuredClone(project)]);
+    setFuture((items) => [...items, project]);
     setHistory((items) => items.slice(0, -1));
     publish({
       ...previous,
@@ -683,7 +695,7 @@ export default function DesignEditor({
     if (readOnly) return;
     const next = future[future.length - 1];
     if (!next) return;
-    setHistory((items) => [...items, structuredClone(project)]);
+    setHistory((items) => [...items, project]);
     setFuture((items) => items.slice(0, -1));
     publish({
       ...next,
@@ -696,7 +708,7 @@ export default function DesignEditor({
   const removeSelected = () => {
     const ids = descendants(
       page.nodes,
-      selectedIds.filter((id) => !page.nodes.find((n) => n.id === id)?.locked),
+      selectedIds.filter((id) => !nodeIndex(page.nodes).byId.get(id)?.locked),
     );
     if (!ids.length) return;
     updatePage({
@@ -1025,8 +1037,8 @@ export default function DesignEditor({
   const worldPoint = (clientX: number, clientY: number) => {
     const rect = artboardRef.current?.getBoundingClientRect();
     return {
-      x: (clientX - (rect?.left ?? 0)) / zoom,
-      y: (clientY - (rect?.top ?? 0)) / zoom,
+      x: (clientX - (rect?.left ?? 0)) / readCamera().zoom,
+      y: (clientY - (rect?.top ?? 0)) / readCamera().zoom,
     };
   };
   const parentAt = (x: number, y: number) =>
@@ -1059,11 +1071,12 @@ export default function DesignEditor({
     let node = input;
     if (!event.ctrlKey && !event.metaKey) {
       const seen = new Set<string>();
-      let parent = page.nodes.find((n) => n.id === node.parentId);
+      const { byId } = nodeIndex(page.nodes);
+      let parent = byId.get(node.parentId ?? '');
       while (parent && !seen.has(parent.id)) {
         seen.add(parent.id);
         if (parent.type === 'group') node = parent;
-        parent = page.nodes.find((n) => n.id === parent?.parentId);
+        parent = byId.get(parent.parentId ?? '');
       }
     }
     if (tool === 'hand' || spaceDown || event.button === 1) {
@@ -1095,10 +1108,10 @@ export default function DesignEditor({
         page.nodes,
         rootSelection(
           page.nodes,
-          ids.filter((id) => !page.nodes.find((n) => n.id === id)?.locked),
+          ids.filter((id) => !nodeIndex(page.nodes).byId.get(id)?.locked),
         ),
       ),
-      startProject: structuredClone(project),
+      startProject: project,
     };
   };
   const finishPen = (closed = false) => {
@@ -1145,7 +1158,7 @@ export default function DesignEditor({
     if (tool === 'pen') {
       if (
         penPoints.length > 2 &&
-        Math.hypot(point.x - penPoints[0].x, point.y - penPoints[0].y) < 10 / zoom
+        Math.hypot(point.x - penPoints[0].x, point.y - penPoints[0].y) < 10 / readCamera().zoom
       ) {
         finishPen(true);
         return;
@@ -1203,7 +1216,7 @@ export default function DesignEditor({
       worldY: point.y,
       nodes: page.nodes,
       ids: [node.id],
-      startProject: structuredClone(project),
+      startProject: project,
       newNode: node,
     };
     previewProject({
@@ -1224,7 +1237,7 @@ export default function DesignEditor({
       nodes: page.nodes,
       ids: [node.id],
       handle,
-      startProject: structuredClone(project),
+      startProject: project,
     };
   };
   const finishText = () => {
@@ -1414,6 +1427,7 @@ export default function DesignEditor({
       /** 集中维护 active 的进行中任务，防止同一目标被重复执行。 */
       const active = interaction.current;
       if (!active) return;
+      const zoom = readCamera().zoom;
       const dx = (event.clientX - active.startX) / zoom,
         dy = (event.clientY - active.startY) / zoom;
       if (active.type === 'pan') {
@@ -1463,21 +1477,22 @@ export default function DesignEditor({
                 page.width,
                 ...guides.filter((g) => g.axis === 'x').map((g) => g.value),
                 ...targets.flatMap((n) => [n.x, n.x + n.width / 2, n.x + n.width]),
-              ],
+              ].sort((a, b) => a - b),
               ys: [
                 0,
                 page.height / 2,
                 page.height,
                 ...guides.filter((g) => g.axis === 'y').map((g) => g.value),
                 ...targets.flatMap((n) => [n.y, n.y + n.height / 2, n.y + n.height]),
-              ],
+              ].sort((a, b) => a - b),
             };
           }
           const { bounds: b, xs, ys } = active.snapTargets;
           let bestX = 5 / zoom,
             bestY = 5 / zoom;
-          for (const a of [b.x, b.x + b.width / 2, b.x + b.width])
-            for (const t of xs) {
+          for (const a of [b.x, b.x + b.width / 2, b.x + b.width]) {
+            const t = nearestSnap(xs, a + dx, bestX);
+            if (t !== undefined) {
               const delta = t - a - dx;
               if (Math.abs(delta) < bestX) {
                 bestX = Math.abs(delta);
@@ -1485,8 +1500,10 @@ export default function DesignEditor({
                 found[0] = { axis: 'x', value: t };
               }
             }
-          for (const a of [b.y, b.y + b.height / 2, b.y + b.height])
-            for (const t of ys) {
+          }
+          for (const a of [b.y, b.y + b.height / 2, b.y + b.height]) {
+            const t = nearestSnap(ys, a + dy, bestY);
+            if (t !== undefined) {
               const delta = t - a - dy;
               if (Math.abs(delta) < bestY) {
                 bestY = Math.abs(delta);
@@ -1494,15 +1511,31 @@ export default function DesignEditor({
                 found[1] = { axis: 'y', value: t };
               }
             }
+          }
           if (page.grid?.enabled) {
             if (!found[0]) mx = Math.round((b.x + mx) / page.grid.size) * page.grid.size - b.x;
             if (!found[1]) my = Math.round((b.y + my) / page.grid.size) * page.grid.size - b.y;
           }
-          setSmartGuides(found.filter(Boolean));
-        } else setSmartGuides([]);
+        }
+        active.previewTranslation ??=
+          canvasRendererRef.current?.beginTranslation(active.ids) ?? false;
+        if (active.previewTranslation) {
+          const x = Math.round(mx),
+            y = Math.round(my);
+          active.translation = { x, y };
+          artboardRef.current?.style.setProperty('--gesture-x', `${x}px`);
+          artboardRef.current?.style.setProperty('--gesture-y', `${y}px`);
+          canvasRendererRef.current?.translate(
+            x,
+            y,
+            found.filter(Boolean).map((guide) => ({ ...guide, smart: true })),
+          );
+          return;
+        }
+        setSmartGuides(found.filter(Boolean));
         nodes = active.nodes.map((n) =>
           (active.movingIds ??= new Set(active.ids)).has(n.id)
-            ? { ...n, x: Math.round(n.x + mx), y: Math.round(n.y + my) }
+            ? { ...n, x: n.x + Math.round(mx), y: n.y + Math.round(my) }
             : n,
         );
       } else if (active.type === 'resize') {
@@ -1636,11 +1669,30 @@ export default function DesignEditor({
       const active = interaction.current;
       if (!active) return;
       interaction.current = undefined;
+      canvasRendererRef.current?.endTranslation();
+      artboardRef.current?.style.removeProperty('--gesture-x');
+      artboardRef.current?.style.removeProperty('--gesture-y');
       setMarquee(undefined);
       setSmartGuides([]);
       if (active.type === 'pan' || active.type === 'marquee') return;
-      const current = projectRef.current;
-      if (JSON.stringify(current.pages) !== JSON.stringify(active.startProject.pages))
+      let current = projectRef.current;
+      if (active.translation) {
+        const { x, y } = active.translation;
+        const moving = active.movingIds ?? new Set(active.ids);
+        const nodes =
+          x || y
+            ? active.nodes.map((node) =>
+                moving.has(node.id) ? { ...node, x: node.x + x, y: node.y + y } : node,
+              )
+            : active.nodes;
+        current = {
+          ...active.startProject,
+          pages: active.startProject.pages.map((item) =>
+            item.id === page.id ? { ...item, nodes } : item,
+          ),
+        };
+      }
+      if (hasNodeChanges(active.nodes, current.pages.find((item) => item.id === page.id)!.nodes))
         commit(current, active.startProject);
       else setDraftProject(undefined);
       if (active.type === 'draw' || active.type === 'pencil') {
@@ -1660,6 +1712,9 @@ export default function DesignEditor({
       const active = interaction.current;
       if (!active) return;
       interaction.current = undefined;
+      canvasRendererRef.current?.endTranslation();
+      artboardRef.current?.style.removeProperty('--gesture-x');
+      artboardRef.current?.style.removeProperty('--gesture-y');
       projectRef.current = active.startProject;
       setDraftProject(undefined);
       setMarquee(undefined);
@@ -1677,7 +1732,17 @@ export default function DesignEditor({
       window.removeEventListener('pointercancel', onCancel);
       window.removeEventListener('blur', onCancel);
     };
-  }, [zoom, page?.id, page?.width, page?.height, page?.grid, snap, guides, commit, previewProject]);
+  }, [
+    readCamera,
+    page?.id,
+    page?.width,
+    page?.height,
+    page?.grid,
+    snap,
+    guides,
+    commit,
+    previewProject,
+  ]);
   useEffect(() => {
     const keydown = (event: KeyboardEvent) => {
       if (readOnly) return;
@@ -1751,6 +1816,9 @@ export default function DesignEditor({
         removeSelected();
       } else if (event.key === 'Escape') {
         interaction.current = undefined;
+        canvasRendererRef.current?.endTranslation();
+        artboardRef.current?.style.removeProperty('--gesture-x');
+        artboardRef.current?.style.removeProperty('--gesture-y');
         projectRef.current = persistedProject;
         setDraftProject(undefined);
         setMarquee(undefined);
@@ -1785,7 +1853,7 @@ export default function DesignEditor({
         updatePage({
           nodes: moveNodes(
             page.nodes,
-            selectedIds.filter((id) => !page.nodes.find((n) => n.id === id)?.locked),
+            selectedIds.filter((id) => !nodeIndex(page.nodes).byId.get(id)?.locked),
             event.key === 'ArrowLeft' ? -step : event.key === 'ArrowRight' ? step : 0,
             event.key === 'ArrowUp' ? -step : event.key === 'ArrowDown' ? step : 0,
           ),
@@ -1847,7 +1915,7 @@ export default function DesignEditor({
     const Icon = nodeIcons[node.type] ?? Square;
     return (
       <div
-        className={`ed-layer ${selectedIds.includes(node.id) ? 'selected' : ''} ${node.visible === false ? 'hidden-layer' : ''} ${node.type === 'component' ? 'component-layer' : ''}`}
+        className={`ed-layer ${selectedIdSet.has(node.id) ? 'selected' : ''} ${node.visible === false ? 'hidden-layer' : ''} ${node.type === 'component' ? 'component-layer' : ''}`}
         style={{ paddingLeft: 12 + depth * 16 }}
         draggable
         onDragStart={(event) => event.dataTransfer.setData('text/forma-node', node.id)}
@@ -2355,7 +2423,8 @@ export default function DesignEditor({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="ed-zoom-trigger">
-                    {Math.round(zoom * 100)}%<ChevronDown size={11} />
+                    <ViewportZoom source={viewportSource} />
+                    <ChevronDown size={11} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -2385,20 +2454,6 @@ export default function DesignEditor({
             </div>
           </div>
           <div className="ed-canvas-viewport">
-            <CanvasRenderer
-              ref={canvasRendererRef}
-              project={project}
-              page={page}
-              view={{ ...viewport, zoom, x: origin.x, y: origin.y }}
-              editingText={editingText}
-              overlay={{
-                selectedIds,
-                hoverId: hoveredNodeId,
-                marquee,
-                guides: [...guides, ...smartGuides.map((guide) => ({ ...guide, smart: true }))],
-                penPoints,
-              }}
-            />
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <div
@@ -2449,12 +2504,29 @@ export default function DesignEditor({
                     }
                   }}
                 >
-                  <div className="ed-canvas-stage" style={stageStyle}>
+                  <div className="ed-canvas-stage" ref={stageRef}>
+                    <ViewportRenderer
+                      ref={canvasRendererRef}
+                      project={project}
+                      page={page}
+                      source={viewportSource}
+                      editingText={editingText}
+                      overlay={{
+                        selectedIds,
+                        hoverId: hoveredNodeId,
+                        marquee,
+                        guides: [
+                          ...guides,
+                          ...smartGuides.map((guide) => ({ ...guide, smart: true })),
+                        ],
+                        penPoints,
+                      }}
+                    />
                     <div
                       className="ed-artboard-space"
                       style={{
-                        width: page.width * zoom,
-                        height: page.height * zoom,
+                        width: `calc(${page.width}px * var(--canvas-zoom, 1))`,
+                        height: `calc(${page.height}px * var(--canvas-zoom, 1))`,
                       }}
                     >
                       <div className="ed-artboard-label">
@@ -2478,7 +2550,7 @@ export default function DesignEditor({
                         style={{
                           width: page.width,
                           height: page.height,
-                          transform: `scale(${zoom})`,
+                          transform: 'scale(var(--canvas-zoom, 1))',
                           background: 'transparent',
                         }}
                         onPointerDown={(event) => {
@@ -2538,7 +2610,7 @@ export default function DesignEditor({
                                 top: node.y,
                                 width: node.width,
                                 height: node.height,
-                                borderWidth: 1 / zoom,
+                                borderWidth: 'calc(1px / var(--canvas-zoom, 1))',
                                 transform: getNodeStyle(node, tokens, page.nodes, project)
                                   .transform,
                                 borderColor: 'transparent',
@@ -2546,7 +2618,7 @@ export default function DesignEditor({
                             >
                               <span
                                 className="ed-selection-name"
-                                style={{ transform: `scale(${1 / zoom})` }}
+                                style={{ transform: 'scale(calc(1 / var(--canvas-zoom, 1)))' }}
                               >
                                 {node.type === 'component' && <Component size={10} />}
                                 {node.name}
@@ -2559,7 +2631,7 @@ export default function DesignEditor({
                                     key={handle}
                                     aria-label={`调整${node.name}大小 ${handle}`}
                                     className={`ed-resize-handle ${handle}`}
-                                    style={{ transform: `scale(${1 / zoom})` }}
+                                    style={{ transform: 'scale(calc(1 / var(--canvas-zoom, 1)))' }}
                                     onPointerDown={(event) => beginResize(event, node, handle)}
                                   />
                                 ))}
@@ -2567,7 +2639,8 @@ export default function DesignEditor({
                                 <span
                                   className="ed-selection-size"
                                   style={{
-                                    transform: `translateX(-50%) scale(${1 / zoom})`,
+                                    transform:
+                                      'translateX(-50%) scale(calc(1 / var(--canvas-zoom, 1)))',
                                   }}
                                 >
                                   {Math.round(node.width)} × {Math.round(node.height)}
@@ -2583,7 +2656,7 @@ export default function DesignEditor({
                               top: selectionBounds.y,
                               width: selectionBounds.width,
                               height: selectionBounds.height,
-                              borderWidth: 1 / zoom,
+                              borderWidth: 'calc(1px / var(--canvas-zoom, 1))',
                             }}
                           />
                         )}
@@ -2596,7 +2669,7 @@ export default function DesignEditor({
                               style={{
                                 left: selected.x + point.x,
                                 top: selected.y + point.y,
-                                transform: `scale(${1 / zoom})`,
+                                transform: 'scale(calc(1 / var(--canvas-zoom, 1)))',
                               }}
                               onPointerDown={(event) => {
                                 event.preventDefault();
@@ -2608,7 +2681,7 @@ export default function DesignEditor({
                                   nodes: page.nodes,
                                   ids: [selected.id],
                                   pointIndex: index,
-                                  startProject: structuredClone(project),
+                                  startProject: project,
                                 };
                               }}
                             />
@@ -2623,7 +2696,7 @@ export default function DesignEditor({
                               style={{
                                 left: comment.x,
                                 top: comment.y,
-                                transform: `scale(${1 / zoom})`,
+                                transform: 'scale(calc(1 / var(--canvas-zoom, 1)))',
                               }}
                               onPointerDown={(event) => event.stopPropagation()}
                               onClick={() => {
@@ -2721,10 +2794,8 @@ export default function DesignEditor({
               </ContextMenuContent>
             </ContextMenu>
             {showRulers && (
-              <CanvasRulers
-                zoom={zoom}
-                origin={origin}
-                viewport={viewport}
+              <ViewportRulers
+                source={viewportSource}
                 onFit={() => fit()}
                 onGuide={(axis, event) => {
                   event.preventDefault();

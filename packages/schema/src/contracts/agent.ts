@@ -1,15 +1,17 @@
 import type { Project } from './design/project.ts';
+import type { ModelRequestDiagnostic } from './design/providers.ts';
 
-/**
- * 助手支持的动作类型，集中定义允许的分支以保持调用方一致。
- * 取值：create_project（创建项目）、update_tokens（更新主题 Token）、create_variables（创建变量集合）、create_component（创建组件）、generate_image（生成参考图）、reconstruct_design（还原可编辑设计）、preview_sync（预览代码变更）、approve_image（用户确认参考图）、apply_sync（用户确认后写入代码）。
- */
+/** 模型可规划的设计动作及用户主动触发的审查动作。 */
 export type AgentActionType =
   | 'create_project'
   | 'update_tokens'
   | 'create_variables'
   | 'create_component'
   | 'generate_image'
+  | 'generate_brand_image'
+  | 'vectorize_brand_logo'
+  | 'adopt_brand_logo'
+  | 'generate_page_image'
   | 'reconstruct_design'
   | 'preview_sync'
   | 'approve_image'
@@ -50,6 +52,7 @@ export interface AgentActionResult {
   revision?: number;
   /** 生成图片的访问地址。 */
   imageUrl?: string;
+  brandArtifactId?: string;
   /** 等待审查或展示的代码同步预览。 */
   syncPreview?: AgentSyncPreview;
   /** 同步预览的审查凭据标识，确认时需与版本一起核验。 */
@@ -75,6 +78,7 @@ export interface AgentMessage {
   status?: 'pending' | 'completed' | 'failed';
   /** 待执行动作或已执行动作的结果集合。 */
   actions?: AgentActionResult[];
+  errorDetails?: ModelRequestDiagnostic;
 }
 /** 全局或项目范围的对话记录，用修订号识别并发请求。 */
 export interface AgentSession {
@@ -84,6 +88,7 @@ export interface AgentSession {
   title: string;
   /** 当前数据或操作生效的范围。取值：global（全局范围）、project（当前项目）。 */
   scope: 'global' | 'project';
+  mode?: 'design' | 'brand';
   /** 动作、会话或记录所属项目的标识。 */
   projectId?: string;
   /** 当前修订号，每次持久化修改后递增，用于拒绝过期提交。 */
@@ -102,6 +107,13 @@ export type AgentSessionSummary = Omit<AgentSession, 'messages'> & {
 };
 /** 需要用户主动触发的审查动作，集中定义允许的分支以保持调用方一致。 */
 export type AgentReviewAction =
+  | {
+      type: 'generate_page_image';
+      projectId: string;
+      revision: number;
+      planId: string;
+      pageId: string;
+    }
   | {
       /** 用于区分数据形态或行为分支的类型。取值：approve_image（用户确认参考图）。 */
       type: 'approve_image';
@@ -155,4 +167,5 @@ export interface AgentTurnResponse {
   syncPreview?: AgentSyncPreview;
   /** 当前操作的失败信息，供界面反馈或重试判断。 */
   error?: string;
+  errorDetails?: ModelRequestDiagnostic;
 }

@@ -312,7 +312,8 @@ html[data-motion='off'] *::after {
   font-weight: 560 !important;
 }
 .nav-item:hover:not(.active),
-.nav-file:hover {
+.nav-file:hover,
+.nav-file[data-state='open'] {
   background: var(--studio-surface-muted);
   color: var(--studio-text);
 }

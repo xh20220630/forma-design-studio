@@ -32,6 +32,8 @@ projectsRouter.put('/api/projects/:id', async (req: ApiRequest, res) => {
           ? { ...current.workspace, autoSync: Boolean(incoming.workspace?.autoSync) }
           : undefined,
         generation: currentGeneration(current, incoming),
+        generationPlan: current?.generationPlan,
+        brandDesign: current?.brandDesign,
         lastSyncedRevision: current?.lastSyncedRevision,
         status: current?.status === 'synced' ? 'in-progress' : incoming.status || 'draft',
       };

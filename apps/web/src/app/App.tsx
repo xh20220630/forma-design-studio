@@ -36,6 +36,7 @@ import { RinAvatar, RinIcon, RinIllustration } from '../shared/ui/brand/RinBrand
 import Modal from '../shared/ui/Modal';
 import '../features/library/styles/library.css';
 import WorkspaceHome from '../features/projects/components/WorkspaceHome';
+import ProjectContextMenu from '../features/projects/components/ProjectContextMenu';
 import ProjectOverview from '../features/projects/components/ProjectOverview';
 import AgentChatPanel from '../features/agent/components/AgentChatPanel';
 import './styles/pearl-studio.css';
@@ -58,6 +59,7 @@ import { RenameModal } from '../features/projects/components/RenameModal.tsx';
 import { BindModal } from '../features/workflow/components/BindModal.tsx';
 
 const DesignEditor = lazy(() => import('../features/editor/components/DesignEditor'));
+const BrandDesignStudio = lazy(() => import('../features/brand/components/BrandDesignStudio'));
 
 const ThemeStudio = lazy(() => import('../features/appearance/components/ThemeStudio'));
 
@@ -91,6 +93,28 @@ export default function App() {
   /** 界面状态：当前保存或展示的项目集合。通过状态更新驱动界面刷新。 */
   const [projects, setProjects] = useState<Project[]>(seedProjects);
   const projectsRef = useRef(projects);
+  const [favorites, setFavorites] = useState<string[]>(() => {
+    try {
+      const stored: unknown = JSON.parse(localStorage.getItem('forma-favorites') || '[]');
+      return Array.isArray(stored)
+        ? stored.filter((id): id is string => typeof id === 'string')
+        : [];
+    } catch {
+      return [];
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('forma-favorites', JSON.stringify(favorites));
+    } catch {
+      // 浏览器禁用持久化时，收藏仍在当前会话内保持同步。
+    }
+  }, [favorites]);
+  const toggleFavorite = (id: string) => {
+    setFavorites((previous) =>
+      previous.includes(id) ? previous.filter((value) => value !== id) : [...previous, id],
+    );
+  };
   /** 界面状态：可供选择的设计模板集合。通过状态更新驱动界面刷新。 */
   const [templates, setTemplates] = useState<DesignTemplate[]>(() => {
     try {
@@ -457,6 +481,10 @@ export default function App() {
     setModal('create');
   };
   const openAgent = () => {
+    if (view === 'brand') {
+      document.querySelector<HTMLTextAreaElement>('.brand-chat-studio textarea')?.focus();
+      return;
+    }
     setAgentOpen(true);
   };
   const promptAgent = (text?: string) => {
@@ -540,7 +568,7 @@ export default function App() {
 
   return (
     <div
-      className={`workspace-root ${agentOpen ? 'agent-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
+      className={`workspace-root ${agentOpen && view !== 'brand' ? 'agent-open' : ''} ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}
     >
       {view === 'editor' && project ? (
         <Suspense
@@ -653,17 +681,30 @@ export default function App() {
                 <div className="project-tree">
                   {projects.map((p) => (
                     <div className="project-tree-item" key={p.id}>
-                      <Button
-                        variant="ghost"
-                        className={`nav-file ${inProject && project?.id === p.id ? 'project-active' : ''}`}
-                        aria-label={p.name}
-                        aria-current={inProject && project?.id === p.id ? 'page' : undefined}
-                        title={sidebarCollapsed ? p.name : undefined}
-                        onClick={() => openProject(p)}
+                      <ProjectContextMenu
+                        project={p}
+                        favorite={favorites.includes(p.id)}
+                        busy={busyProjectIds.includes(p.id)}
+                        onOpen={() => openProject(p)}
+                        onFavorite={() => toggleFavorite(p.id)}
+                        onRename={() => fileAction(p, 'rename')}
+                        onDuplicate={() => void duplicate(p)}
+                        onBind={() => fileAction(p, 'bind')}
+                        onExport={() => downloadJson(`${p.name}.forma.json`, p)}
+                        onDelete={() => fileAction(p, 'delete')}
                       >
-                        <ProjectMark project={p} size={23} />
-                        <span>{p.name}</span>
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          className={`nav-file ${inProject && project?.id === p.id ? 'project-active' : ''}`}
+                          aria-label={p.name}
+                          aria-current={inProject && project?.id === p.id ? 'page' : undefined}
+                          title={p.name}
+                          onClick={() => openProject(p)}
+                        >
+                          <ProjectMark project={p} size={23} />
+                          <span>{p.name}</span>
+                        </Button>
+                      </ProjectContextMenu>
                     </div>
                   ))}
                   {!projects.length && (
@@ -785,17 +826,18 @@ export default function App() {
                     </Button>
                   </PopoverContent>
                 </Popover>
-                <Button
-                  variant={agentOpen ? 'secondary' : 'outline'}
-                  size="sm"
-                  onClick={() => setAgentOpen(!agentOpen)}
-                  aria-label={agentOpen ? '收起 Agent 聊天' : '打开 Agent 聊天'}
-                  className={`rin-toggle ${agentOpen ? 'is-open' : ''}`}
-                  aria-pressed={agentOpen}
-                >
-                  <RinIcon kind="agent" size={15} />
-                  凛
-                </Button>
+                {view !== 'brand' && (
+                  <Button
+                    variant={agentOpen ? 'secondary' : 'outline'}
+                    size="sm"
+                    onClick={() => setAgentOpen(!agentOpen)}
+                    aria-label={agentOpen ? '收起 Agent 聊天' : '打开 Agent 聊天'}
+                    className={`rin-toggle ${agentOpen ? 'is-open' : ''}`}
+                    aria-pressed={agentOpen}
+                  >
+                    <RinIcon kind="agent" size={15} />凛
+                  </Button>
+                )}
                 <span className="topbar-local">
                   <span className={`connection-dot ${online ? 'online' : ''}`} />
                   {online ? '本地已连接' : '正在连接'}
@@ -824,6 +866,7 @@ export default function App() {
                 {(
                   [
                     ['project', '页面'],
+                    ['brand', '品牌设计'],
                     ['editor', '画布'],
                     ['components', '组件库'],
                     ['tokens', '设计变量'],
@@ -879,6 +922,8 @@ export default function App() {
                   {view === 'projects' && (
                     <WorkspaceHome
                       projects={projects}
+                      favorites={favorites}
+                      onToggleFavorite={toggleFavorite}
                       templates={templates}
                       online={online}
                       ready={ready}
@@ -924,6 +969,20 @@ export default function App() {
                   )}
                   {view === 'components' && project && (
                     <ComponentsView key={project.id} project={project} onChange={updateProject} />
+                  )}
+                  {view === 'brand' && project && (
+                    <BrandDesignStudio
+                      key={project.id}
+                      project={project}
+                      settings={settings}
+                      onProviderSettings={setSettings}
+                      onProject={acceptProject}
+                      onNavigate={navigate}
+                      onBusyChange={onAgentBusyChange}
+                      flush={flush}
+                      refresh={refreshProject}
+                      onSettings={() => navigate('settings')}
+                    />
                   )}
                   {view === 'tokens' && project && (
                     <TokensView
@@ -983,7 +1042,7 @@ export default function App() {
       )}
       <AgentChatPanel
         draftRequest={agentDraftRequest}
-        hidden={!agentOpen}
+        hidden={!agentOpen || view === 'brand'}
         project={inProject ? project : undefined}
         settings={settings}
         onClose={() => setAgentOpen(false)}

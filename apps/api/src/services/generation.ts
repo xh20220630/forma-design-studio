@@ -1,4 +1,4 @@
-import type { Project, GenerationState, ThemeTokens } from '@forma/schema';
+import type { Project, GenerationState, PageGenerationTask, ThemeTokens } from '@forma/schema';
 import type { ChatMessage } from '../shared/types.ts';
 import { isRecord, errorMessage, ApiError, requireValue } from '../shared/errors.ts';
 import path from 'node:path';
@@ -8,8 +8,13 @@ import { resolveModel } from '../infrastructure/providers/settings.ts';
 import { saveGeneratedMedia } from '../infrastructure/assets/generated-media.ts';
 import { reconstructWithAssets } from './reconstruction.ts';
 import { requestText, requestImage } from '../infrastructure/providers/transport.ts';
-import { requireApproved, validateTokens } from './validation.ts';
+import { requireApproved, validateProject, validateTokens } from './validation.ts';
 import { designContext, designContextHash } from '../domain/design-context.ts';
+import {
+  sceneGraphAlignmentGuidelines,
+  uiAlignmentGuidelines,
+  singlePageImageGuidelines,
+} from '../domain/design-guidelines.ts';
 
 export { getProviderSettings, saveProviderSettings } from '../infrastructure/providers/settings.ts';
 
@@ -30,7 +35,12 @@ function projectContext(project: Project) {
  * @param prompt - 发送给模型的生成要求。
  * @returns 尚待用户确认的图片生成记录。
  */
-export async function generateImage(project: Project, prompt: unknown): Promise<GenerationState> {
+export async function generateImage(
+  project: Project,
+  prompt: unknown,
+  page?: PageGenerationTask,
+  styleGuide = '',
+): Promise<GenerationState> {
   requireValue(
     typeof prompt === 'string' && prompt.trim().length > 0 && prompt.length <= 20000,
     '请输入 1–20000 字的设计需求。',
@@ -39,7 +49,7 @@ export async function generateImage(project: Project, prompt: unknown): Promise<
   const result = await requestImage(
     provider,
     model,
-    `Create a polished desktop web application UI design screenshot for the following request. This is one project; enforce its exact palette, typography, radii, spacing scale, component shapes and navigation conventions across all pages. Show the entire requested UI edge-to-edge. Choose the appropriate aspect ratio and image dimensions for its content, including a tall full-page image for long pages. Do not crop the header or footer or compress a long page into a fixed landscape canvas. No device mockups. Project design contract: ${projectContext(project)}\nUser request: ${prompt}`,
+    `Create a polished application UI design screenshot. ${singlePageImageGuidelines} Enforce the project's exact palette, typography, radii, spacing scale, component shapes and navigation conventions. No device mockups. ${uiAlignmentGuidelines}\nProject design contract: ${projectContext(page ? { ...project, pages: [{ id: page.id, name: page.name, width: page.width, height: page.height, nodes: [] }] } : project)}\nShared visual style: ${styleGuide}\n${page ? `Only page: ${page.name}. Target viewport: ${page.width} × ${page.height}.\n` : ''}Page requirements: ${prompt}`,
   );
   const media = await saveGeneratedMedia(project.id, result);
   return {
@@ -50,6 +60,7 @@ export async function generateImage(project: Project, prompt: unknown): Promise<
     approved: false,
     generatedAt: new Date().toISOString(),
     contextHash: designContextHash(project),
+    ...(page ? { pageId: page.id } : {}),
   };
 }
 
@@ -59,9 +70,12 @@ export async function generateImage(project: Project, prompt: unknown): Promise<
  * @param messages - 按会话顺序保存的消息列表。
  * @returns 解析后的模型输出对象。
  */
-export async function generateJson(messages: ChatMessage[]): Promise<Record<string, unknown>> {
+export async function generateJson(
+  messages: ChatMessage[],
+  purpose?: 'reconstruction',
+): Promise<Record<string, unknown>> {
   const { provider, model } = await resolveModel('text');
-  const content = await requestText(provider, model, messages);
+  const content = await requestText(provider, model, messages, purpose);
   requireValue(content.trim(), '模型没有返回有效文本。', 502);
   try {
     const result: unknown = JSON.parse(
@@ -105,27 +119,46 @@ export async function generateDesign(project: Project, prompt: unknown = '') {
     : filename.endsWith('.webp')
       ? 'image/webp'
       : 'image/png';
-  return reconstructWithAssets(project, image, mime, async (assetInstructions) =>
-    generateJson([
-      {
-        role: 'system',
-        content: `You translate approved web UI images into editable scene graphs. Return JSON {"pages": [...], "components": [...], "assets": [...]}. Preserve existing stable page IDs where appropriate. Node IDs must be unique stable ASCII letters/digits/hyphens/underscores. Every page/component: {id,name,width,height,nodes}. Component additionally has description/category. Every node: {id,name,type,x,y,width,height,fill?,color?,text?,fontSize?,radius?,opacity?,parentId?,componentId?,tokenBindings?,visible?,layout?,gap?,src?,stroke?,strokeWidth?,rotation?,fontWeight?,textAlign?,lineHeight?,letterSpacing?,gradient?,shadow?,path?,points?,closed?}. Types: frame,text,rectangle,button,image,component,group,ellipse,line,polygon,star,path,section. gradient={type:"linear"|"radial",from:color,to:color,angle:number}; shadow={x,y,blur,spread,color}; points=[{x,y}] use local shape coordinates. path contains SVG path coordinate commands only, never XML markup. All node x/y are absolute coordinates within the page, even children; parentId is optional and must refer to another node in the same page. Avoid deep nesting. Use tokenBindings such as {fill:"primary",color:"text",radius:"radius"}. Bind the exact project theme tokens. Colors are CSS hex/rgb/hsl strings. No executable code, XML markup or remote image URLs. Reuse existing component IDs when meaningful. Accurately reconstruct the approved screenshot with editable typography, shapes, cards and controls. Preserve its hierarchy. The project graph is the source of truth for consistency. Return exactly one page matching the approved screenshot, with as many editable nodes as needed; do not invent additional screens. Use compact JSON and omit unused optional properties instead of null. All numeric fields must be JSON numbers; fontWeight must be a number between 1 and 1000, never a CSS name or a string. Token bindings use node property names: bind fill/color/stroke to color tokens, fontFamily to fontFamily, and radius/gap/padding/paddingX/paddingY to radius or spacing. Never use border as a binding property; the border token is bound through stroke. Token keys: primary,background,surface,text,muted,border,radius,fontFamily,spacing.`,
-      },
-      {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: `Project: ${projectContext(project)}\nApproved image request: ${project.generation.prompt}\nReconstruct only the approved image. Preserve the full reference image aspect ratio; do not force it into existing page height. ${assetInstructions} Preserve flat node array stacking order from background to foreground. parentId is grouping metadata; all positions remain absolute to the page or component surface. Use type component only for actual reusable instances; do not attach componentId to ordinary buttons.`,
-          },
-          {
-            type: 'image_url',
-            image_url: { url: `data:${mime};base64,${image.toString('base64')}` },
-          },
-        ],
-      },
-    ]),
+  const task = project.generationPlan?.pages.find((page) => page.id === project.generation.pageId);
+  const existingPage =
+    project.pages.find((page) => page.id === project.generation.pageId) ?? project.pages[0];
+  const target = task
+    ? { id: task.id, name: task.name, width: task.width, height: task.height, nodes: [] }
+    : existingPage;
+  const pageProject = target ? { ...project, pages: [target] } : project;
+  const design = await reconstructWithAssets(pageProject, image, mime, async (assetInstructions) =>
+    generateJson(
+      [
+        {
+          role: 'system',
+          content: `You translate approved web UI images into editable scene graphs. Return JSON {"pages": [...], "components": [...], "assets": [...]}. Preserve existing stable page IDs where appropriate. Node IDs must be unique stable ASCII letters/digits/hyphens/underscores. Every page/component: {id,name,width,height,nodes}. Component additionally has description/category. Every node: {id,name,type,x,y,width,height,fill?,color?,text?,fontSize?,radius?,opacity?,parentId?,componentId?,tokenBindings?,visible?,layout?,gap?,src?,stroke?,strokeWidth?,rotation?,fontWeight?,textAlign?,verticalAlign?,lineHeight?,padding?,paddingX?,paddingY?,alignItems?,justifyContent?,letterSpacing?,gradient?,shadow?,path?,points?,closed?}. Types: frame,text,rectangle,button,image,component,group,ellipse,line,polygon,star,path,section. gradient={type:"linear"|"radial",from:color,to:color,angle:number}; shadow={x,y,blur,spread,color}; points=[{x,y}] use local shape coordinates. path contains SVG path coordinate commands only, never XML markup. All node x/y are absolute coordinates within the page, even children; parentId is optional and must refer to another node in the same page. Avoid deep nesting. Use tokenBindings such as {fill:"primary",color:"text",radius:"radius"}. Bind the exact project theme tokens. Colors are CSS hex/rgb/hsl strings. No executable code, XML markup or remote image URLs. Reuse existing component IDs when meaningful. Accurately reconstruct the approved screenshot with editable typography, shapes, cards and controls. Preserve its hierarchy. The project graph is the source of truth for consistency. Return exactly one page matching the approved screenshot, with as many editable nodes as needed; do not invent additional screens. Use compact JSON and omit unused optional properties instead of null. All numeric fields must be JSON numbers; fontWeight must be a number between 1 and 1000, never a CSS name or a string. Token bindings use node property names: bind fill/color/stroke to color tokens, fontFamily to fontFamily, and radius/gap/padding/paddingX/paddingY to radius or spacing. Never use border as a binding property; the border token is bound through stroke. Token keys: primary,background,surface,text,muted,border,radius,fontFamily,spacing. ${sceneGraphAlignmentGuidelines}`,
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Project: ${projectContext(pageProject)}\nApproved image request: ${project.generation.prompt}\nReconstruct only the approved image as page ${target?.id ?? ''}, ${target?.name ?? ''}. Preserve the full reference image aspect ratio; do not force it into existing page height. ${assetInstructions} Preserve flat node array stacking order from background to foreground. parentId is grouping metadata; all positions remain absolute to the page or component surface. Use type component only for actual reusable instances; do not attach componentId to ordinary buttons.`,
+            },
+            {
+              type: 'image_url',
+              image_url: { url: `data:${mime};base64,${image.toString('base64')}` },
+            },
+          ],
+        },
+      ],
+      'reconstruction',
+    ),
   );
+  const reconstructed = {
+    ...design.pages[0],
+    ...(target ? { id: target.id, name: target.name } : {}),
+  };
+  const pages = project.pages.some((page) => page.id === reconstructed.id)
+    ? project.pages.map((page) => (page.id === reconstructed.id ? reconstructed : page))
+    : [...project.pages, reconstructed];
+  const merged = validateProject({ ...project, pages, components: design.components });
+  return { pages: merged.pages, components: merged.components };
 }
 
 /**

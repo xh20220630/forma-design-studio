@@ -3,6 +3,7 @@ import test from 'node:test';
 import type { DesignNode, Project } from '@forma/schema';
 import { SceneCompiler } from '../../src/canvas/scene.ts';
 import { transform } from '../../src/canvas/geometry.ts';
+import { translationLayers } from '../../src/canvas/translation.ts';
 
 /**
  * 构造具有默认字段的设计节点，减少样例中无关字段的干扰。
@@ -46,6 +47,38 @@ function project(nodes: DesignNode[]): Project {
     },
   };
 }
+
+test('translation layers retain stacking and fall back for external clipping and backdrop blending', () => {
+  const document = project([
+    node('under'),
+    node('group', { type: 'group' }),
+    node('child', { parentId: 'group' }),
+    node('over'),
+  ]);
+  const scene = new SceneCompiler().compile(document.pages[0], document);
+  const layers = translationLayers(scene, new Set(['group', 'child']))!;
+  assert.deepEqual(
+    layers.map((layer) => layer.moving),
+    [false, true, false],
+  );
+  assert.deepEqual(
+    layers.map((layer) => layer.index.size),
+    [1, 2, 1],
+  );
+  assert.equal(layers[0].background, true);
+  const clipped = project([
+    node('frame', { type: 'frame', clipContent: true }),
+    node('child', { parentId: 'frame' }),
+  ]);
+  const clippedScene = new SceneCompiler().compile(clipped.pages[0], clipped);
+  assert.equal(translationLayers(clippedScene, new Set(['child'])), undefined);
+  assert.ok(translationLayers(clippedScene, new Set(['frame', 'child'])));
+  const blended = project([node('a', { blendMode: 'multiply' })]);
+  assert.equal(
+    translationLayers(new SceneCompiler().compile(blended.pages[0], blended), new Set(['a'])),
+    undefined,
+  );
+});
 
 test('parent rotation, opacity, locks, and clips are inherited independent of array order', () => {
   const document = project([
@@ -126,4 +159,59 @@ test('theme changes invalidate resolved values and malformed cycles terminate', 
   assert.equal(compiler.compile(document.pages[0], document).nodes.get('a')!.node.fill, '#f00');
   const updated = { ...document, tokens: { ...document.tokens, primary: '#00f' } };
   assert.equal(compiler.compile(updated.pages[0], updated).nodes.get('a')!.node.fill, '#00f');
+});
+
+test('a single edit in ten thousand nodes updates only the changed spatial entry', () => {
+  const document = project(
+    Array.from({ length: 10000 }, (_, i) => node(String(i), { x: i * 120 })),
+  );
+  const compiler = new SceneCompiler();
+  const first = compiler.compile(document.pages[0], document);
+  assert.equal(compiler.compile(document.pages[0], document), first);
+  const original = first.nodes.get('0')!;
+  const page = { ...document.pages[0], nodes: [...document.pages[0].nodes] };
+  page.nodes[0] = { ...page.nodes[0], x: -1000 };
+  const next = compiler.compile(page, document);
+  assert.equal(next.index, first.index);
+  assert.equal(next.index.size, 10000);
+  assert.equal(next.changes!.full, false);
+  assert.equal(next.changes!.added.length, 1);
+  assert.deepEqual(next.changes!.removed, [original]);
+  assert.equal(next.changes!.bounds.length, 2);
+  assert.equal(next.index.query(original.bounds).length, 0);
+  assert.equal(next.nodes.get('9999'), first.nodes.get('9999'));
+  const removed = compiler.compile({ ...page, nodes: page.nodes.slice(1) }, document);
+  assert.equal(removed.index.size, 9999);
+  assert.equal(removed.index.query(next.nodes.get('0')!.bounds).length, 0);
+});
+
+test('instance children retain identity across unrelated edits and stacking changes invalidate blocks', () => {
+  const document = project([
+    node('instance', { type: 'component', componentId: 'master' }),
+    node('other'),
+  ]);
+  document.components = [
+    {
+      id: 'master',
+      name: 'Master',
+      description: '',
+      category: '',
+      width: 100,
+      height: 100,
+      nodes: [node('nested')],
+    },
+  ];
+  const compiler = new SceneCompiler();
+  const first = compiler.compile(document.pages[0], document);
+  const page = {
+    ...document.pages[0],
+    nodes: [document.pages[0].nodes[0], node('other', { x: 500 })],
+  };
+  const next = compiler.compile(page, document);
+  assert.equal(next.entries[1], first.entries[1]);
+  assert.equal(next.changes!.added.length, 1);
+  const reordered = compiler.compile({ ...page, nodes: [...page.nodes].reverse() }, document);
+  assert.equal(reordered.changes!.added.length, 0);
+  assert.ok(reordered.changes!.bounds.length > 0);
+  assert.equal(reordered.index.size, 3);
 });

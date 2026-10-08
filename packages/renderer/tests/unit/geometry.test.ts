@@ -72,3 +72,19 @@ test('ten thousand nodes return only the local visible candidates', () => {
       index.insert({ bounds: { x: x * 100, y: y * 100, width: 50, height: 50 } });
   assert.equal(index.query({ x: 0, y: 0, width: 999, height: 999 }).length, 100);
 });
+
+test('incremental removal and reinsertion release old cells and large buckets', () => {
+  const index = new SpatialIndex<{
+    bounds: { x: number; y: number; width: number; height: number };
+  }>();
+  const item = { bounds: { x: 0, y: 0, width: 10, height: 10 } };
+  index.insert(item);
+  item.bounds = { x: 10000, y: 10000, width: 100000, height: 100000 };
+  index.insert(item);
+  assert.equal(index.size, 1);
+  assert.equal(index.query({ x: 0, y: 0, width: 100, height: 100 }).length, 0);
+  assert.equal(index.query(item.bounds).length, 1);
+  index.remove(item);
+  assert.equal(index.query(item.bounds).length, 0);
+  assert.equal(index.size, 0);
+});
